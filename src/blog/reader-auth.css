@@ -1,0 +1,18 @@
+.reader-auth { max-width: 420px; margin: 8px 0 0; color: var(--blog-text, #242424); font: 12px/1.6 Inter, sans-serif; }
+.reader-auth > p:first-child { margin: 0 0 18px; font-size: 13px; }
+.reader-auth-google { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; width: 100%; margin: 0; border-color: var(--theme-border, #deded8); color: var(--blog-text, #242424); background: var(--blog-background, #fff); }
+.reader-auth-google svg { width: 18px; height: 18px; flex: none; }
+.reader-auth-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; color: var(--blog-muted, #73766e); font-size: 11px; }
+.reader-auth-divider::before, .reader-auth-divider::after { content: ""; height: 1px; flex: 1; background: var(--theme-border, #deded8); }
+.reader-auth-email { display: grid; gap: 8px; margin: 0; }
+.reader-auth-email label { margin: 0; font: 600 12px/1.4 Inter, sans-serif; }
+.reader-auth-email input { box-sizing: border-box; width: 100%; min-height: 42px; margin: 0; padding: 9px 12px; border: 1px solid var(--theme-border, #deded8); border-radius: 6px; color: var(--blog-text, #242424); background: var(--blog-background, #fff); font: 12px/1.5 Inter, sans-serif; }
+.reader-auth-email input:focus-visible { outline: 2px solid var(--accent, #46603c); outline-offset: 2px; }
+.reader-auth-email .button { justify-self: start; min-height: 42px; margin: 6px 0 0; }
+.reader-auth .small-text { margin: 14px 0 0; color: var(--blog-muted, #73766e); }
+.reader-auth [role="status"] { margin: 12px 0 0; }
+.comment-session { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 10px 0 0; font-size: 13px; }
+.comment-fields.comment-fields-signed-in { grid-template-columns: 1fr; }
+.comment-name-help { display: block; margin-top: 8px; font-size: 11px; line-height: 1.6; font-weight: 400; color: var(--blog-muted, #777); }
+.comment-form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; margin-top: 20px; }
+.comment-form-actions .comment-session { margin: 0; }

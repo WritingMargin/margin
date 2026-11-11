@@ -1,0 +1,21 @@
+[
+ {"input":"https://x.com/jack/status/20?s=20","provider":"X","url":"https://x.com/i/web/status/20"},
+ {"input":"https://mobile.twitter.com/jack/status/20/photo/1","provider":"X","url":"https://x.com/i/web/status/20"},
+ {"input":"https://www.instagram.com/p/ABC_123-/ ?x=1","provider":""},
+ {"input":"https://instagram.com/reel/ABC_123-/?igsh=test","provider":"Instagram","url":"https://www.instagram.com/reel/ABC_123-/"},
+ {"input":"https://www.instagram.com/p/ABC123/","provider":"Instagram","url":"https://www.instagram.com/p/ABC123/"},
+ {"input":"https://www.linkedin.com/posts/some-person_notes-activity-123456789-ABcd?utm_source=share","provider":"LinkedIn","url":"https://www.linkedin.com/feed/update/urn:li:activity:123456789/"},
+ {"input":"https://www.linkedin.com/feed/update/urn:li:ugcPost:123456789/","provider":"LinkedIn","url":"https://www.linkedin.com/feed/update/urn:li:ugcPost:123456789/"},
+ {"input":"https://www.linkedin.com/feed/update/urn:li:share:123456789/","provider":"LinkedIn","url":"https://www.linkedin.com/feed/update/urn:li:share:123456789/"},
+ {"input":"https://x.com.evil.test/jack/status/20","provider":""},
+ {"input":"https://x.com@evil.test/jack/status/20","provider":""},
+ {"input":"https://evil@x.com/jack/status/20","provider":""},
+ {"input":"https://x.com:444/jack/status/20","provider":""},
+ {"input":"http://x.com/jack/status/20","provider":""},
+ {"input":"javascript:alert(1)","provider":""},
+ {"input":"https://x.com/jack","provider":""},
+ {"input":"https://instagram.com/stories/someone/123","provider":""},
+ {"input":"https://www.linkedin.com/in/someone/","provider":""},
+ {"input":"https://lnkd.in/ABC123","provider":""},
+ {"input":"https://x.com/jack/status/20/extra","provider":""}
+]

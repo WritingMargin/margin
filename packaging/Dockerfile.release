@@ -1,0 +1,12 @@
+# GoReleaser supplies the already-built, self-contained binary for each platform.
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 margin && mkdir -p /app/.data && chown -R margin:margin /app
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/margin /usr/local/bin/margin
+WORKDIR /app
+ENV MARGIN_ENV=production HOST=0.0.0.0 PORT=3001 SQLITE_PATH=/app/.data/margin.db
+USER margin
+EXPOSE 3001
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["margin", "healthcheck"]
+CMD ["margin", "serve"]

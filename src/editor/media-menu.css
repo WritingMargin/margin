@@ -1,0 +1,46 @@
+.format-bar .editor-media-trigger {
+  gap: 3px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.editor-media-trigger[aria-expanded="true"] {
+  color: #34422a;
+  background: #edf1e5;
+  box-shadow: 0 0 0 5px #edf1e5;
+}
+.editor-media-menu {
+  position: fixed;
+  z-index: 80;
+  width: 240px;
+  max-width: calc(100vw - 16px);
+  padding: 5px;
+  border: 1px solid #dfe3d7;
+  border-radius: 11px;
+  background: #fffffc;
+  box-shadow: 0 12px 32px #26301f24;
+}
+.editor-media-menu button {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px;
+  text-align: left;
+  border-radius: 7px;
+  color: #46513b;
+}
+.editor-media-menu button:hover,
+.editor-media-menu button:focus-visible {
+  background: #edf1e5;
+  outline: none;
+}
+.editor-media-menu span {
+  font-size: 12px;
+  font-weight: 500;
+}
+.editor-media-menu small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  color: #828a77;
+}

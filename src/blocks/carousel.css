@@ -1,0 +1,26 @@
+.image-carousel { min-width: 0; margin: 2em 0; }
+.widget-frame > .image-carousel { margin: 0; }
+.carousel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; font: 500 12px/1.5 Inter, sans-serif; color: #56604f; }
+.carousel-heading > span { min-width: 0; overflow-wrap: anywhere; }
+.carousel-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.carousel-count { font-size: 10px; font-variant-numeric: tabular-nums; color: #7b8175; margin-right: 6px; }
+.carousel-controls button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid #d9dfd3; border-radius: 50%; background: #f8faf5; color: #475b43; cursor: pointer; }
+.carousel-controls button:hover:not(:disabled) { background: #e8eee2; border-color: #a9b79c; }
+.carousel-controls button:disabled { opacity: .35; cursor: default; }
+.carousel-track { position: relative; display: flex; gap: 16px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none !important; cursor: grab; user-select: none; -webkit-user-select: none; border-radius: var(--radius, 8px); }
+.carousel-track::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.carousel-track[data-dragging] { scroll-snap-type: none; cursor: grabbing; }
+.carousel-track:focus-visible, .carousel-controls button:focus-visible { outline: 2px solid #537c68; outline-offset: -2px; }
+.carousel-slide { flex: 0 0 86%; min-width: 0; scroll-snap-align: start; }
+.carousel-slide:only-child { flex-basis: 100%; }
+.markdown-body .carousel-slide .md-media, .carousel-slide .md-media { width: 100%; margin: 0; }
+.markdown-body .carousel-slide img, .carousel-slide img { display: block; width: 100%; height: var(--widget-height, auto); aspect-ratio: 16 / 10; object-fit: var(--carousel-fit, contain); background: #f0f2eb; border: 1px solid #e1e5da; border-radius: var(--radius, 8px); box-sizing: border-box; -webkit-user-drag: none; }
+.markdown-body .image-carousel .carousel-hint, .image-carousel .carousel-hint { margin: 12px 0 0; font: 10px/1.6 Inter, sans-serif; color: #858a7e; }
+.carousel-picker .carousel-slide figcaption { font: 11px/1.7 Inter, sans-serif; text-align: center; color: #7b7e74; margin-top: 10px; }
+.carousel-editor-slide { padding: 16px; border: 1px solid #e0e4d9; border-radius: 8px; margin: 12px 0; background: #fafbf7; }
+.carousel-editor-slide > header { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+.carousel-editor-slide > header > div { display: flex; gap: 6px; }
+.carousel-editor-slide label { margin-top: 12px; font-size: 11px; }
+.carousel-editor-slide .icon-button { width: 28px; height: 28px; }
+.carousel-editor-actions { display: flex; gap: 12px; justify-content: space-between; margin: 20px 0; flex-wrap: wrap; }
+.carousel-picker > p { font-size: 12px; line-height: 1.7; }

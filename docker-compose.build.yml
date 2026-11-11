@@ -1,0 +1,12 @@
+# Explicit source-build override for development. Mount paths are runtime settings.
+services:
+  app:
+    image: margin-blog:local
+    pull_policy: build
+    build:
+      context: .
+  create-bucket:
+    image: margin-blog:local
+    pull_policy: build
+    build:
+      context: .

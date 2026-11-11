@@ -1,0 +1,19 @@
+.page-content.cli-connect {
+  max-width: 660px;
+  margin: 8vh auto;
+}
+.cli-connect .settings-card p {
+  color: #555650;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.cli-connect-code {
+  color: #242424;
+  font-family: monospace;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+}
+.cli-connect a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

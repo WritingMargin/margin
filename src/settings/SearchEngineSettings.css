@@ -1,0 +1,93 @@
+.seo-settings {
+  container-type: inline-size;
+}
+.seo-engine-panel {
+  grid-template-columns: minmax(0, 760px);
+}
+
+.search-engine-card {
+  min-width: 0;
+}
+.search-engine-card p,
+.search-engine-steps {
+  line-height: 1.7;
+}
+.search-engine-steps {
+  padding-left: 20px;
+  font-size: 13px;
+}
+.search-engine-steps li + li {
+  margin-top: 18px;
+}
+.search-engine-steps a svg {
+  vertical-align: middle;
+}
+.search-engine-status {
+  background: var(--paper, #f5f5f0);
+  border: 1px solid #e2e4da;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.search-engine-status > span {
+  font-weight: 600;
+}
+.search-engine-status p {
+  margin: 6px 0 0;
+}
+.search-engine-address {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  min-width: 0;
+}
+.search-engine-address label {
+  margin: 0;
+  font-size: 11px;
+}
+.search-engine-address-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.publication-settings-grid .search-engine-address-controls input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  height: 44px;
+  margin: 0;
+  font: inherit;
+  font-size: 11px;
+  color: inherit;
+  padding: 0 12px;
+  border: 1px solid var(--line, #dfe2d8);
+  border-radius: 6px;
+  background: #fff;
+  appearance: none;
+  box-sizing: border-box;
+}
+.publication-settings-grid .search-engine-address-controls input:focus-visible {
+  outline: 2px solid #93a583;
+  outline-offset: 2px;
+}
+.search-engine-address-controls .button {
+  flex: 0 0 auto;
+  height: 44px;
+  margin: 0;
+  box-sizing: border-box;
+}
+.search-engine-card .settings-actions {
+  flex-wrap: wrap;
+}
+.search-engine-notice {
+  font-size: 12px;
+  padding: 12px;
+  background: #f5f1e5;
+  border-radius: 8px;
+}
+.search-engine-error {
+  font-size: 12px;
+  color: #9d392c;
+}

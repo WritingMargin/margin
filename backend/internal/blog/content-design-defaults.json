@@ -1,0 +1,18 @@
+{
+  "guide": {
+    "font": "sans",
+    "width": "wide",
+    "border": "subtle",
+    "radius": 8,
+    "headerLayout": "standard",
+    "showCover": false,
+    "showExcerpt": true,
+    "showDates": false,
+    "showTags": true,
+    "bodySize": "regular",
+    "lineSpacing": "relaxed",
+    "measure": "reading",
+    "headingStyle": "ruled",
+    "quoteStyle": "panel"
+  }
+}

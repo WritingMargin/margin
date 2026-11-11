@@ -1,0 +1,15 @@
+.app-shell .editor-card .source-body.writer-source { padding:0; overflow:hidden; }
+.folding-writer { width:100%; height:100%; min-height:0; min-width:0; }
+.folding-writer .cm-editor { height:100%; color:#72726a; font-size:var(--writer-input-size,14px); }
+.folding-writer .cm-editor.cm-focused { outline:none; }
+.folding-writer .cm-scroller { overflow:auto; font-family:var(--font-mono,monospace); line-height:26px; }
+.folding-writer .cm-content { padding:20px 0; caret-color:#454b3f; }
+.folding-writer .cm-line { padding:0 20px 0 0; }
+.folding-writer .cm-gutters { background:transparent; border:0; color:#a3a397; font-size:11px; }
+.folding-writer .cm-lineNumbers .cm-gutterElement { min-width:40px; padding:0 12px 0 6px; }
+.folding-writer .cm-selectionBackground,.folding-writer .cm-focused .cm-selectionBackground { background:#dde5d5; }
+.writer-code-label { display:inline; margin:0 4px; vertical-align:baseline; line-height:inherit; }
+.writer-code-toggle { display:inline-flex; align-items:center; max-width:100%; padding:1px 7px; border:1px solid #e3e5de; border-radius:4px; background:#f2f4ed; color:#647057; vertical-align:1px; font:500 11px/18px var(--font-sans,sans-serif); cursor:pointer; text-align:left; }
+.writer-code-toggle:focus-visible { outline:2px solid #7b8b6f; outline-offset:2px; }
+.writer-code-toggle:hover { background:#e9eee1; }
+@media(max-width:600px) { .folding-writer .cm-scroller { line-height:24px; } .folding-writer .cm-content { padding:16px 0; } }

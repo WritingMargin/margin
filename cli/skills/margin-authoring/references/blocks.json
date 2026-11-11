@@ -1,0 +1,804 @@
+{
+  "formatVersion": 1,
+  "codeLanguages": [
+    "text",
+    "javascript",
+    "typescript",
+    "python",
+    "go",
+    "rust",
+    "java",
+    "csharp",
+    "c",
+    "cpp",
+    "json",
+    "ipynb",
+    "bash",
+    "sql",
+    "xml",
+    "css",
+    "yaml",
+    "markdown",
+    "diff"
+  ],
+  "tags": [
+    "Model",
+    "Figma",
+    "Social",
+    "Diagram",
+    "Mermaid",
+    "Chart",
+    "Scene",
+    "Illustration",
+    "Poll",
+    "Checklist",
+    "Callout",
+    "Carousel",
+    "Tabs",
+    "Tab",
+    "Widget",
+    "Widgets",
+    "Columns",
+    "Column",
+    "Image",
+    "Audio",
+    "SoundCloud",
+    "Link",
+    "Spotify",
+    "Video",
+    "Divider",
+    "Clear"
+  ],
+  "blocks": [
+    {
+      "language": "chart",
+      "title": "Interactive chart",
+      "description": "Compare measurements. Readers can switch chart styles, inspect values, and toggle series.",
+      "maxCharacters": 50000,
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "type": {
+            "default": "line",
+            "type": "string",
+            "enum": [
+              "line",
+              "bar",
+              "area"
+            ]
+          },
+          "xLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "yLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "labels": {
+            "minItems": 1,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          "series": {
+            "minItems": 1,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "values": {
+                  "minItems": 1,
+                  "maxItems": 200,
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -1000000000000,
+                    "maximum": 1000000000000
+                  }
+                },
+                "color": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-f]{6}$"
+                }
+              },
+              "required": [
+                "name",
+                "values"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "labels",
+          "series"
+        ],
+        "additionalProperties": false
+      },
+      "rules": [
+        "Every series must have exactly one value per label.",
+        "Series names must be unique after trimming.",
+        "Labels are evenly spaced categories, not proportional numeric coordinates.",
+        "Use real measured data or explicitly label illustrative values."
+      ],
+      "example": "{\n  \"title\": \"Latency as traffic grows\",\n  \"description\": \"Illustrative data: compare response times with and without a cache. Toggle a series to isolate it.\",\n  \"type\": \"line\",\n  \"xLabel\": \"Concurrent requests\",\n  \"yLabel\": \"Latency (ms)\",\n  \"labels\": [\n    \"10\",\n    \"50\",\n    \"100\",\n    \"250\",\n    \"500\"\n  ],\n  \"series\": [\n    {\n      \"name\": \"Without cache\",\n      \"values\": [\n        24,\n        42,\n        78,\n        160,\n        310\n      ],\n      \"color\": \"#b8794f\"\n    },\n    {\n      \"name\": \"With cache\",\n      \"values\": [\n        12,\n        16,\n        21,\n        32,\n        48\n      ],\n      \"color\": \"#537c68\"\n    }\n  ]\n}"
+    },
+    {
+      "language": "mermaid",
+      "title": "Flowchart & diagrams",
+      "description": "Explain architecture with flowcharts, sequence diagrams, state machines, and more.",
+      "maxCharacters": 50000,
+      "rules": [
+        "Start with the diagram type; empty definitions are invalid.",
+        "No %%{...} configuration directives or YAML frontmatter.",
+        "Renderer uses strict security; do not use HTML, scripts or click callbacks.",
+        "At most 300 edges; review syntax and layout in the Mermaid renderer."
+      ],
+      "example": "flowchart LR\n  A[Client request] --> B{Cache hit?}\n  B -->|Yes| C[Return response]\n  B -->|No| D[Query database]\n  D --> E[Update cache]\n  E --> C"
+    },
+    {
+      "language": "scene",
+      "title": "Interactive 3D scene",
+      "description": "Build a scene from geometry. Orbit, zoom, inspect objects, and explore the wireframe.",
+      "maxCharacters": 50000,
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "poster": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": false
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "background": {
+            "default": "#f5f7f4",
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
+          },
+          "autoRotate": {
+            "default": false,
+            "type": "boolean"
+          },
+          "objects": {
+            "minItems": 1,
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "shape": {
+                  "type": "string",
+                  "enum": [
+                    "box",
+                    "sphere",
+                    "torus",
+                    "cone",
+                    "cylinder",
+                    "model"
+                  ]
+                },
+                "src": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "keyframes": {
+                  "minItems": 1,
+                  "maxItems": 32,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "time": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 120
+                      },
+                      "position": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      },
+                      "rotation": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "number",
+                            "minimum": -50,
+                            "maximum": 50
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 3,
+                        "maxItems": 3
+                      }
+                    },
+                    "required": [
+                      "time"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "animationSrc": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "pulse": {
+                  "type": "object",
+                  "properties": {
+                    "bpm": {
+                      "default": 72,
+                      "type": "number",
+                      "minimum": 30,
+                      "maximum": 180
+                    },
+                    "amplitude": {
+                      "default": 0.07,
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 0.15
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 2000
+                },
+                "color": {
+                  "default": "#648774",
+                  "type": "string",
+                  "pattern": "^#[0-9a-f]{6}$"
+                },
+                "position": {
+                  "default": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "rotation": {
+                  "default": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    },
+                    {
+                      "type": "number",
+                      "minimum": -50,
+                      "maximum": 50
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "scale": {
+                  "default": 1,
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 10
+                }
+              },
+              "required": [
+                "shape",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "objects"
+        ],
+        "additionalProperties": false
+      },
+      "rules": [
+        "Only shape=model accepts src and animationSrc. It requires src. Optional animationSrc points to a self-contained Three.js transform clip JSON targeting this model.",
+        "Model src must be an HTTPS or root-relative .glb, .gltf, .obj or .stl URL without credentials.",
+        "Use a self-contained file up to 20 MiB. GLB/glTF 2.0 supports embedded clips, up to 1000 nodes and 2000000 accessor elements. Embed glTF JSON resources as base64. Required extensions and external resources are unsupported. OBJ and STL provide static geometry. Remote hosts need CORS and an allowed model origin.",
+        "Poster src must be HTTPS or root-relative without credentials; alt must be non-empty.",
+        "Each keyframe specifies time in seconds (strictly increasing from above 0 up to 120) and position or rotation or both. Start from the object pose at time 0. Animated objects share one looping clip.",
+        "Rotations use radians. Pulse is illustrative scaling, not imported animation playback."
+      ],
+      "example": "{\n  \"title\": \"Explore the geometry\",\n  \"description\": \"Drag to orbit and scroll to zoom. Select an object below to inspect its position.\",\n  \"objects\": [\n    {\n      \"shape\": \"box\",\n      \"label\": \"Compute node\",\n      \"position\": [\n        -2,\n        0,\n        0\n      ],\n      \"color\": \"#648774\"\n    },\n    {\n      \"shape\": \"torus\",\n      \"label\": \"Message ring\",\n      \"position\": [\n        0,\n        0,\n        0\n      ],\n      \"color\": \"#b8794f\"\n    },\n    {\n      \"shape\": \"sphere\",\n      \"label\": \"Data store\",\n      \"position\": [\n        2,\n        0,\n        0\n      ],\n      \"color\": \"#668aaa\"\n    }\n  ]\n}"
+    },
+    {
+      "language": "illustration",
+      "title": "Clickable illustration",
+      "description": "Explain a drawing with numbered regions, detailed labels, zoom, and an expanded view.",
+      "maxCharacters": 50000,
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "poster": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": false
+          },
+          "artwork": {
+            "type": "object",
+            "properties": {
+              "src": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "alt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "src",
+              "alt"
+            ],
+            "additionalProperties": false
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "width": {
+            "default": 600,
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 1000
+          },
+          "height": {
+            "default": 600,
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 1000
+          },
+          "background": {
+            "default": "#faf5ed",
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
+          },
+          "flow": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "landmarks": {
+                "default": [],
+                "maxItems": 10,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    },
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "x",
+                    "y"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "secondsPerStep": {
+                "default": 4,
+                "type": "number",
+                "minimum": 2,
+                "maximum": 12
+              },
+              "steps": {
+                "minItems": 1,
+                "maxItems": 30,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    },
+                    "points": {
+                      "minItems": 2,
+                      "maxItems": 40,
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1000
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1000
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      }
+                    },
+                    "color": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-f]{6}$"
+                    },
+                    "endColor": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-f]{6}$"
+                    },
+                    "region": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "description",
+                    "points",
+                    "color"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "title",
+              "description",
+              "steps"
+            ],
+            "additionalProperties": false
+          },
+          "shapes": {
+            "default": [],
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000,
+                  "pattern": "^[Mm][MmLlHhVvCcSsQqTtAaZz0-9eE.,+\\s-]+$"
+                },
+                "fill": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-f]{6}$"
+                },
+                "stroke": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-f]{6}$"
+                },
+                "strokeWidth": {
+                  "default": 2,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 20
+                },
+                "region": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "path",
+                "fill"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "regions": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "x": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000
+                },
+                "color": {
+                  "default": "#a64040",
+                  "type": "string",
+                  "pattern": "^#[0-9a-f]{6}$"
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "description",
+                "x",
+                "y"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "regions"
+        ],
+        "additionalProperties": false
+      },
+      "rules": [
+        "Supply shapes or artwork with a hosted image src and non-empty alt. Regions use the drawing coordinate system.",
+        "Region IDs must be unique after trimming.",
+        "Shape and flow region references must match an existing region ID.",
+        "Markers, flow points and landmarks must remain inside width and height.",
+        "Consecutive flow points must differ. Each step must begin at the previous step's endpoint.",
+        "Paths contain SVG geometry, never SVG markup, URLs, styles or event handlers.",
+        "Poster src must be HTTPS or root-relative without credentials; alt must be non-empty."
+      ],
+      "example": "{\n  \"title\": \"Explore a cross-section\",\n  \"description\": \"Select a numbered region to read its explanation.\",\n  \"width\": 400,\n  \"height\": 300,\n  \"shapes\": [\n    {\n      \"path\": \"M80 60 H320 V240 H80 Z\",\n      \"fill\": \"#b66c60\",\n      \"region\": \"outer\"\n    },\n    {\n      \"path\": \"M140 110 H260 V190 H140 Z\",\n      \"fill\": \"#ebc5ab\",\n      \"region\": \"inner\"\n    }\n  ],\n  \"regions\": [\n    {\n      \"id\": \"outer\",\n      \"label\": \"Outer layer\",\n      \"description\": \"The outer layer surrounds the core.\",\n      \"x\": 105,\n      \"y\": 85\n    },\n    {\n      \"id\": \"inner\",\n      \"label\": \"Inner core\",\n      \"description\": \"The core sits inside the outer layer.\",\n      \"x\": 200,\n      \"y\": 150\n    }\n  ]\n}"
+    },
+    {
+      "language": "poll",
+      "title": "Reader poll",
+      "description": "Ask one question. Choose when results appear and when voting closes.",
+      "maxCharacters": 50000,
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "multiple-choice",
+              "agree-disagree"
+            ]
+          },
+          "options": {
+            "minItems": 2,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "allowReason": {
+            "type": "boolean"
+          },
+          "resultsVisibility": {
+            "type": "string",
+            "enum": [
+              "after-vote",
+              "after-close"
+            ]
+          },
+          "closesAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "rules": [
+        "Keep a poll ID stable across edits so each signed-in reader gets one vote.",
+        "Multiple-choice polls need two to eight uniquely identified options.",
+        "Agree/disagree polls use fixed agree and disagree options; allowReason lets a reader send an optional private reason visible to the writer in poll results.",
+        "Set resultsVisibility to after-vote (default) or after-close. After-close requires closesAt as an RFC3339 date and time with a timezone. A closesAt value also closes an after-vote poll at that time."
+      ],
+      "example": "{\n  \"id\": \"your-question-1\",\n  \"title\": \"Which topic should we explore next?\",\n  \"type\": \"multiple-choice\",\n  \"resultsVisibility\": \"after-vote\",\n  \"options\": [\n    {\n      \"id\": \"history\",\n      \"label\": \"The history\"\n    },\n    {\n      \"id\": \"future\",\n      \"label\": \"What comes next\"\n    }\n  ]\n}"
+    }
+  ]
+}

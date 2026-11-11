@@ -1,0 +1,287 @@
+[
+  {
+    "name": "markdown",
+    "content": "# Heading\n\n**Strong** and *emphasis* ~~deleted~~.\n\n- One\n- Two\n\n| A | B |\n| - | - |\n| 1 | 2 |\n\n> Quote",
+    "html": "<h1>Heading</h1>\n<p><strong>Strong</strong> and <em>emphasis</em> <del>deleted</del>.</p>\n<ul>\n<li>One</li>\n<li>Two</li>\n</ul>\n<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>\n<blockquote>\n<p>Quote</p>\n</blockquote>"
+  },
+  {
+    "name": "links",
+    "content": "[Relative](other) [Root](/other) [Mail](mailto:hello@example.com) [Bad](javascript:alert(1)) [Credentials](https://user:pass@example.com)\n\n![Image](/image.png \"Title\")",
+    "html": "<link rel=\"preload\" as=\"image\" href=\"https://blog.example/image.png\"/><p><a href=\"https://blog.example/post/other\">Relative</a> <a href=\"https://blog.example/other\">Root</a> <a href=\"mailto:hello@example.com\">Mail</a> <a>Bad</a> <a>Credentials</a></p>\n<p><img src=\"https://blog.example/image.png\" alt=\"Image\" title=\"Title\"/></p>"
+  },
+  {
+    "name": "unsafe",
+    "content": "<script>alert(1)</script>\n\nHello <b>friend</b>.\n\n::image{src=\"javascript:alert(1)\" onerror=\"alert(2)\"}",
+    "html": "\n<p>Hello friend.</p>\n<figure><img alt=\"\"/></figure>"
+  },
+  {
+    "name": "directives",
+    "content": "::image{src=\"/image.png\" alt=\"An image\" caption=\"Caption\"}\n\n::video{src=\"https://media.example/film.mp4\"}\n\n:::callout{tone=\"note\"}\nA **useful** note.\n:::\n\n::divider",
+    "html": "<link rel=\"preload\" as=\"image\" href=\"https://blog.example/image.png\"/><figure><img src=\"https://blog.example/image.png\" alt=\"An image\"/><figcaption>Caption</figcaption></figure>\n<figure><video src=\"https://media.example/film.mp4\" controls=\"\"></video></figure>\n<blockquote><p>A <strong>useful</strong> note.</p></blockquote>\n<hr/>"
+  },
+  {
+    "name": "tags",
+    "content": "[Callout]\nHello **world**\n[/Callout]\n\n[Carousel]\n[Image src=\"/one.png\" caption=\"One\"]\n[Image src=\"/two.png\"]\n[/Carousel]",
+    "html": "<link rel=\"preload\" as=\"image\" href=\"https://blog.example/one.png\"/><link rel=\"preload\" as=\"image\" href=\"https://blog.example/two.png\"/><blockquote><p>Hello <strong>world</strong></p></blockquote>\n<div><figure><img src=\"https://blog.example/one.png\" alt=\"\"/><figcaption>One</figcaption></figure><figure><img src=\"https://blog.example/two.png\" alt=\"\"/></figure></div>"
+  },
+  {
+    "name": "tabs",
+    "content": "[Tabs]\n[Tab title=\"First\"]\nOne **thing**\n[/Tab]\n[Tab title=\"Second\"]\nAnother thing\n[/Tab]\n[/Tabs]",
+    "html": "<section><section><h3>First</h3><p>One <strong>thing</strong></p></section><section><h3>Second</h3><p>Another thing</p></section></section>"
+  },
+  {
+    "name": "raw",
+    "content": "[Diagram]\ngraph LR\n  A --> B\n[/Diagram]\n\n```text\n[Image src=\"/literal.png\"]\n```",
+    "html": "<pre><code class=\"language-mermaid\">graph LR\n  A --&gt; B\n</code></pre>\n<pre><code class=\"language-text\">[Image src=&quot;/literal.png&quot;]\n</code></pre>"
+  },
+  {
+    "name": "fonts",
+    "content": "Before [Font=\"cAvEaT\"]One **bold** [Font=\"plex-mono\"]code voice[/Font] end[/Font] after\n\n[Font=\"Source Serif 4\"]Bookish[/Font]\n\n[Highlight]**good** idea[/Highlight]",
+    "html": "<p>Before <span data-font=\"caveat\">One <strong>bold</strong> <span data-font=\"plex-mono\">code voice</span> end</span> after</p>\n<p><span data-font=\"source-serif\">Bookish</span></p>\n<p><mark><strong>good</strong> idea</mark></p>"
+  },
+  {
+    "name": "fontSections",
+    "content": "[Font=\"Caveat\"]\n\n## Heading\n\nFirst paragraph.\n\n[Font=\"Kalam\"]\n\n- One\n- Two\n\n[/Font]\n\nLast paragraph.\n\n[/Font]\n\nOutside.",
+    "html": "<div data-font=\"caveat\"><h2>Heading</h2><p>First paragraph.</p><div data-font=\"kalam\"><ul>\n<li>One</li>\n<li>Two</li>\n</ul></div><p>Last paragraph.</p></div>\n<p>Outside.</p>"
+  },
+  {
+    "name": "fontLiterals",
+    "content": "`[Font=\"Caveat\"]literal[/Font]`\n\n\\[Font=\"Caveat\"]literal[/Font]\n\n[Font=\"Caveat\"]unclosed",
+    "html": "<p><code>[Font=&quot;Caveat&quot;]literal[/Font]</code></p>\n<p>[Font=&quot;Caveat&quot;]literal[/Font]</p>\n<p>[Font=&quot;Caveat&quot;]unclosed</p>"
+  },
+  {
+    "name": "videos",
+    "content": "[Video src=\"https://youtu.be/dQw4w9WgXcQ?t=1m2s\"]\n\n[Video src=\"https://vimeo.com/123456/secret#t=1m\" caption=\"Vimeo\"]\n\n[Video src=\"https://stream.mux.com/test.m3u8\"]",
+    "html": "<figure><a href=\"https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?start=62\">Watch on YouTube</a></figure>\n<figure><a href=\"https://player.vimeo.com/video/123456?h=secret#t=60s\">Vimeo</a><figcaption>Vimeo</figcaption></figure>\n<figure><a href=\"https://stream.mux.com/test.m3u8\">Watch on Mux</a></figure>"
+  },
+  {
+    "name": "inlineDirectives",
+    "content": "A :mark[**marked** phrase] and :callout[note].",
+    "html": "<p>A <mark><strong>marked</strong> phrase</mark> and <blockquote>note</blockquote>.</p>"
+  },
+  {
+    "name": "edgeTags",
+    "content": "[Tabs]\n[Tab title=\"Unclosed\"]\nText\n[/Tab]\n\n`code\n[Image src=\"/literal.png\"]\nend`",
+    "html": "<p>[Tabs]\n[Tab title=&quot;Unclosed&quot;]\nText\n[/Tab]</p>\n<p><code>code [Image src=&quot;/literal.png&quot;] end</code></p>"
+  },
+  {
+    "name": "edgeFonts",
+    "content": "`\\[Font=\"Caveat\"]literal[/Font]`\n\nBefore [Font=\"Caveat\"]First\n\nSecond[/Font] after",
+    "html": "<p><code>\\[Font=&quot;Caveat&quot;]literal[/Font]</code></p>\n<p>Before </p>\n<div data-font=\"caveat\"><p>First</p><p>Second</p></div>\n<p> after</p>"
+  },
+  {
+    "name": "edgeDirectives",
+    "content": ":::callout\nUnclosed **note**\n\n::unknown[Label]",
+    "html": "<blockquote><p>Unclosed <strong>note</strong></p><div>Label</div></blockquote>"
+  },
+  {
+    "name": "tasks",
+    "content": "- [x] Done\n- [ ] Pending\n\n| Left | Right |\n| :--- | ---: |\n| One | Two |",
+    "html": "<ul class=\"contains-task-list\">\n<li class=\"task-list-item\"><input type=\"checkbox\" disabled=\"\" checked=\"\"/> Done</li>\n<li class=\"task-list-item\"><input type=\"checkbox\" disabled=\"\"/> Pending</li>\n</ul>\n<table><thead><tr><th style=\"text-align:left\">Left</th><th style=\"text-align:right\">Right</th></tr></thead><tbody><tr><td style=\"text-align:left\">One</td><td style=\"text-align:right\">Two</td></tr></tbody></table>"
+  },
+  {
+    "name": "codeURLs",
+    "content": "`<a href=\"javascript:alert(1)\">`\n\n[Safe](https://example.com/:mark[abc])",
+    "html": "<p><code>&lt;a href=&quot;javascript:alert(1)&quot;&gt;</code></p>\n<p><a href=\"https://example.com/:mark%5Babc%5D\">Safe</a></p>"
+  },
+  {
+    "name": "inlineCode",
+    "content": "A :mark[`code`] and `:mark[literal]` and \\:mark[literal].",
+    "html": "<p>A <mark><code>code</code></mark> and <code>:mark[literal]</code> and :mark[literal].</p>"
+  },
+  {
+    "name": "nestedLayout",
+    "content": "[Columns ratio=\"wide-left\"]\n[Column]\n## Context\n\n**Markdown** works.\n[/Column]\n[Column]\n[Diagram width=\"half\" height=\"360\" align=\"right\" wrap=\"true\"]\nflowchart LR\nA --> B\n[/Diagram]\n[/Column]\n[/Columns]",
+    "html": "<div><div><h2>Context</h2><p><strong>Markdown</strong> works.</p></div><div><div><pre><code class=\"language-mermaid\">flowchart LR\nA --&gt; B\n</code></pre></div></div></div>"
+  },
+  {
+    "name": "malformedTags",
+    "content": "[Unknown]\ntext\n[/Unknown]\n\n[Callout tone=\"tip\"]\nText\n[/Columns]",
+    "html": "<p>[Unknown]\ntext\n[/Unknown]</p>\n<p>[Callout tone=&quot;tip&quot;]\nText\n[/Columns]</p>"
+  },
+  {
+    "name": "rawPayload",
+    "content": "[Diagram]\nflowchart LR\nA[Font=\"Caveat\"] --> B[Done]\n```\n[Image src=\"https://example.com/x.png\"]\n[/Diagram]",
+    "html": "<pre><code class=\"language-mermaid\">flowchart LR\nA[Font=&quot;Caveat&quot;] --&gt; B[Done]\n```\n[Image src=&quot;https://example.com/x.png&quot;]\n</code></pre>"
+  },
+  {
+    "name": "provider0",
+    "content": "[Video src=\"https://youtube.com/watch?v=aqz-KE-bpKQ\"]",
+    "html": "<figure><a href=\"https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ\">Watch on YouTube</a></figure>"
+  },
+  {
+    "name": "provider1",
+    "content": "[Video src=\"https://www.youtube.com/shorts/aqz-KE-bpKQ\"]",
+    "html": "<figure><a href=\"https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ\">Watch on YouTube</a></figure>"
+  },
+  {
+    "name": "provider2",
+    "content": "[Video src=\"https://www.youtube.com/live/aqz-KE-bpKQ\"]",
+    "html": "<figure><a href=\"https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ\">Watch on YouTube</a></figure>"
+  },
+  {
+    "name": "provider3",
+    "content": "[Video src=\"https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ\"]",
+    "html": "<figure><a href=\"https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ\">Watch on YouTube</a></figure>"
+  },
+  {
+    "name": "provider4",
+    "content": "[Video src=\"https://vimeo.com/123456/abc123\"]",
+    "html": "<figure><a href=\"https://player.vimeo.com/video/123456?h=abc123\">Watch on Vimeo</a></figure>"
+  },
+  {
+    "name": "provider5",
+    "content": "[Video src=\"https://player.vimeo.com/video/123456?h=abc123#t=1m\"]",
+    "html": "<figure><a href=\"https://player.vimeo.com/video/123456?h=abc123#t=60s\">Watch on Vimeo</a></figure>"
+  },
+  {
+    "name": "provider6",
+    "content": "[Video src=\"https://vimeo.com/channels/staffpicks/123456\"]",
+    "html": "<figure><a href=\"https://player.vimeo.com/video/123456\">Watch on Vimeo</a></figure>"
+  },
+  {
+    "name": "provider7",
+    "content": "[Video src=\"https://player.mux.com/abc123?autoplay=true\"]",
+    "html": "<figure><a href=\"https://player.mux.com/abc123\">Watch on Mux</a></figure>"
+  },
+  {
+    "name": "provider8",
+    "content": "[Video src=\"https://stream.mux.com/abc123.m3u8?token=existing-playback-token\"]",
+    "html": "<figure><a href=\"https://stream.mux.com/abc123.m3u8?token=existing-playback-token\">Watch on Mux</a></figure>"
+  },
+  {
+    "name": "provider9",
+    "content": "[Video src=\"https://player.cloudinary.com/embed/?cloud_name=demo&public_id=folder%2Fvideo\"]",
+    "html": "<figure><a href=\"https://player.cloudinary.com/embed/?cloud_name=demo&amp;public_id=folder%2Fvideo&amp;player%5Bautoplay%5D=false\">Watch on Cloudinary</a></figure>"
+  },
+  {
+    "name": "provider10",
+    "content": "[Video src=\"javascript:alert(1)\"]",
+    "html": "<figure><video controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider11",
+    "content": "[Video src=\"data:text/html,test\"]",
+    "html": "<figure><video controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider12",
+    "content": "[Video src=\"//youtube.com/watch?v=aqz-KE-bpKQ\"]",
+    "html": "<figure><video src=\"https://youtube.com/watch?v=aqz-KE-bpKQ\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider13",
+    "content": "[Video src=\"https://youtube.com.evil.example/watch?v=aqz-KE-bpKQ\"]",
+    "html": "<figure><video src=\"https://youtube.com.evil.example/watch?v=aqz-KE-bpKQ\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider14",
+    "content": "[Video src=\"https://user:pass@vimeo.com/1234\"]",
+    "html": "<figure><video controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider15",
+    "content": "[Video src=\"https://www.youtube.com/watch?v=bad\"]",
+    "html": "<figure><video src=\"https://www.youtube.com/watch?v=bad\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider16",
+    "content": "[Video src=\"https://player.mux.com/\"]",
+    "html": "<figure><video src=\"https://player.mux.com/\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider17",
+    "content": "[Video src=\"https://player.cloudinary.com/embed/?cloud_name=demo\"]",
+    "html": "<figure><video src=\"https://player.cloudinary.com/embed/?cloud_name=demo\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider18",
+    "content": "[Video src=\"https://vimeo.com/1234?h=%3Cscript%3E\"]",
+    "html": "<figure><video src=\"https://vimeo.com/1234?h=%3Cscript%3E\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider19",
+    "content": "[Video src=\"https://example.com/page\"]",
+    "html": "<figure><video src=\"https://example.com/page\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider20",
+    "content": "[Video src=\"https://player.mux.com//abc//\"]",
+    "html": "<figure><video src=\"https://player.mux.com//abc//\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider21",
+    "content": "[Video src=\"https://vimeo.com/%31\"]",
+    "html": "<figure><video src=\"https://vimeo.com/%31\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "provider22",
+    "content": "[Video src=\"https://youtu.be/%61qz-KE-bpKQ\"]",
+    "html": "<figure><video src=\"https://youtu.be/%61qz-KE-bpKQ\" controls=\"\"></video></figure>"
+  },
+  {
+    "name": "unusual0",
+    "content": "<img src=x onerror=alert(1)>\n\nText <svg onload=alert(2)>hidden</svg>",
+    "html": "\n<p>Text hidden</p>"
+  },
+  {
+    "name": "unusual1",
+    "content": "[Bad](jav&#x61;script:alert(1)) ![Bad](data:text/html;base64,PHNjcmlwdD4=)",
+    "html": "<p><a>Bad</a> <img alt=\"Bad\"/></p>"
+  },
+  {
+    "name": "unusual2",
+    "content": "::image{src=\"javascript:alert(1)\" alt=\"Safe\" caption=\"<svg onload=alert(1)>\"}",
+    "html": "<figure><img alt=\"Safe\"/><figcaption>&lt;svg onload=alert(1)&gt;</figcaption></figure>"
+  },
+  {
+    "name": "unusual3",
+    "content": ":image[]{src=\"javascript:alert(1)\" onerror=\"alert(2)\"}",
+    "html": "<p><figure><img alt=\"\"/></figure></p>"
+  },
+  {
+    "name": "unusual5",
+    "content": "::unknown[**Strong** label]{#id .class}",
+    "html": "<div><strong>Strong</strong> label</div>"
+  },
+  {
+    "name": "unusual6",
+    "content": ":mark[`a]b`] and :mark[link [name](https://example.com)]",
+    "html": "<p><mark>`a</mark>b`] and <mark>link <a href=\"https://example.com/\">name</a></mark></p>"
+  },
+  {
+    "name": "unusual8",
+    "content": "[Font=\"Caveat; color:red\"]Safe[/Font]",
+    "html": "<p>[Font=&quot;Caveat; color<div></div>&quot;]Safe[/Font]</p>"
+  },
+  {
+    "name": "unusual9",
+    "content": ":::unknown\nKeep **this**\n:::",
+    "html": "<div><p>Keep <strong>this</strong></p></div>"
+  },
+  {
+    "name": "unusual10",
+    "content": "::::tabs\n:::tab{title=\"One\"}\nText\n:::\n::::",
+    "html": "<section><section><h3>One</h3><p>Text</p></section></section>"
+  },
+  {
+    "name": "unusual11",
+    "content": "[Image src=\"https://example.com/a.png?x=1&y=2\" caption=\"A ] \\\"quote\\\"\\\\path\" alt=\"<a & b>\"]",
+    "html": "<link rel=\"preload\" as=\"image\" href=\"https://example.com/a.png?x=1&amp;y=2\"/><figure><img src=\"https://example.com/a.png?x=1&amp;y=2\" alt=\"&lt;a &amp; b&gt;\"/><figcaption>A ] &quot;quote&quot;\\path</figcaption></figure>"
+  },
+  {
+    "name": "nestedInline",
+    "content": ":mark[A :mark[second] **label**] and :unknown[[Font=\"Kalam\"]nice[/Font]]",
+    "html": "<p><mark>A <mark>second</mark> <strong>label</strong></mark> and <div><span data-font=\"kalam\">nice</span></div></p>"
+  },
+  {
+    "name": "leafVariants",
+    "content": "::mark[marked]\n\n::callout[note]\n\n::tabs[label]\n\n::tab[label]{title=\"Tab\"}",
+    "html": "<mark>marked</mark>\n<blockquote>note</blockquote>\n<section>label</section>\n<section><h3>Tab</h3>label</section>"
+  },
+  {
+    "name": "containerLabel",
+    "content": ":::callout[Title]\nBody\n:::",
+    "html": "<blockquote><p>Title</p><p>Body</p></blockquote>"
+  }
+]

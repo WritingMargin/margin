@@ -1,0 +1,14 @@
+.footer-link-controls { --footer-link-field-size: 11px; margin-top: 24px; }
+.footer-link-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.footer-link-heading h4 { margin: 0; font-size: 14px; }
+.footer-link-columns, .footer-link-row { display: grid; grid-template-columns: minmax(82px, 1fr) minmax(0, 1.8fr) 36px; align-items: center; gap: 8px; }
+.footer-link-columns { margin-top: 18px; color: #65655e; font-size: var(--footer-link-field-size); font-weight: 500; }
+.footer-link-row { margin-top: 8px; }
+.footer-link-row input { min-width: 0; width: 100%; height: 38px; margin: 0; padding: 8px 10px; border: 1px solid #deded8; border-radius: 5px; background: #fff; font-size: var(--footer-link-field-size); }
+.footer-link-remove { width: 36px; height: 36px; border-radius: 5px; color: #64645d; }
+.footer-link-remove:hover { background: #f2f2ee; color: #242424; }
+.footer-link-remove:focus-visible { outline: 2px solid #555; outline-offset: 2px; }
+.footer-only-preview { width: min(100% - 36px, 760px); margin: 36px auto 32px; }
+.footer-only-preview h2 { font-family: var(--heading-font); font-size: clamp(24px, 4vw, 36px); margin: 16px 0; }
+.design-preview-viewport .footer-preview-frame .is-design-preview { min-height: 0; }
+@media (max-width: 800px) { .footer-link-controls { --footer-link-field-size: 13px; } .footer-link-columns, .footer-link-row { grid-template-columns: minmax(80px, 1fr) minmax(0, 1.6fr) 36px; } }

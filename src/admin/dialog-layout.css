@@ -1,0 +1,143 @@
+.modal:not(.ai-modal):not(.tabs-modal) {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-height: calc(100dvh - 50px);
+  overflow: hidden;
+}
+.dialog-stack,
+.modal .media-picker,
+.modal .carousel-picker {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.dialog-header,
+.dialog-footer,
+.modal .media-picker-footer {
+  flex: none;
+  padding: 24px;
+}
+.dialog-header {
+  padding-right: 52px;
+  border-bottom: 1px solid #e4e7dc;
+}
+.dialog-header .eyebrow {
+  font-size: 9px;
+  color: #929281;
+}
+.dialog-header h2 {
+  margin: 8px 0 0;
+}
+.dialog-header p,
+.dialog-body > p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #858577;
+}
+.dialog-header p {
+  margin-bottom: 0;
+}
+.dialog-header .settings-tabs {
+  margin: 16px 0 -24px;
+  gap: 20px;
+}
+.dialog-header .settings-tabs button {
+  white-space: nowrap;
+}
+.dialog-body,
+.modal .media-picker-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+.dialog-footer,
+.modal .media-picker-footer {
+  border-top: 1px solid #e4e7dc;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.dialog-footer .button,
+.dialog-footer .citation-insert,
+.modal .media-picker-footer {
+  margin: 0;
+}
+.modal .media-picker > .section-tabs {
+  flex: none;
+  margin: 0;
+  padding: 0 24px;
+}
+.modal .carousel-picker {
+  margin: 0;
+}
+.modal > .modal-close {
+  z-index: 2;
+}
+
+/* Scrolling belongs to the content, never to the dialog frame. */
+.font-picker-dialog {
+  overflow: hidden;
+}
+.font-picker-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  box-sizing: border-box;
+  min-height: 0;
+}
+.font-picker-panel > header,
+.font-picker-search,
+.font-picker-panel > footer {
+  flex-shrink: 0;
+}
+.font-picker-options {
+  min-height: 0;
+}
+.tabs-builder > header {
+  padding-right: 56px;
+}
+.modal .ai-scroll {
+  scrollbar-gutter: auto;
+  margin-right: 0;
+}
+.modal *,
+.font-picker-options {
+  scrollbar-width: none;
+}
+.modal *::-webkit-scrollbar,
+.font-picker-options::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 600px) {
+  .modal:not(.ai-modal):not(.tabs-modal) {
+    max-height: calc(100dvh - 30px);
+  }
+  .dialog-header {
+    padding: 20px 48px 20px 20px;
+  }
+  .dialog-header .settings-tabs {
+    margin-bottom: -20px;
+    gap: 12px;
+  }
+  .dialog-header .settings-tabs button {
+    font-size: 11px;
+  }
+  .dialog-header h2 {
+    padding-right: 0;
+  }
+  .dialog-body,
+  .modal .media-picker-body {
+    padding: 20px;
+  }
+  .dialog-footer,
+  .modal .media-picker-footer {
+    padding: 14px 20px;
+  }
+  .modal .media-picker > .section-tabs {
+    padding: 0 20px;
+    gap: 12px;
+  }
+}

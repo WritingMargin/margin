@@ -1,0 +1,60 @@
+.pwa-install-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--theme-border, #ddd);
+  border-radius: 6px;
+  background: var(--blog-background, #fff);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pwa-install-button:hover {
+  border-color: currentColor;
+}
+.pwa-install-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.pwa-install-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.pwa-install-dialog {
+  width: min(440px, calc(100vw - 40px));
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid var(--theme-border, #ddd);
+  border-radius: 12px;
+  background: var(--blog-background, #fff);
+  color: var(--blog-text, #202020);
+  font: 14px/1.6 sans-serif;
+}
+.pwa-install-dialog::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+.pwa-install-dialog h2 {
+  margin: 0 0 16px;
+  font: 600 22px/1.3 sans-serif;
+}
+.pwa-install-dialog p {
+  margin: 0 0 18px;
+}
+.pwa-install-dialog form {
+  display: flex;
+  justify-content: flex-end;
+}
+@media (max-width: 520px) {
+  .public-nav:has(.pwa-install-button) {
+    height: auto;
+    min-height: 80px;
+    flex-wrap: wrap;
+    padding-block: 16px;
+  }
+  .public-nav:has(.pwa-install-button) > div {
+    margin-left: auto;
+  }
+}

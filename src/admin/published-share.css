@@ -1,0 +1,55 @@
+.published-share {
+  margin-bottom: 20px;
+  color: #404b38;
+}
+.published-share h3 {
+  font-size: 17px;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  margin: 0 0 12px;
+}
+.published-share-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #d9dfd1;
+  background: white;
+  border-radius: 9px;
+  padding: 6px 9px 6px 12px;
+}
+.published-share-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.published-share-link button {
+  margin-left: auto;
+  flex: none;
+  font-size: 12px;
+  min-height: 32px;
+}
+.published-share nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+.published-share nav :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: #eef2e8;
+  color: #3f5134;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.published-share nav :is(a, button):hover {
+  background: #e1e8d8;
+}
+.published-share [role="status"]:not(:empty) {
+  margin-top: 8px;
+  font-size: 12px;
+}

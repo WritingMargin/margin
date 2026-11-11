@@ -1,0 +1,87 @@
+.markdown-body.reply-markdown {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 0 12px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--assistant-ink);
+  --accent: var(--assistant-accent);
+}
+
+.markdown-body.reply-markdown :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.1em 0 0.45em;
+  font:
+    600 1.05em/1.35 Georgia,
+    serif;
+  letter-spacing: -0.012em;
+  color: inherit;
+}
+
+.markdown-body.reply-markdown h1 {
+  font-size: 1.4em;
+}
+.markdown-body.reply-markdown h2 {
+  font-size: 1.24em;
+}
+.markdown-body.reply-markdown h3 {
+  font-size: 1.12em;
+}
+
+.markdown-body.reply-markdown :is(p, ul, ol, pre, blockquote, .md-table-wrap) {
+  margin: 0 0 0.8em;
+}
+.markdown-body.reply-markdown :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+.markdown-body.reply-markdown ul.contains-task-list {
+  padding-inline-start: 0;
+}
+.markdown-body.reply-markdown li {
+  margin: 0.25em 0;
+}
+.markdown-body.reply-markdown li > :is(ul, ol) {
+  margin: 0.25em 0;
+}
+.markdown-body.reply-markdown blockquote {
+  padding-inline-start: 0.9em;
+}
+.markdown-body.reply-markdown > :first-child {
+  margin-top: 0;
+}
+.markdown-body.reply-markdown :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body.reply-markdown :is(pre, .md-table-wrap) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.markdown-body.reply-markdown pre {
+  padding: 10px 12px;
+  line-height: 1.55;
+  white-space: pre;
+}
+.markdown-body.reply-markdown pre code {
+  white-space: inherit;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.markdown-body.reply-markdown :is(th, td) {
+  padding: 6px 9px;
+}
+.markdown-body.reply-markdown :is(a, pre, .md-table-wrap):focus-visible {
+  outline: 2px solid var(--assistant-accent);
+  outline-offset: -2px;
+}
+
+.markdown-body.reply-markdown-compact {
+  margin-bottom: 0.25em;
+  font-size: 13px;
+  line-height: 1.7;
+}

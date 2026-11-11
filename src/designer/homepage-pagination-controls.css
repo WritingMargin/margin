@@ -1,0 +1,33 @@
+.expanded-designer .featured-article-controls .design-toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.expanded-designer .featured-article-controls .design-toggle > span {
+  display: contents;
+}
+
+.featured-article-controls .design-toggle strong {
+  grid-column: 1;
+  grid-row: 1;
+  line-height: 1.5;
+}
+
+.featured-article-controls .design-toggle small {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+}
+
+.featured-article-controls .design-toggle i {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.featured-article-controls .design-toggle input {
+  top: 0;
+  transform: none;
+}

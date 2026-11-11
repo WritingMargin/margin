@@ -1,0 +1,13 @@
+.new-content-menu { position: relative; display: inline-flex; align-items: stretch; max-width: 100%; }
+.new-content-menu > .new-content-default { flex: 1; gap: 8px; border-radius: 6px 0 0 6px; white-space: nowrap; }
+.new-content-menu > details { display: block; }
+.new-content-menu summary { display: flex; align-items: center; justify-content: center; min-width: 36px; height: 100%; padding: 0 9px; border-radius: 0 6px 6px 0; list-style: none; cursor: pointer; }
+.new-content-menu summary.primary { border-left: 1px solid #ffffff30; }
+.new-content-menu summary::-webkit-details-marker { display: none; }
+.new-content-menu summary:focus-visible { outline: 2px solid #888; outline-offset: 3px; }
+.new-content-menu details[open] summary svg { transform: rotate(180deg); }
+.new-content-options { position: absolute; top: calc(100% + 7px); left: 0; min-width: 100%; width: max-content; z-index: 30; padding: 5px; border: 1px solid #dcded5; border-radius: 8px; background: #fff; box-shadow: 0 6px 18px #24282014; }
+.new-content-options .button { width: 100%; justify-content: flex-start; gap: 8px; padding: 10px 12px; border: 0; border-radius: 4px; color: #34382d; background: transparent; white-space: nowrap; }
+.new-content-options .button:hover, .new-content-options .button:focus-visible { background: #f1f3eb; }
+.sidebar-create { display: flex; margin: 18px 0; }
+.sidebar-create .new-content-default { justify-content: flex-start; }

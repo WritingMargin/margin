@@ -1,0 +1,41 @@
+/* Keep the native menu and keyboard behavior, with room around its caret. */
+/* Owned by the shared Select component.
+   Component styles may set padding-block, padding-inline-start, and
+   background-color; caret placement and end padding belong here. */
+:where(.margin-select) {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-block: 11px;
+  padding-inline-start: 12px;
+  border: 1px solid #deded8;
+  border-radius: 5px;
+  background-color: white;
+  font: inherit;
+  font-weight: 400;
+  color: #262626;
+}
+
+:root .margin-select:not([multiple]):is(:not([size]), [size="0"], [size="1"]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline-end: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23606058' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px 12px;
+}
+
+:root .margin-select:not([multiple]):is(:not([size]), [size="0"], [size="1"]):dir(rtl) {
+  background-position: left 16px center;
+}
+
+@media (forced-colors: active) {
+  :root .margin-select:not([multiple]):is(:not([size]), [size="0"], [size="1"]) {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-image: none;
+    padding-inline-end: 12px;
+  }
+}

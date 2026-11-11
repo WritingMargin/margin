@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <title>Margin</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .margin-sheet { fill: #faf9f6; }
+    }
+  </style>
+  <g class="margin-sheet" fill="#252521">
+    <path d="M7 3h17a2 2 0 0 1 2 2v12H15a3 3 0 0 0-3 3v9H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/>
+    <path d="M16 20h10L15 29V21a1 1 0 0 1 1-1Z"/>
+  </g>
+</svg>

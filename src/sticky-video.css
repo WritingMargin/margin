@@ -1,0 +1,15 @@
+.sticky-video-slot { position: relative; width: 100%; }
+.sticky-video-controls { display: none; align-items: center; justify-content: flex-end; gap: 4px; padding: 6px; background: var(--blog-background, #fff); color: var(--blog-text, #222); }
+.public-article .sticky-video-controls { display: flex; }
+.sticky-video-controls button { border: 0; border-radius: 4px; padding: 8px 10px; min-height: 36px; background: transparent; color: inherit; font: 12px/1.3 Inter, sans-serif; cursor: pointer; }
+.sticky-video-controls button:hover, .sticky-video-controls button[aria-pressed="true"] { background: color-mix(in srgb, currentColor 10%, transparent); }
+.sticky-video-controls button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+.sticky-video-slot.is-floating .sticky-video-player { position: fixed; top: auto; left: auto; margin: 0; padding: 0; z-index: 80; bottom: max(16px, env(safe-area-inset-bottom)); right: max(16px, env(safe-area-inset-right)); width: min(360px, calc(100vw - 32px)); overflow: hidden; border: 1px solid var(--theme-border, #d8dcd3); border-radius: 10px; box-shadow: 0 8px 36px #0004; background: #121412; }
+.sticky-video-slot.is-floating .video-file video { max-height: min(42vh, 280px); border-radius: 0; }
+.sticky-video-slot.is-floating .video-embed { aspect-ratio: 16 / 9; max-height: 42vh; border-radius: 0; }
+.sticky-video-slot.is-floating .sticky-video-controls { justify-content: space-between; }
+@media (max-width: 480px) {
+  .sticky-video-slot.is-floating .sticky-video-player { width: min(280px, calc(100vw - 24px)); right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+
+:is(.design-preview, .is-design-preview) .sticky-video-controls { display: none; }

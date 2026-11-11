@@ -1,0 +1,63 @@
+.chat-sessions-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 17px 4px;
+}
+.chat-sessions-bar .chat-session-trigger {
+  flex: 1;
+  justify-content: flex-start;
+  min-width: 0;
+}
+.chat-session-trigger > span {
+  flex: 1;
+  text-align: left;
+}
+.chat-session-history h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.chat-session-history > p {
+  margin: 6px 0 16px;
+  color: var(--assistant-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.chat-session-list {
+  display: grid;
+  gap: 5px;
+}
+.chat-session-list > button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--assistant-ink);
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.chat-session-list > button:hover {
+  background: #f0f2eb;
+}
+.chat-session-list > button[aria-current="true"] {
+  background: #edf2e8;
+  border-color: #dce4d5;
+}
+.chat-session-list > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chat-session-list > button > svg {
+  flex: none;
+  color: var(--assistant-accent);
+}

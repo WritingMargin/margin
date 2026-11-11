@@ -1,0 +1,40 @@
+# Margin engine — Apache 2.4 virtual-host configuration.
+# Include from the server's sites directory; ensure global Listen {{.Port}} is enabled.
+# Required modules: proxy, proxy_http, headers{{if .TLS}}, ssl, alias, socache_shmcb{{end}}.
+# Debian/Ubuntu: a2enmod proxy proxy_http headers{{if .TLS}} ssl alias socache_shmcb{{end}}
+# Validate with apachectl configtest, then reload Apache using your service manager.
+# Engine: PUBLIC_URL={{.PublicURL}} TRUST_PROXY=1 MARGIN_ENV=production
+# Keep the engine listener private (default HOST=127.0.0.1 PORT=3001).
+# This is a single, internet-facing proxy; client-supplied forwarding headers are replaced.
+# All routes, including public HTML, /admin, /api, and assets, go to Go.
+{{if .TLS}}# Provision the certificate and private key below before enabling this site.
+# Ensure global Listen 80 and Listen 443 are enabled exactly once.
+<VirtualHost *:80>
+    ServerName {{.Domain}}
+    Redirect 308 "/" "https://{{.Authority}}/"
+</VirtualHost>
+{{else}}# HTTP-only: use for local/bootstrap setups. Secure production login requires HTTPS.
+{{end}}
+<VirtualHost *:{{.Port}}>
+    ServerName {{.Domain}}
+{{if .TLS}}
+    SSLEngine on
+    SSLCertificateFile "{{.Cert}}"
+    SSLCertificateKeyFile "{{.Key}}"
+    SSLProtocol -all +TLSv1.2 +TLSv1.3
+{{end}}
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyAddHeaders Off
+    RequestHeader set Host "{{.Authority}}"
+    RequestHeader set X-Forwarded-Host "{{.Authority}}"
+    RequestHeader set X-Forwarded-Proto "{{.Scheme}}"
+    RequestHeader set X-Forwarded-Port "{{.Port}}"
+    RequestHeader set X-Forwarded-For "expr=%{REMOTE_ADDR}"
+    RequestHeader set X-Real-IP "expr=%{REMOTE_ADDR}"
+    RequestHeader unset Forwarded
+    # Go enforces request-body limits; Apache LimitRequestBody is bypassed for proxy requests.
+    AllowEncodedSlashes NoDecode
+    ProxyPass "/" "{{.Upstream}}/" connectiontimeout=5 timeout=300 nocanon
+    ProxyPassReverse "/" "{{.Upstream}}/"
+</VirtualHost>

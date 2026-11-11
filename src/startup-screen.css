@@ -1,0 +1,46 @@
+.startup-screen { min-height: 100vh; min-height: 100svh; }
+.startup-placeholder { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 24px; text-align: center; }
+.startup-branding {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(24px, 5vw, 64px);
+  background: var(--blog-background, #fff);
+  color: var(--blog-text, #242424);
+  font-family: var(--article-font, "Inter", sans-serif);
+}
+.startup-branding > header {
+  width: 100%;
+  max-width: 1192px;
+  min-height: 100px;
+  margin-inline: auto;
+  padding-block: 20px;
+  border-bottom: 1px solid var(--theme-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+}
+.startup-branding > header img { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+.startup-branding > header span { overflow-wrap: anywhere; }
+.startup-message {
+  flex: 1;
+  width: 100%;
+  max-width: var(--home-width, 760px);
+  margin-inline: auto;
+  padding-block: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+}
+.startup-message h1 { margin: 0; max-width: 100%; font-size: clamp(28px, 4vw, 48px); font-weight: 500; line-height: 1.2; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.startup-message p, .startup-message noscript { margin: 0; color: color-mix(in srgb, var(--blog-text) 78%, var(--blog-background)); font-size: 15px; line-height: 1.7; }
+.startup-message a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.startup-indicator { display: block; width: 42px; height: 4px; border-radius: var(--radius, 4px); background: var(--accent, #5b7048); }
+@media (max-width: 600px) {
+  .startup-branding > header { min-height: 76px; }
+  .startup-message { padding-block: 40px; }
+}

@@ -1,0 +1,76 @@
+.post-details-modal .article-seo-audit {
+  margin: 0 0 20px;
+  border-block: 1px solid var(--line);
+  color: #404b38;
+}
+.article-seo-audit summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  list-style: none;
+}
+.article-seo-audit summary::-webkit-details-marker { display: none; }
+.article-seo-audit summary:focus-visible { outline: 2px solid #758367; outline-offset: 2px; }
+.article-seo-audit summary > svg { flex: none; }
+.article-seo-audit[open] > summary > svg:last-child,
+.audit-finding[open] > summary > svg { transform: rotate(180deg); }
+.audit-toggle { min-height: 46px; }
+.audit-toggle strong { font-size: 13px; font-weight: 600; }
+.audit-count, .audit-severity { margin-inline-start: auto; color: #616958; font-size: 11px; }
+.audit-body { padding: 0 0 14px; container-type: inline-size; }
+.audit-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 6px 0 4px;
+}
+.audit-toolbar label {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  min-width: 0;
+  font-size: 11px;
+  color: #596451;
+}
+.post-details-modal .dialog-body .audit-toolbar select.margin-select {
+  width: 100%;
+  margin: 0;
+  min-height: 38px;
+  height: auto;
+  /* Override the dialog’s shared input padding for this compact toolbar. */
+  padding-block: 6px !important;
+  font-size: 11px;
+  border-radius: 8px;
+}
+.audit-toolbar .button.primary {
+  min-height: 38px;
+  margin: 0;
+  padding: 0 15px;
+  border-radius: 8px;
+  color: #fff;
+  background: #435b36;
+  border-color: #435b36;
+}
+.audit-toolbar .button.primary:hover { background: #35492a; }
+@container (max-width: 390px) {
+  .audit-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .audit-toolbar .button { grid-column: 1 / -1; justify-self: start; }
+}
+@container (max-width: 265px) {
+  .audit-toolbar { grid-template-columns: minmax(0, 1fr); }
+}
+.audit-results { margin-top: 16px; }
+.audit-caption, .audit-clear, .audit-caption a { display: flex; align-items: center; gap: 5px; }
+.audit-caption { justify-content: space-between; color: #646d5d; font-size: 11px; }
+.audit-caption a:hover { text-decoration: underline; }
+.audit-results ul { list-style: none; padding: 0; margin: 7px 0 0; }
+.audit-finding { border-top: 1px solid var(--line); }
+.audit-finding summary { min-height: 40px; padding: 6px 0; }
+.audit-finding strong { font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.audit-marker { width: 6px; height: 6px; flex: none; border-radius: 50%; background: #798474; }
+.audit-marker-warning { background: #a47d40; }
+.audit-marker-error { background: #aa594b; }
+.audit-explanation { padding: 0 16px 8px; color: #585e53; }
+.audit-explanation p, .audit-explanation blockquote { margin: 0 0 6px; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }

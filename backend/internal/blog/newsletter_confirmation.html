@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>Confirm your subscription to {{.Name}}</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .email-outer { padding: 28px 16px !important; }
+      .email-content { padding: 36px 28px !important; }
+      .email-headline { font-size: 38px !important; line-height: 43px !important; }
+      .email-footer { padding: 24px 28px !important; }
+      .email-brand { font-size: 25px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;width:100%;background-color:#f3f1eb;color:#263c32;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;">
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">{{if .Preview}}A first look at the new newsletter email for {{.Name}}.{{else}}One small step. Confirm your email to receive {{.Name}} in your inbox.{{end}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f3f1eb" style="width:100%;background-color:#f3f1eb;">
+    <tr><td class="email-outer" align="center" style="padding:48px 20px 40px;">
+      <!--[if mso]><table role="presentation" width="580"><tr><td><![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:580px;">
+        <tr><td style="padding:0 4px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td valign="middle"><a class="email-brand" href="{{.PublicationURL}}" style="font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:36px;letter-spacing:-1px;color:#263c32;text-decoration:none;overflow-wrap:anywhere;">{{.Name}}</a></td>
+            <td align="right" valign="middle" width="110" style="width:110px;font-size:10px;line-height:16px;letter-spacing:2px;color:#6c7568;">THE NEWSLETTER</td>
+          </tr></table>
+        </td></tr>
+        <tr><td bgcolor="#ffffff" style="background-color:#ffffff;border:1px solid #dddcd3;border-radius:12px;overflow:hidden;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td bgcolor="#b7c7a5" style="height:6px;background-color:#b7c7a5;border-radius:12px 12px 0 0;font-size:1px;line-height:6px;">&nbsp;</td></tr>
+            <tr><td class="email-content" style="padding:44px 44px 38px;">
+              {{if .Preview}}<p style="margin:0 0 24px;padding:10px 12px;border:1px solid #dddcd3;border-radius:4px;color:#6c7568;font-size:11px;line-height:18px;">DESIGN PREVIEW &middot; Your existing subscription stays active. The button opens your local publication.</p>{{end}}
+              <p style="margin:0 0 22px;color:#637756;font-size:10px;line-height:16px;font-weight:700;letter-spacing:2.5px;">LETTERS FROM THE JOURNAL</p>
+              <h1 class="email-headline" style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:48px;line-height:53px;font-weight:400;letter-spacing:-1.6px;color:#263c32;">A little more room<br>in your inbox.</h1>
+              <p style="margin:0 0 12px;color:#3f493f;font-size:16px;line-height:27px;">Good to have you here.</p>
+              <p style="margin:0 0 28px;color:#697065;font-size:15px;line-height:26px;">{{if .Preview}}Here’s a first look at the new newsletter confirmation email for <strong style="color:#263c32;font-weight:600;">{{.Name}}</strong>. A little more considered, from the first hello.{{else}}You asked to receive <strong style="color:#263c32;font-weight:600;">{{.Name}}</strong> by email. Confirm your subscription below, and we’ll save you a place.{{end}}</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#263c32" style="background-color:#263c32;border-radius:5px;mso-padding-alt:17px 24px;">
+                <a href="{{.ConfirmationURL}}" style="display:inline-block;border:1px solid #263c32;border-radius:5px;padding:17px 24px;color:#ffffff;font-size:14px;line-height:20px;font-weight:700;text-decoration:none;">{{if .Preview}}Preview the journal{{else}}Confirm my subscription{{end}} &nbsp;&rarr;</a>
+              </td></tr></table>
+              <p style="margin:17px 0 0;color:#6b7165;font-size:12px;line-height:20px;">{{if .Preview}}The live email includes a single-use confirmation link.{{else}}One click, and you’re in. This link expires in 24 hours.{{end}}</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;border-top:1px solid #e8e8df;"><tr><td style="padding-top:23px;">
+                <p style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;color:#3f493f;font-size:20px;line-height:28px;">A small invitation. Always your choice.</p>
+                <p style="margin:0;color:#6b7165;font-size:12px;line-height:21px;">{{if .Preview}}This is the design test you requested. No action is needed.{{else}}If you didn’t request this, you can simply ignore this email. You won’t be subscribed until you confirm.{{end}}</p>
+              </td></tr></table>
+            </td></tr>
+            <tr><td class="email-footer" bgcolor="#f8f8f3" style="padding:22px 44px 24px;border-top:1px solid #e8e8df;background-color:#f8f8f3;">
+              <p style="margin:0;color:#6b7165;font-size:11px;line-height:20px;">Button not working? <a href="{{.ConfirmationURL}}" style="color:#52664a;text-decoration:underline;">{{if .Preview}}Open the preview{{else}}Use the confirmation link{{end}}</a>.</p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:23px 4px 0;">
+          <p style="margin:0 0 7px;color:#73786c;font-size:11px;line-height:20px;">Sent by <a href="{{.PublicationURL}}" style="color:#69765f;text-decoration:none;">{{.Name}}</a> &middot; Published with Margin</p>
+          <p style="margin:0;color:#73786c;font-size:11px;line-height:20px;">{{if .Preview}}A preview of something more thoughtful.{{else}}Changed your mind? <a style="color:#69765f;text-decoration:underline;" href="{{.UnsubscribeURL}}">Unsubscribe</a>.{{end}}</p>
+        </td></tr>
+      </table>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </td></tr>
+  </table>
+</body>
+</html>

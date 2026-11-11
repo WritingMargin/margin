@@ -1,0 +1,8 @@
+mark.search-highlight {
+  background: #e6edbc;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

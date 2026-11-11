@@ -1,0 +1,49 @@
+.conversation-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 24px;
+}
+.conversation-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #72796a;
+  font-size: 11px;
+}
+.conversation-filters .margin-select {
+  width: auto;
+  margin: 0;
+  min-height: 36px;
+  font-size: 11px;
+}
+.conversation-result-count {
+  margin-inline-start: auto;
+  color: #72796a;
+  font-size: 11px;
+}
+.conversation-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 20px; color: #62665b; font-size: 12px; }
+@media (max-width: 600px) {
+  #conversation-results .comment-card footer { flex-wrap: wrap; }
+  .conversation-filters {
+    gap: 12px;
+  }
+  .conversation-filters label {
+    flex: 1 1 140px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+  }
+  .conversation-filters .margin-select {
+    width: 100%;
+    min-height: 40px;
+  }
+  .conversation-result-count {
+    flex-basis: 100%;
+    margin-inline-start: 0;
+  }
+  .conversation-pagination { justify-content: space-between; }
+}

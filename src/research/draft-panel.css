@@ -1,0 +1,49 @@
+.draft-panel-body {
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.draft-panel-body h3 {
+  font-size: 16px;
+  margin: 1.25rem 0 0.5rem;
+}
+.draft-panel-body h3:first-child {
+  margin-top: 0;
+}
+.draft-panel-body :is(input:not([type="checkbox"]), textarea) {
+  width: 100%;
+  min-width: 0;
+}
+.draft-panel .panel-heading,
+.source-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.source-entry,
+.review-entry {
+  border-bottom: 1px solid #dedfd6;
+  padding: 0.8rem 0;
+}
+.source-entry p {
+  white-space: pre-line;
+  margin: 0;
+}
+.source-entry a {
+  color: inherit;
+}
+.draft-panel summary {
+  cursor: pointer;
+  padding: 0.4rem 0;
+}
+.draft-panel .button {
+  justify-self: start;
+}
+.draft-panel-body .review-note {
+  margin: 0.5rem 0;
+}

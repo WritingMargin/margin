@@ -1,0 +1,23 @@
+# Include INSIDE the existing {{.Domain}} {{.Scheme}} VirtualHost.
+# Engine: PUBLIC_URL={{.PublicURL}} MARGIN_BASE_PATH={{.BasePath}} TRUST_PROXY=1 MARGIN_ENV=production
+# Enable modules: proxy, proxy_http, headers. Reuse the VirtualHost's TLS certificate.
+# Keep the engine private. This assumes one trusted proxy hop.
+# Place these rules before any catch-all ProxyPass for the main site.
+# Validate with apachectl configtest before reloading.
+ProxyRequests Off
+AllowEncodedSlashes NoDecode
+ProxyPassMatch "^({{.BasePath}}(?:/.*)?)$" "{{.Upstream}}$1" connectiontimeout=5 timeout=300 nocanon
+ProxyPassReverse "{{.BasePath}}" "{{.Upstream}}{{.BasePath}}"
+# OAuth discovery lives at the origin root, outside the publication mount.
+ProxyPassMatch "^(/\.well-known/(?:oauth-authorization-server{{.BasePath}}|oauth-protected-resource{{.BasePath}}/(?:mcp|api)))$" "{{.Upstream}}$1" connectiontimeout=5 timeout=300 nocanon
+<LocationMatch "^(?:{{.BasePath}}(?:/|$)|/\.well-known/(?:oauth-authorization-server{{.BasePath}}|oauth-protected-resource{{.BasePath}}/(?:mcp|api))$)">
+    ProxyPreserveHost On
+    ProxyAddHeaders Off
+    RequestHeader set Host "{{.Authority}}"
+    RequestHeader set X-Forwarded-Host "{{.Authority}}"
+    RequestHeader set X-Forwarded-Proto "{{.Scheme}}"
+    RequestHeader set X-Forwarded-Port "{{.Port}}"
+    RequestHeader set X-Forwarded-For "expr=%{REMOTE_ADDR}"
+    RequestHeader set X-Real-IP "expr=%{REMOTE_ADDR}"
+    RequestHeader unset Forwarded
+</LocationMatch>

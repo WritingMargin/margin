@@ -1,0 +1,12 @@
+[
+  {
+    "name": "malformedAttributes",
+    "content": "::image{src=\"https://safe.example/x\"src=\"javascript:evil\"}",
+    "html": "<p>::image{src=&quot;<a href=\"https://safe.example/x%22src=%22javascript:evil%22%7D\">https://safe.example/x&quot;src=&quot;javascript:evil&quot;}</a></p>"
+  },
+  {
+    "name": "invalidFontURL",
+    "content": "[Font=\"url(https://evil.example)\"]Safe **text**[/Font]",
+    "html": "<p>[Font=&quot;url(<a>https://evil.example)&quot;]Safe</a> <strong>text</strong>[/Font]</p>"
+  }
+]

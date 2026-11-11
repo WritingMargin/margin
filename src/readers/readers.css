@@ -1,0 +1,223 @@
+.reader-settings {
+  display: grid;
+  gap: 24px;
+}
+@media (max-width: 380px) {
+  .readers-page > .settings-tabs { gap: 10px; }
+  .readers-page > .settings-tabs button { font-size: 11px; }
+}
+.reader-settings > .settings-card > h2 {
+  margin-top: 0;
+}
+.reader-settings > .reader-detail {
+  padding-block: 0;
+}
+.reader-settings > .reader-detail > summary {
+  min-height: 64px;
+}
+.reader-settings > .reader-appearance {
+  margin: 0;
+}
+.reader-settings fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.reader-feature {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 140px;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.reader-feature-icon {
+  color: #73786b;
+  align-self: start;
+  padding-top: 3px;
+}
+.reader-feature-icon svg {
+  width: 19px;
+  height: 19px;
+}
+.reader-feature h3 {
+  margin: 0 0 7px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.reader-feature p {
+  margin: 0;
+  color: #62665b;
+  line-height: 1.7;
+  font-size: 12px;
+}
+.reader-feature select {
+  font-size: 12px;
+}
+.reader-switch {
+  display: flex;
+  justify-self: end;
+  align-items: center;
+  min-height: 44px;
+  margin: 0;
+  cursor: pointer;
+}
+.reader-switch input[type="checkbox"] {
+  appearance: none;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #c4c6bd;
+  border-radius: 20px;
+  background-color: #d7d8d0;
+  cursor: pointer;
+}
+.reader-switch input::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 2px;
+  border-radius: 50%;
+  background: white;
+}
+.reader-switch input:checked {
+  border-color: #405437;
+  background-color: #405437;
+}
+.reader-switch input:checked::before {
+  transform: translateX(14px);
+}
+.reader-detail {
+  border-bottom: 1px solid var(--line);
+}
+.reader-detail summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.reader-detail summary::after {
+  content: "";
+  margin-inline-start: auto;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform .16s ease;
+}
+.reader-detail[open] > summary::after {
+  transform: rotate(225deg);
+}
+.reader-detail summary::-webkit-details-marker {
+  display: none;
+}
+.reader-detail-body {
+  padding: 0 0 22px;
+}
+.reader-feedback-detail { margin: 0 0 24px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.reader-feedback-detail > summary { padding: 18px 20px; }
+.reader-feedback-detail > .reader-detail-body { padding: 0 20px 22px; }
+.reader-feedback-detail .reader-flags-intro { margin-top: 0; }
+.reader-detail-body > .settings-card {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.reader-detail-body .settings-icon {
+  display: none;
+}
+.reader-settings .small-text {
+  color: #62665b;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.reader-savebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  font-size: 12px;
+  color: #62665b;
+}
+.reader-appearance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #62665b;
+  font-size: 12px;
+  margin-top: 24px;
+}
+.reader-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.reader-filters [aria-pressed="true"] {
+  background: #e8ecdf;
+  border-color: #7b876b;
+}
+.reader-table {
+  overflow-x: auto;
+  margin-top: 24px;
+}
+.reader-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+.reader-table th,
+.reader-table td {
+  padding: 14px 12px;
+  text-align: start;
+  border-bottom: 1px solid var(--line);
+}
+.reader-table td:first-child {
+  overflow-wrap: anywhere;
+}
+.reader-pagination {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .reader-feature {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .reader-feature > select {
+    grid-column: 2 / -1;
+    max-width: 170px;
+  }
+  .reader-feature > .reader-switch {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .reader-savebar {
+    flex-wrap: wrap;
+  }
+}
+@media (forced-colors: active) {
+  .reader-switch input[type="checkbox"] {
+    appearance: auto;
+  }
+  .reader-switch input::before {
+    display: none;
+  }
+}
+
+.reader-setting-value {
+  justify-self: end;
+  font-size: 12px;
+  color: #62665b;
+}

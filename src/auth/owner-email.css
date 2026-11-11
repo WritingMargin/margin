@@ -1,0 +1,4 @@
+.owner-email-page { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 24px; }
+.owner-email-page .login-card { width: min(100%, 480px); }
+.owner-email-page h1 { font-size: 28px; }
+.owner-email-page .button { margin-top: 16px; margin-right: 8px; }

@@ -1,0 +1,13 @@
+.template-section-intro { padding: 16px 0; }
+.template-section-intro p { color: #676d61; font-size: 12px; line-height: 1.6; }
+.template-section-list { list-style: none; padding: 0; margin: 0 0 14px; }
+.template-section-list li { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e3e5dd; gap: 12px; font-size: 13px; }
+.template-section-list li > div { display: flex; gap: 4px; }
+.template-section-list button { display: inline-flex; padding: 7px; border: 1px solid #dfe2d8; border-radius: 4px; background: #fff; }
+.template-binding-field { padding: 12px 0; border-bottom: 1px solid #e3e5dd; }
+.template-binding-field > summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; font-size: 13px; }
+.template-binding-field > summary::before { content: "+"; color: #69755e; }
+.template-binding-field[open] > summary::before { content: "−"; }
+.template-binding-field > summary > span { flex: 1; }
+.template-binding-field small { color: #73796b; font-size: 11px; }
+.template-binding-field > label { margin-top: 14px; }

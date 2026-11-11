@@ -1,0 +1,72 @@
+services:
+  app:
+    image: ${MARGIN_IMAGE:-ghcr.io/writingmargin/margin:latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MARGIN_ENV: ${MARGIN_ENV:-development}
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN:-}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3001}
+      MARGIN_ALLOWED_ORIGINS: ${MARGIN_ALLOWED_ORIGINS:-}
+      HOST: 0.0.0.0
+      PORT: 3001
+      SQLITE_PATH: /app/.data/margin.db
+      CONTENT_ENCRYPTION_KEY: ${CONTENT_ENCRYPTION_KEY:-}
+      S3_ENDPOINT: http://s3:9000
+      S3_FORCE_PATH_STYLE: 'true'
+    ports:
+      - '127.0.0.1:3001:3001'
+    volumes:
+      - margin-data:/app/.data
+    depends_on:
+      create-bucket:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'margin', 'healthcheck']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  s3:
+    image: versity/versitygw@sha256:30292fc2eeacc67a36993b01f7a7a5e3361a19cced0e80c1d71cfa2a4b0a2499
+    restart: unless-stopped
+    command: ['--port', ':9000', '--health', '/health', 'posix', '/data']
+    environment:
+      ROOT_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env}
+      ROOT_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env}
+      VGW_REGION: ${S3_REGION:-us-east-1}
+    ports:
+      - '127.0.0.1:9000:9000'
+    volumes:
+      - s3-data:/data
+
+  create-bucket:
+    image: ${MARGIN_IMAGE:-ghcr.io/writingmargin/margin:latest}
+    env_file: .env
+    environment:
+      S3_ENDPOINT: http://s3:9000
+      S3_FORCE_PATH_STYLE: 'true'
+    command: ['margin', 'init-bucket']
+    depends_on:
+      - s3
+
+  postgres:
+    image: postgres:17-alpine
+    profiles: ['postgres']
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: margin
+      POSTGRES_USER: margin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U margin -d margin']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  margin-data:
+  s3-data:
+  postgres-data:

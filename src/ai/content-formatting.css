@@ -1,0 +1,54 @@
+.chat-formatting {
+  min-width: 0;
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--assistant-line);
+  border-radius: 8px;
+  background: #fff;
+}
+.content-formatting-preview {
+  min-width: 0;
+}
+.content-formatting-preview h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.content-formatting-preview > p {
+  margin: 5px 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--assistant-muted);
+}
+.content-formatting-preview .inner-tabs-container {
+  margin: 12px 0;
+}
+.content-formatting-preview [role="tabpanel"] {
+  min-width: 0;
+  overflow: auto;
+}
+.content-formatting-preview .markdown-body {
+  font-size: 13px;
+}
+.content-formatting-preview .markdown-body :is(h1, h2) {
+  font-size: 20px;
+}
+.formatting-original {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.7 "IBM Plex Mono",
+    monospace;
+  margin: 0;
+  padding: 10px;
+  background: #f4f5f0;
+  border-radius: 6px;
+}
+.chat-formatting-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+}

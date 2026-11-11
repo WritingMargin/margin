@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{.Title}} — Margin</title>
+<style>
+  * { box-sizing: border-box; }
+  html { color-scheme: light; background: #f5f6ef; color: #30372b; font: 15px/1.7 system-ui, sans-serif; }
+  body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 28px; }
+  main { width: min(100%, 520px); padding: clamp(28px, 6vw, 48px); border: 1px solid #dfe4d5; border-radius: 20px; background: #fffef9; box-shadow: 0 14px 60px #35432a08; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 650; letter-spacing: -.6px; margin-bottom: 44px; }
+  .brand svg { width: 30px; height: 30px; }
+  .brand .margin-sheet { fill: #5b7048; }
+  .status { color: #7b866d; font-size: 11px; letter-spacing: .15em; }
+  h1 { font-size: clamp(25px, 5vw, 32px); line-height: 1.2; letter-spacing: -.8px; font-weight: 600; margin: 12px 0 18px; }
+  p { color: #737b69; margin: 0; }
+  nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 30px; }
+  a { color: #526842; text-underline-offset: 4px; font-size: 13px; }
+  .retry { padding: 10px 18px; background: #5b7048; border-radius: 7px; color: white; text-decoration: none; font-weight: 550; }
+  .retry:hover { background: #485d37; }
+  a:focus-visible { outline: 2px solid #74885d; outline-offset: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">{{.Logo}}<span>margin</span></div>
+  <span class="status">{{.Status}} · {{.Title}}</span>
+  <h1>{{.Heading}}</h1>
+  <p>{{.Message}}</p>
+  <nav aria-label="Page recovery">
+    {{if .SignIn}}<a class="retry" href="{{.SignIn}}">Sign in as admin</a>{{end}}
+    {{if .Retry}}<a class="retry" href="">Try again</a>{{end}}
+    <a href="{{.Home}}">Back to the journal</a>
+  </nav>
+</main>
+</body>
+</html>

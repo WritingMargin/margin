@@ -1,0 +1,259 @@
+{
+  "title": "From stored energy to moving wheels",
+  "description": "A schematic side view of a rear-wheel-drive electric car. Select a numbered part or follow the energy route. The front of the car is on the right; component positions and proportions are simplified.",
+  "width": 640,
+  "height": 440,
+  "background": "#edf1ef",
+  "shapes": [
+    {
+      "path": "M55 310 L60 250 Q65 232 120 228 L206 145 Q220 132 250 132 L378 132 Q400 132 420 156 L486 220 L554 245 Q572 252 575 285 L575 320 L55 320 Z",
+      "fill": "#b2cdc3",
+      "stroke": "#477c71",
+      "strokeWidth": 3,
+      "region": "body"
+    },
+    {
+      "path": "M220 155 L274 155 L274 218 L164 218 Z",
+      "fill": "#4e6973",
+      "region": "body"
+    },
+    {
+      "path": "M288 155 L378 155 L431 218 L288 218 Z",
+      "fill": "#4e6973",
+      "region": "body"
+    },
+    {
+      "path": "M68 315 h492 v24 h-492 Z",
+      "fill": "#68787a"
+    },
+    {
+      "path": "M204 265 h254 v57 h-254 Z",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 3,
+      "region": "battery"
+    },
+    {
+      "path": "M90 195 h78 v46 h-78 Z",
+      "fill": "#d99b6d",
+      "stroke": "#a76b3b",
+      "strokeWidth": 2,
+      "region": "controller"
+    },
+    {
+      "path": "M91 261 h80 v48 h-80 Z",
+      "fill": "#85b2c8",
+      "stroke": "#527f97",
+      "strokeWidth": 3,
+      "region": "motor"
+    },
+    {
+      "path": "M112 350 A48 48 0 1 0 208 350 A48 48 0 1 0 112 350 Z",
+      "fill": "#34464d",
+      "region": "wheels"
+    },
+    {
+      "path": "M131 350 A29 29 0 1 0 189 350 A29 29 0 1 0 131 350 Z",
+      "fill": "#d9e0de",
+      "stroke": "#7b8b8e",
+      "strokeWidth": 5,
+      "region": "wheels"
+    },
+    {
+      "path": "M452 350 A48 48 0 1 0 548 350 A48 48 0 1 0 452 350 Z",
+      "fill": "#34464d",
+      "region": "body"
+    },
+    {
+      "path": "M471 350 A29 29 0 1 0 529 350 A29 29 0 1 0 471 350 Z",
+      "fill": "#d9e0de",
+      "stroke": "#7b8b8e",
+      "strokeWidth": 5,
+      "region": "body"
+    },
+    {
+      "path": "M242 269 L242 317",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 1
+    },
+    {
+      "path": "M282 269 L282 317",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 1
+    },
+    {
+      "path": "M322 269 L322 317",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 1
+    },
+    {
+      "path": "M362 269 L362 317",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 1
+    },
+    {
+      "path": "M402 269 L402 317",
+      "fill": "#e5bc68",
+      "stroke": "#b58734",
+      "strokeWidth": 1
+    }
+  ],
+  "regions": [
+    {
+      "id": "body",
+      "label": "Body and cabin",
+      "description": "The body encloses the passenger space. Its silhouette is separate from the underfloor power system in this diagram.",
+      "x": 340,
+      "y": 170,
+      "color": "#477c71"
+    },
+    {
+      "id": "battery",
+      "label": "Traction battery",
+      "description": "Stores energy. The flat gold pack is shown below the passenger cabin, between the axles.",
+      "x": 340,
+      "y": 290,
+      "color": "#b58734"
+    },
+    {
+      "id": "controller",
+      "label": "Power electronics",
+      "description": "Controls electrical power supplied to the motor. The diagram separates it from the motor so the connection is easier to follow.",
+      "x": 130,
+      "y": 220,
+      "color": "#ba7543"
+    },
+    {
+      "id": "motor",
+      "label": "Traction motor",
+      "description": "Converts electrical energy into mechanical rotation. A reduction gear transfers torque to the driven wheels.",
+      "x": 130,
+      "y": 285,
+      "color": "#527f97"
+    },
+    {
+      "id": "wheels",
+      "label": "Driven wheels",
+      "description": "The rear wheels are driven in this example. The tyre-road contact transmits forces that accelerate or slow the vehicle.",
+      "x": 160,
+      "y": 360,
+      "color": "#536268"
+    }
+  ],
+  "flow": {
+    "title": "Follow the power path",
+    "description": "Gold and orange show an electrical path; blue shows mechanical power. The moving dot is a teaching cue, not an electron, a measured speed or a representation of electrical current direction.",
+    "secondsPerStep": 4,
+    "landmarks": [
+      {
+        "label": "REAR",
+        "x": 80,
+        "y": 410
+      },
+      {
+        "label": "FRONT",
+        "x": 550,
+        "y": 410
+      }
+    ],
+    "steps": [
+      {
+        "label": "Battery → power electronics",
+        "description": "The traction battery supplies electrical energy to the power electronics.",
+        "points": [
+          [
+            340,
+            294
+          ],
+          [
+            207,
+            294
+          ],
+          [
+            190,
+            220
+          ],
+          [
+            130,
+            220
+          ]
+        ],
+        "color": "#b58734",
+        "endColor": "#ba7543",
+        "region": "battery"
+      },
+      {
+        "label": "Power electronics → motor",
+        "description": "The controller regulates electrical power delivered to the traction motor.",
+        "points": [
+          [
+            130,
+            220
+          ],
+          [
+            130,
+            245
+          ],
+          [
+            130,
+            285
+          ]
+        ],
+        "color": "#ba7543",
+        "region": "controller"
+      },
+      {
+        "label": "Motor → driven wheels",
+        "description": "The motor produces torque. Gearing and shafts transmit it to the rear wheels.",
+        "points": [
+          [
+            130,
+            285
+          ],
+          [
+            130,
+            320
+          ],
+          [
+            160,
+            350
+          ]
+        ],
+        "color": "#527f97",
+        "region": "motor"
+      },
+      {
+        "label": "Tyres → road",
+        "description": "Forces at the tyre-road contact accelerate the car. Real systems lose some energy as heat along the way.",
+        "points": [
+          [
+            160,
+            350
+          ],
+          [
+            160,
+            396
+          ],
+          [
+            350,
+            396
+          ],
+          [
+            560,
+            396
+          ]
+        ],
+        "color": "#527f97",
+        "region": "wheels"
+      }
+    ]
+  },
+  "poster": {
+    "src": "/assets/car-power-flow.jpg",
+    "alt": "Numbered car side view: 1 body, 2 battery, 3 power electronics, 4 motor and 5 driven rear wheels. Front is on the right."
+  }
+}

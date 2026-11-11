@@ -1,0 +1,32 @@
+.editor-actions { position:relative; flex-shrink:0; }
+.editor-title-row .title-input { min-width:0; flex:1; }
+.editor-actions-trigger {
+  width:36px; height:36px; padding:0; justify-content:center;
+  border-radius:6px; color:#62625c; font-size:12px; white-space:nowrap;
+}
+.editor-actions-trigger:hover,.editor-actions-trigger[aria-expanded="true"] { background:#eeeee8; color:#292923; }
+.editor-actions-tooltip {
+  position:absolute; right:0; top:calc(100% + 6px); z-index:46;
+  padding:6px 9px; border-radius:5px; background:#292923; color:#fff;
+  font-size:11px; line-height:1.4; white-space:nowrap; pointer-events:none;
+  opacity:0; visibility:hidden; transition:opacity 80ms,visibility 80ms;
+}
+.editor-actions-trigger[aria-expanded="false"]:is(:hover,:focus-visible) + .editor-actions-tooltip {
+  opacity:1; visibility:visible;
+}
+.editor-actions-panel {
+  position:absolute; right:0; top:calc(100% + 8px); z-index:45;
+  width:230px; max-width:calc(100vw - 32px); padding:6px;
+  background:#fffffc; border:1px solid #dcdcd5; border-radius:8px;
+  box-shadow:0 8px 24px #25252118;
+}
+.editor-actions-panel button {
+  width:100%; min-height:40px; justify-content:flex-start;
+  gap:10px; padding:10px; border-radius:4px; color:#41413b;
+  font-size:12px; text-align:left; white-space:nowrap;
+}
+.editor-actions-panel button:hover { background:#f0f0ea; }
+.editor-actions-panel p {
+  margin:5px 4px 0; padding:12px 6px 6px; border-top:1px solid #e7e7df;
+  font-size:11px; color:#62625c;
+}

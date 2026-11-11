@@ -1,0 +1,88 @@
+.diff-legend {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #7b8273;
+}
+.text-diff {
+  border: 1px solid #dce1d5;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+.text-diff > header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  background: #f3f5ef;
+  font-size: 10px;
+}
+.text-diff strong {
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: 500;
+}
+.diff-added-count {
+  color: #25623b;
+}
+.diff-removed-count {
+  color: #a13036;
+}
+.diff-hunk {
+  background: #eef3f8;
+  color: #64778a;
+  padding: 6px 12px;
+  font: 10px/1.6 monospace;
+}
+.diff-line {
+  display: grid;
+  grid-template-columns: 32px 32px 20px minmax(0, 1fr);
+  font: 11px/1.8 monospace;
+}
+.diff-line code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 2px 8px 2px 0;
+  font: inherit;
+}
+.diff-number {
+  color: #92998b;
+  text-align: right;
+  padding: 2px 5px 2px 0;
+  user-select: none;
+}
+.diff-sign {
+  text-align: center;
+  padding-top: 2px;
+}
+.diff-added {
+  background: #e5f4e9;
+  color: #205d34;
+}
+.diff-removed {
+  background: #fce9e8;
+  color: #8c3036;
+}
+.diff-context,
+.diff-note {
+  background: #fffffc;
+  color: #646d59;
+}
+.diff-note {
+  font-style: italic;
+}
+.diff-unchanged {
+  padding: 12px;
+  font-size: 11px;
+  color: #7b8273;
+}
+.revision-view-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.revision-view-tabs button[aria-pressed="true"] {
+  background: #eaf0e2;
+  border-color: #b5c5a3;
+}

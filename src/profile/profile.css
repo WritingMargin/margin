@@ -1,0 +1,54 @@
+.profile-page { max-width: 1240px; }
+.profile-page .page-heading { margin-bottom: 30px; }
+.profile-summary { display: flex; align-items: center; gap: 24px; padding: 28px 0 32px; border-top: 1px solid var(--line); }
+.profile-portrait { display: grid; place-items: center; flex: 0 0 84px; width: 84px; height: 84px; border: 1px solid #dce2d3; border-radius: 50%; background: #eef2e8; color: #6b7e57; overflow: hidden; }
+.profile-portrait img, .profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.profile-summary-copy { min-width: 0; }
+.profile-summary-copy h2 { font-size: 25px; font-weight: 500; letter-spacing: -.8px; margin: 0 0 8px; overflow-wrap: anywhere; }
+.profile-role { display: inline-flex; padding: 4px 9px; background: #eff2e8; border: 1px solid #dde3d4; color: #5e6b50; border-radius: 5px; font-size: 10px; }
+.profile-summary-copy p { font-size: 12px; color: #77796e; line-height: 1.7; max-width: 600px; margin: 10px 0 0; white-space: pre-line; overflow-wrap: anywhere; }
+.profile-page .inner-tabs-container { margin-bottom: 26px; }
+.profile-edit-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.profile-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(275px, 1fr); gap: 24px; align-items: start; }
+.profile-side { min-width: 0; }
+.profile-field { margin-top: 24px; }
+.profile-field label { display: block; }
+.profile-field .profile-optional { margin-left: 6px; }
+.profile-optional { font-size: 10px; color: #8b8d82; font-weight: 400; }
+.profile-field input, .profile-field textarea, .profile-link-row input { width: 100%; min-width: 0; }
+.profile-field textarea { resize: vertical; line-height: 1.7; }
+.profile-page .small-text { color: #818376; font-size: 11px; line-height: 1.7; }
+.profile-character-count { text-align: right; margin: 5px 0 0; }
+.profile-links { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+.profile-section-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.profile-section-label h3 { font-size: 12px; font-weight: 500; margin: 0; }
+.profile-link-row { display: grid; grid-template-columns: minmax(90px, .7fr) minmax(0, 1.4fr) 30px; align-items: center; gap: 8px; margin: 14px 0; }
+.profile-link-row label { min-width: 0; margin: 0; }
+.profile-photo .cover-picker { margin: 0; }
+.profile-photo .cover-selected > img { height: 88px; width: 88px; border-radius: 50%; object-fit: cover; }
+.profile-photo .cover-selected { display: flex; align-items: center; gap: 14px; }
+.profile-photo .cover-selected > button { margin: 0; }
+.profile-byline-preview { padding: 26px 10px 8px; }
+.profile-byline-preview .eyebrow { font-size: 9px; color: #8a8c7e; }
+.profile-byline-preview .post-byline { margin: 14px 0; }
+.profile-save-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 0; margin-top: 6px; }
+.profile-account { display: grid; gap: 22px; max-width: 900px; }
+.profile-section-heading { display: flex; gap: 12px; align-items: center; }
+.profile-section-heading > svg { color: #737d66; }
+.profile-section-heading h2 { margin: 0; }
+.profile-private { margin-left: auto; font-size: 10px; color: #858878; }
+.profile-account-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.profile-account-row > div { min-width: 0; }
+.profile-account-row strong { display: block; font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.profile-account-row p { color: #818376; font-size: 11px; line-height: 1.7; margin: 7px 0 0; }
+.profile-account-row .button { flex-shrink: 0; }
+.profile-verification { display: flex; align-items: center; gap: 5px; margin-top: 8px; color: #9a7a42; font-size: 10px; }
+.profile-verification.verified { color: #63814c; }
+@media (max-width: 760px) {
+  .profile-grid { grid-template-columns: minmax(0, 1fr); }
+  .profile-summary { gap: 18px; padding: 24px 0; align-items: flex-start; }
+  .profile-portrait { flex-basis: 64px; width: 64px; height: 64px; }
+  .profile-summary-copy h2 { font-size: 22px; }
+  .profile-account-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .profile-save-bar { align-items: flex-start; }
+}

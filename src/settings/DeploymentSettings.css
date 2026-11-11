@@ -1,0 +1,10 @@
+.deployment-settings { min-width: 0; background: #fafaf7; }
+.deployment-settings h2 { margin-top: 15px; }
+.deployment-settings .small-text { color: #62665b; }
+.deployment-settings form > .button { margin-top: 8px; }
+.deployment-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.deployment-actions .button { padding: 8px 10px; font-size: 11px; }
+.deployment-result pre { max-height: 300px; overflow: auto; margin: 12px 0; padding: 16px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: #30362c; font: 11px/1.65 ui-monospace, monospace; tab-size: 4; }
+.deployment-result pre:focus-visible { outline: 2px solid #62665b; outline-offset: 2px; }
+.deployment-result [role="status"]:empty { display: none; }
+.deployment-settings .deployment-note { margin: 24px 0 0; padding-top: 18px; border-top: 1px solid var(--line); color: #62665b; font-size: 11px; line-height: 1.7; }

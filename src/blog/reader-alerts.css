@@ -1,0 +1,17 @@
+.reader-alerts-intro { margin: 0 0 16px; color: #697267; font: 12px/1.5 Inter,sans-serif; }
+.passage-dialog .reader-alert-email, .reader-alert-email { display: flex; align-items: center; gap: 9px; padding: 11px 0; border-block: 1px solid var(--theme-border, #e4e7df); font: 12px/1.5 Inter,sans-serif; }
+.reader-alert-email input { width: auto; flex: 0 0 auto; margin: 0; accent-color: var(--accent, #46603c); }
+.reader-alert-list article { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--theme-border, #e4e7df); }
+.reader-alert-list article[data-read="false"] { border-left: 3px solid var(--accent, #46603c); padding-left: 11px; }
+.reader-alert-list p { margin: 0 0 5px; font: 13px/1.55 Inter,sans-serif; }
+.reader-alert-list time { color: #737a70; font: 11px/1.4 Inter,sans-serif; }
+.reader-alert-actions { display: flex; flex: none; gap: 9px; }
+.reader-alert-actions :is(a,button), .reader-alert-pages button { border: 0; padding: 0; background: none; color: var(--accent, #46603c); font: 600 11px/1.4 Inter,sans-serif; cursor: pointer; text-decoration: none; }
+.reader-alert-actions :is(a,button):hover, .reader-alert-pages button:hover { text-decoration: underline; }
+.reader-alert-empty { padding: 24px 0; color: #737a70; font: 12px/1.6 Inter,sans-serif; }
+.reader-alert-pages { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 18px; font: 11px/1.4 Inter,sans-serif; }
+.reader-alert-pages button:disabled { opacity: .5; cursor: default; }
+.reader-alerts-page { box-sizing: border-box; width: min(100% - 40px, 680px); margin: 54px auto 90px; }
+.reader-alerts-page h1 { margin: 20px 0 28px; font: 400 clamp(30px,5vw,46px)/1.12 Georgia,serif; letter-spacing: -.035em; }
+@media (max-width: 600px) { .reader-alert-list article { display: grid; gap: 8px; } .reader-alert-actions { flex-wrap: wrap; } }
+@media (max-width: 600px) { .reader-alerts-page { width: min(100% - 32px, 680px); margin: 28px auto 64px; } }

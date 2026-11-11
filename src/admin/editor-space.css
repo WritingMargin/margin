@@ -1,0 +1,90 @@
+.app-shell { --writer-input-size:14px; }
+.app-shell .editor-heading {
+  flex-shrink:0;
+  padding:16px 20px 12px;
+}
+.app-shell .editor-title-row { margin:6px 0 10px; }
+.app-shell .editor-assistant-layout { min-height:0; min-width:0; }
+.app-shell .editor-composition { min-height:0; overflow:hidden; }
+.app-shell .editor-card {
+  margin:0 16px;
+  min-height:0;
+}
+.app-shell .editor-card .editor-controls { height:44px; min-height:44px; flex-shrink:0; }
+.editor-live-status { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.app-shell .editor-card .editor-control-right { flex-shrink:0; white-space:nowrap; }
+.app-shell .editor-card .source-body {
+  min-height:0;
+  padding-top:20px;
+  padding-bottom:20px;
+}
+.app-shell .editor-card .source-body textarea {
+  font-size:var(--writer-input-size); line-height:26px;
+  top:20px; height:calc(100% - 40px);
+  white-space:pre-wrap; overflow-wrap:anywhere; overflow-x:hidden;
+}
+.app-shell .editor-card .line-numbers { font-size:11px; line-height:26px; }
+.app-shell .editor-card .preview-label {
+  height:48px; min-height:48px; padding:0 24px;
+}
+.app-shell .editor-card .preview-label button {
+  font-size:11px; letter-spacing:0; min-height:32px; color:#62625c;
+}
+.app-shell .editor-card .preview-label .editor-live-status { display:inline-flex; font-size:11px; font-weight:400; letter-spacing:0; text-transform:none; }
+.app-shell .editor-card .preview-content { min-height:0; padding:20px 24px 28px; }
+.app-shell .editor-card .preview-content { overflow-wrap:anywhere; }
+.app-shell .editor-card .preview-content pre,
+.app-shell .editor-card .preview-content pre code { white-space:pre-wrap; overflow-wrap:anywhere; }
+.app-shell .editor-card .preview-content table { table-layout:fixed; }
+.app-shell .editor-card .preview-content :is(th,td) { padding:8px; overflow-wrap:anywhere; }
+.app-shell .editor-card .preview-content .markdown-body { font-size:16px; line-height:1.8; }
+.app-shell .editor-card .preview-content .markdown-body h2 { font-size:24px; }
+.app-shell .editor-card .preview-content .markdown-body p { color:#4e4e46; }
+.app-shell .editor-card .preview-content .markdown-body pre { font-size:13px; }
+.app-shell .editor-card .preview-post-title { font-size:26px; line-height:1.35; margin:0 0 24px; }
+.writer-cover { display:flex; align-items:center; gap:12px; flex-shrink:0; padding:12px 20px; border-bottom:1px solid #e5e5df; }
+.writer-cover > img { width:88px; height:58px; object-fit:cover; border-radius:5px; }
+.writer-cover > .article-video-cover { width:120px; flex:0 0 120px; }
+.writer-cover > .article-video-cover .video-file video { aspect-ratio:16 / 9; }
+.writer-cover > div { flex:1; min-width:0; font-size:12px; }
+.writer-cover small { display:block; color:#62625c; font-size:11px; line-height:1.5; margin-top:4px; }
+.writer-cover > button { flex-shrink:0; font-size:11px; }
+.app-shell .editor-card .preview-post-cover { display:block; width:100%; height:auto; max-height:420px; object-fit:cover; border-radius:6px; margin:0 0 24px; }
+.app-shell .editor-card .article-video-cover.preview-post-cover { max-height:none; }
+.app-shell .editor-composition .editor-bottom {
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  flex-shrink:0; align-items:center; min-height:60px;
+  padding:10px 20px; gap:16px;
+}
+.app-shell .editor-bottom .save-state { min-width:0; line-height:1.4; }
+.app-shell .editor-bottom .save-state > :first-child { flex-shrink:0; }
+.app-shell .editor-bottom .save-state-copy { min-width:0; }
+.app-shell .editor-bottom .save-state-label { display:block; }
+.app-shell .editor-bottom .save-state small { margin-top:2px; }
+.app-shell .editor-bottom .bottom-actions { justify-content:flex-end; flex-wrap:nowrap; }
+.app-shell .editor-bottom .bottom-actions .button { white-space:nowrap; }
+@media(max-width:600px) {
+  .writer-cover { padding:10px 12px; gap:10px; flex-wrap:wrap; }
+  .writer-cover > img { width:64px; height:48px; }
+  .app-shell .editor-heading { padding:12px 12px 10px; }
+  .app-shell .editor-card { margin:0 8px; }
+  .app-shell .editor-card .editor-controls { height:auto; min-height:46px; padding:6px 8px; flex-wrap:wrap; gap:6px; overflow:visible; }
+  .app-shell .editor-card .editor-control-right { gap:2px; margin-left:auto; }
+  .app-shell .editor-card .editor-control-right button { margin-left:0; }
+  .app-shell .editor-card .editor-control-label { display:none; }
+  .app-shell .editor-card .editor-live-status { justify-content:center; width:16px; }
+  .app-shell .editor-card .mode-tabs { flex-shrink:0; }
+  .app-shell .editor-card .mode-tabs button { width:36px; min-height:32px; padding:6px; white-space:nowrap; }
+  .app-shell .editor-card .mode-tabs button span { display:none; }
+  .app-shell .editor-card .preview-content { padding:16px; }
+  .app-shell .editor-card .source-body textarea { line-height:24px; }
+  .app-shell .editor-card .line-numbers { line-height:24px; }
+  .app-shell .editor-composition .editor-bottom { min-height:56px; padding:8px 12px; gap:10px; }
+  .app-shell .editor-bottom .save-state { font-size:11px; gap:6px; }
+  .app-shell .editor-bottom .save-state small {
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+  }
+  .app-shell .editor-bottom .bottom-actions { gap:6px; }
+  .app-shell .editor-bottom .bottom-actions .button { min-height:36px; padding:8px 10px; font-size:11px; }
+}

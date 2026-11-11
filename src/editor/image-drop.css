@@ -1,0 +1,38 @@
+.source-body.image-drop-active {
+  outline: 2px dashed #71825e;
+  outline-offset: -3px;
+  background: #f3f5ed;
+}
+.image-drop-hint {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 10px 12px;
+  border: 1px solid #d8dfce;
+  border-radius: 6px;
+  background: #f3f5ed;
+  color: #38452b;
+  font-size: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+.image-drop-feedback {
+  flex-shrink: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.image-drop-feedback p:empty {
+  display: none;
+}
+.image-drop-feedback p {
+  margin: 0;
+  padding: 8px 16px;
+  color: #505b44;
+}
+.image-drop-feedback ul {
+  margin: 0;
+  padding: 8px 16px 8px 32px;
+  color: #a33328;
+}

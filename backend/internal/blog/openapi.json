@@ -1,0 +1,6355 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Post authoring and token management. Authenticate with an API key using `Authorization: Bearer YOUR_TOKEN`. Reader tokens can read all posts including drafts; writers can create and edit drafts; publishers can also publish, archive, edit live posts and delete; owners can manage tokens and all administrative APIs. This specification covers posts (articles and guides), per-post SEO, image uploads, publication SEO, search, revisions and tokens. Other administration APIs are not yet included. Writers and publishers can upload article images; publication-wide SEO requires an owner token.",
+    "title": "Margin authoring API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/ai/writing/sessions/{key}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns the owner’s saved chats for one post or unsaved draft key. Expired chats are deleted and return null.\n\nAllowed token roles: owner.",
+        "tags": [
+          "AI"
+        ],
+        "summary": "Restore a short-lived writing conversation",
+        "operationId": "getWritingChatSession",
+        "parameters": [
+          {
+            "description": "Post or draft UUID",
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWritingChatSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Stores a bounded owner-only chat session for 24 hours after its last update. Set postId to the article ID for saved articles; omit it for unsaved drafts. previousDraftKey clears the temporary copy after saving an article.\n\nAllowed token roles: owner.",
+        "tags": [
+          "AI"
+        ],
+        "summary": "Save a short-lived writing conversation",
+        "operationId": "saveWritingChatSession",
+        "parameters": [
+          {
+            "description": "Post or draft UUID",
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIWritingChatsInput"
+              }
+            }
+          },
+          "description": "Writing chats",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWritingChatExpiry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/ai/writing/stream": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Streams progress, optional reasoning summaries and visible reply deltas, then the validated writing result. Research and URL reading may provide progress and a final result without token deltas.\n\nAllowed token roles: owner.",
+        "tags": [
+          "AI"
+        ],
+        "summary": "Stream a writing assistant response",
+        "operationId": "writingAssistantStream",
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid writing request",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/media/audio": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns reusable MP3, M4A, WAV, Ogg and FLAC uploads, including private draft recordings, newest first. No Cloudinary connection is needed. secure_url is canonical: store it unchanged in a [Audio src=\"URL\"] block. Apply Margin's mount path only when fetching the file. Cloudinary's separate library remains available at GET /api/media.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "List recordings stored in Margin",
+        "operationId": "listAudio",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIMediaLibrary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Upload MP3, M4A, WAV, Ogg or FLAC to Margin's configured storage without Cloudinary. JSON accepts standard base64 data (no data-URL prefix), contentType and optional title, up to 10 MiB decoded. Alternatively send raw audio/mpeg, audio/mp4, audio/wav, audio/ogg or audio/flac bytes up to 50 MiB, with optional title query parameter. The file signature must match contentType. This validates the container, not browser codec compatibility; no transcoding is performed. Store the returned canonical URL unchanged in a [Audio src=\"URL\" title=\"Description\"] block or the post cover, then updatePost with its current revision. Uploading alone does not change or publish a post. Unused and draft-only recordings require authentication; a reference in published content makes the audio public. Delivery supports HEAD and HTTP byte ranges for seeking.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload audio to Margin storage",
+        "operationId": "uploadAudio",
+        "parameters": [
+          {
+            "description": "Optional title for binary uploads only (up to 200 characters)",
+            "name": "title",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUploadAudio"
+              }
+            },
+            "audio/mpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "audio/mp4": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "audio/wav": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "audio/ogg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "audio/flac": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "description": "Base64 audio, or raw bytes with audio Content-Type",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIUploadedAudio"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, base64, title or audio type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit uploads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Audio exceeds 50 MiB binary or 10 MiB decoded JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/media/covers": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Upload PNG, JPEG, WebP or GIF bytes (up to 10 MiB), with a matching Content-Type. Returns a reusable image URL for Markdown content, a post cover, or SEO image. Uploading alone does not attach or publish the image. Use updatePost with the latest revision to reference the returned URL. For JSON-only MCP tools, use uploadImage instead.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload an image as binary data",
+        "operationId": "uploadImageBinary",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/gif": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIUploadedImage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unsupported or mismatched image type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit uploads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Image exceeds 10 MiB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/media/images": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns uploaded and generated images, including private draft images, with reusable canonical secure_url values. Store these unchanged in post content, cover or seo.image. source=cloudinary also appends up to 100 Cloudinary images and requires the Cloudinary integration. The default uploads library needs no provider connection.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "List reusable images",
+        "operationId": "listImages",
+        "parameters": [
+          {
+            "description": "Library source",
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "uploads",
+                "cloudinary"
+              ],
+              "default": "uploads"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIMediaLibrary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Cloudinary integration requires an active plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Cloudinary is not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Supply url to import a public HTTP(S) image (bounded redirects and size; internal addresses are blocked), or send standard base64-encoded PNG, JPEG, WebP or GIF bytes (up to 10 MiB decoded), without a data-URL prefix. Content-Type must be application/json. contentType is required for data and optional for url; when supplied it must match the file. Returns a canonical image URL for Markdown content, cover, or seo.image. Uploading alone does not attach the image or change a post. Read the post, insert ![Alt text](returned URL) into its content, then call updatePost with the latest revision. Unused and draft-only uploads are private; images become public when referenced by a published post or site-wide SEO. Store the returned URL unchanged, including when Margin is mounted under a base path.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload an article image using JSON",
+        "operationId": "uploadImage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUploadImage"
+              }
+            }
+          },
+          "description": "Base64 image",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIUploadedImage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, base64 or image type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit uploads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Image exceeds 10 MiB or JSON request exceeds the encoded limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/media/models": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Send up to 20 MiB of raw file bytes. For GLB or self-contained glTF 2.0, OBJ or STL, use the returned URL as a scene model's src. For a Three.js transform clip JSON file, use it as animationSrc. Unreferenced and draft-only files are private. Publishing a post that references the file grants readers access.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload a 3D model or Three.js animation clip",
+        "operationId": "uploadDiagramAsset",
+        "parameters": [
+          {
+            "description": "File extension",
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "glb",
+                "gltf",
+                "obj",
+                "stl",
+                "json"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIUploadedDiagramAsset"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid format or file contents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign-in required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit uploads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File exceeds 20 MiB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/media/preview": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Fetches public HTTP(S) page metadata with bounded redirects, time and response size. Internal addresses and credentials are blocked. Returns plain text and an optional image URL, never executable embed HTML. Save these fields in a [Link url=\"URL\" mode=\"preview\" title=\"Title\" description=\"Summary\" image=\"URL\"] tag. Readers use the saved snapshot, not a live fetch. If the site blocks access, use a plain link or supply the card details manually.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Fetch metadata for a link preview card",
+        "operationId": "previewLink",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APILinkPreviewInput"
+              }
+            }
+          },
+          "description": "Public page URL",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APILinkPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Page metadata unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/media/videos": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns reusable MP4 and WebM uploads, including private draft videos, newest first. No Cloudinary connection is needed. secure_url is canonical: store it unchanged in a [Video src=\"URL\"] block. Apply Margin's mount path only when fetching the file. Cloudinary's separate library remains available at GET /api/media.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "List videos stored in Margin",
+        "operationId": "listVideos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIMediaLibrary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Upload MP4 or WebM to Margin's configured storage without Cloudinary. JSON accepts standard base64 data (no data-URL prefix), contentType and optional title, up to 10 MiB decoded. Alternatively send raw video/mp4 or video/webm bytes up to 50 MiB, with optional title query parameter. The file signature must match contentType. This validates the container, not browser codec compatibility; no transcoding is performed. Store the returned canonical URL unchanged in a [Video src=\"URL\" title=\"Description\"] block or a post's cover, then updatePost with its current revision. Uploading alone does not change or publish a post. Unused and draft-only videos require authentication; a reference in published content, a published post cover, or a saved, visible homepage hero makes the video public. Delivery supports HEAD and HTTP byte ranges for seeking.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Upload a video to Margin storage",
+        "operationId": "uploadVideo",
+        "parameters": [
+          {
+            "description": "Optional title for binary uploads only (up to 200 characters)",
+            "name": "title",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUploadVideo"
+              }
+            },
+            "video/mp4": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "video/webm": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "description": "Base64 video, or raw bytes with video Content-Type",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIUploadedVideo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, base64, title or video type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit uploads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Video exceeds 50 MiB binary or 10 MiB decoded JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns every matching post, newest updated first. No pagination.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "List posts",
+        "operationId": "posts",
+        "parameters": [
+          {
+            "description": "Filter by lifecycle status",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "archived",
+                "all"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIPostSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Before generating rich content, call getAuthoringGuide for supported blocks, examples and constraints. Status defaults to draft. Draft responses include draftUrl, an absolute admin-session-only preview URL at /draft/post/{slug}. Writers may create drafts only. Publishing or archiving requires publisher or owner.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Create a post",
+        "operationId": "createPost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APICreatePost"
+              },
+              "example": {
+                "title": "Release notes",
+                "slug": "release-notes",
+                "content": "# Release notes\n\nInitial draft.",
+                "status": "draft"
+              }
+            }
+          },
+          "description": "Request body",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision conflict or duplicate slug",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/audit": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Use mode=draft with article (unsaved fields) or id (saved fields). Use mode=public with a published post ID to fetch its actual canonical URL without credentials and compare the HTML, social metadata and structured data to saved settings. Intent defaults to index unless the article explicitly requests noindex. An unavailable finding means the check could not be measured. This read-only operation never submits or publishes content.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Audit an article before or after publishing",
+        "operationId": "auditArticle",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIArticleAuditInput"
+              }
+            }
+          },
+          "description": "Article and indexing intent",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.articleAuditReport"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/page": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns bounded post summaries, ordered by last edit or search relevance. Out-of-range pages clamp to the last page.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "List or search a page of posts",
+        "operationId": "workspacePostsPage",
+        "parameters": [
+          {
+            "description": "Page number",
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "description": "Posts per page",
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "description": "Search titles, tags and content",
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "description": "Lifecycle status",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "archived",
+                "all"
+              ],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspacePostPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination or search input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/search": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Searches titles, slugs, excerpts, tags and content. Empty query returns an empty array.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Search posts",
+        "operationId": "privateSearch",
+        "parameters": [
+          {
+            "description": "Filter by lifecycle status",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "archived",
+                "all"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "description": "Search query; at most 12 terms of 64 characters each",
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "searchSnippet",
+                  "searchMatches"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APISearchPost"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Includes content and the revision required for subsequent edits.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Read a post",
+        "operationId": "readPost",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Before generating rich content, call getAuthoringGuide for supported blocks, examples and constraints. Works for articles and guides. Omitted properties are preserved. Supplied content replaces the entire Markdown document. Alternatively supply edits, an ordered list of oldText/newText exact replacements; each oldText must match exactly once. content and edits are mutually exclusive. To insert an uploaded image, use the URL returned by uploadImage in Markdown: ![Alt text](URL). Use cover for the on-page image, audio player, or video hero. An empty seo.image defaults to an image cover for sharing; video and audio covers need a separate seo.image for a share image. Insert videos with [Video src=\"URL\" title=\"Description\"]. URL can be returned by uploadVideo or listVideos, or be an existing YouTube, Vimeo, Mux (player or HLS), Cloudinary, or direct MP4/WebM video link. Hosted video links need no upload. A supplied seo object replaces the previous SEO object: include title, description and image (empty strings use defaults), plus any noindex/nofollow overrides you want to keep. Send the latest revision; missing revision returns 428 and stale revision returns 409. Set status to published to publish, archived to archive, or draft to unpublish. Unpublishing keeps staged edits as the private draft, preserves the last live version in revision history, and returns draftUrl. Supply the current live revision when unpublishing. Writers may edit only posts that are and remain drafts. To prepare changes to published content without changing the live version, use updatePostDraft, then publishPostDraft when approved. Draft saves return draftUrl, an admin-session-only preview at /draft/post/{slug}. Use previewPost for a 30-minute bearer preview link without an admin login. Responses include structural block warnings and publicationState (never_published, published, unpublished, archived).\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Update content, SEO, cover or publication status",
+        "operationId": "updatePost",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUpdatePost"
+              },
+              "examples": {
+                "editDraft": {
+                  "summary": "Edit a draft",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "content": "Updated draft."
+                  }
+                },
+                "updateSEO": {
+                  "summary": "Update post SEO without changing content",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "seo": {
+                      "title": "Search title",
+                      "description": "Search description",
+                      "image": ""
+                    }
+                  }
+                },
+                "insertImage": {
+                  "summary": "Insert an uploaded image and preserve the rest of the Markdown",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "content": "Existing Markdown, preserved.\n\n![Descriptive alt text](/api/public/covers/REPLACE_WITH_UPLOAD_ID)"
+                  }
+                },
+                "insertVideo": {
+                  "summary": "Insert a video stored in Margin",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "content": "Existing Markdown, preserved.\n\n[Video src=\"/api/public/videos/REPLACE_WITH_UPLOAD_ID\" title=\"A walkthrough\"]"
+                  }
+                },
+                "embedVideo": {
+                  "summary": "Insert an existing hosted video without uploading",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "content": "Existing Markdown, preserved.\n\n[Video src=\"https://youtu.be/aqz-KE-bpKQ\" title=\"A video\"]"
+                  }
+                },
+                "setCover": {
+                  "summary": "Set an uploaded image as the cover",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "cover": "/api/public/covers/REPLACE_WITH_UPLOAD_ID"
+                  }
+                },
+                "publish": {
+                  "summary": "Publish (publisher or owner)",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "status": "published"
+                  }
+                },
+                "archive": {
+                  "summary": "Archive (publisher or owner)",
+                  "value": {
+                    "revision": "REPLACE_WITH_LATEST_REVISION",
+                    "status": "archived"
+                  }
+                }
+              }
+            }
+          },
+          "description": "Request body",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision conflict or duplicate slug",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Revision required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Send the latest revision in the JSON body. Missing revision returns 428 and stale revision returns 409.\n\nAllowed token roles: publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Delete a post",
+        "operationId": "deletePost",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIDeletePost"
+              }
+            }
+          },
+          "description": "Request body",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIOK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision conflict or duplicate slug",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Revision required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/draft": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns saved staged changes, or the current post as the starting point if none exist. For published content baseRevision identifies the live revision on which the draft is based. Use the returned revision with updatePostDraft. Reading does not create a draft or change the live post. Archived posts cannot be staged.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Read the working draft of a post",
+        "operationId": "readPostDraft",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Saves an ordinary draft or stages changes to a published article or guide while leaving all live content unchanged. Read readPostDraft first and supply its revision. Omitted fields are preserved from the working draft. Status may only be draft or omitted. Returns draftUrl at /draft/post/{slug}; only a signed-in admin browser session can load it. Writers and publishers may save drafts. If the live version changes after staging, discard and reconcile the draft before saving again. Use previewPost to obtain an expiring preview link without an admin session. Supports edits (exact oldText/newText replacements) instead of full content; returns structural block warnings. Publish explicitly using publishPostDraft.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Save changes without publishing",
+        "operationId": "updatePostDraft",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUpdatePost"
+              }
+            }
+          },
+          "description": "Draft changes",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Deletes only the working draft, preserving the live post and revision history. Requires the saved draft revision. Ordinary unpublished posts must be deleted using deletePost.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Discard staged changes to a published post",
+        "operationId": "discardPostDraft",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/blog.APIDeletePost"
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIOK"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/draft/publish": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Publishes the entire saved draft, including metadata and slug. Requires the draft revision from readPostDraft or updatePostDraft and publisher permission. The live revision must still match the draft's baseRevision; a conflict preserves both versions. Also publishes ordinary unpublished drafts. Does not send a newsletter.\n\nAllowed token roles: publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Publish the reviewed working draft",
+        "operationId": "publishPostDraft",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings"
+                ]
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/blog.APIDeletePost"
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPost"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/events": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Streams revision events (id, revision, deleted), including the current state on every connection. Changes are pushed after saves and deletes commit, using local notifications for SQLite and PostgreSQL LISTEN/NOTIFY across server instances. No content polling. Clients reconnect after disconnection. No article content is streamed.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Watch saved post changes",
+        "operationId": "postEvents",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-sent revision events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/link": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns the absolute canonical URL of a currently published article or guide, using its current slug, the configured publication domain (or PUBLIC_URL/request origin), and the mount path. Call after publishing instead of constructing a URL from the MCP endpoint. Reader, writer, publisher and owner tokens may use this operation. Drafts and archives return 409 POST_NOT_PUBLISHED with no public URL; this operation does not publish content. A returned link describes the current state, not a permanent guarantee of future availability.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Get a published post's public link",
+        "operationId": "getPostLink",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPostLink"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/preview": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns a bearer preview link valid for 30 minutes and only the current draft revision, plus structural block warnings. Anyone with this link may view this draft and its referenced uploaded media until it expires or the draft changes, is discarded, or is published. Uses the normal page renderer. Does not publish or modify post content. Warnings check block structure, not every semantic or visual constraint.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Preview the saved draft without an admin browser session",
+        "operationId": "previewPost",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPostPreview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/research": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Search Crossref using the research question in q. Returns publication titles, DOI URLs and available abstract excerpts in provider order. Only the query is sent to Crossref. Review abstracts as source material and use saveResearchSource to keep selected references privately with the post.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Research"
+        ],
+        "summary": "Find publications for draft research",
+        "operationId": "searchPublications",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Research question or bibliographic search",
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          {
+            "description": "Maximum results, default 8",
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                3,
+                8
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIResearchSource"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/revisions": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns up to 50 revisions, newest version first. Pass the last version as before for the next page.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "List saved revisions",
+        "operationId": "revisionList",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exclusive version cursor",
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "revision",
+                  "version",
+                  "savedAt",
+                  "author",
+                  "title",
+                  "status",
+                  "contentType"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIRevisionSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/revisions/{revision}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns the historical snapshot. previousRevision is null for the earliest saved version.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Read a saved revision",
+        "operationId": "readRevision",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Revision",
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "recommendations",
+                  "author",
+                  "draftUrl",
+                  "baseRevision",
+                  "publicationState",
+                  "warnings",
+                  "version",
+                  "savedAt",
+                  "previousRevision"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/sources": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Return the private sources kept with this post, ordered by title and ID. These sources can be cited in a draft.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Research"
+        ],
+        "summary": "List saved research sources",
+        "operationId": "listResearchSources",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APISavedResearchSource"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Keep an HTTP or HTTPS source with this post. Saving an existing URL updates the title and preserves an existing excerpt when the new excerpt is empty. The article body is unchanged.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Research"
+        ],
+        "summary": "Save a source with a draft",
+        "operationId": "saveResearchSource",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIResearchSource"
+              }
+            }
+          },
+          "description": "Source to keep",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APISavedResearchSource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/posts/{id}/writing-notes": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Read this post’s private notes, newest first. Includes author notes and insights saved from the writing assistant.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Research"
+        ],
+        "summary": "List private thinking notes",
+        "operationId": "listThinkingNotes",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APISavedThinkingNote"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Append a note with the author’s reasoning, research or questions to the specified post. Only body is required. The article body is unchanged.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Research"
+        ],
+        "summary": "Save a private thinking note",
+        "operationId": "saveThinkingNote",
+        "parameters": [
+          {
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIThinkingNote"
+              }
+            }
+          },
+          "description": "Thinking note",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APISavedThinkingNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/public/authoring": {
+      "get": {
+        "description": "Read this before generating or editing rich content. Returns this engine's Markdown authoring guide, supported fence languages and tags, runnable block examples, JSON Schemas generated from renderer validators, and additional cross-field/URL rules that schemas cannot express. Covers charts, polls, Mermaid, 3D scenes, illustrations, tabs, layouts, media (including YouTube/Vimeo/Mux and native uploads), citations and revision-aware saving. Static public documentation: no authentication required, no publication or private post data returned. formatVersion versions the reference response format. A valid schema or successful post save does not establish renderability; follow the rules and preview the result. Ordinary code fences display source, never execute it.",
+        "tags": [
+          "Authoring"
+        ],
+        "summary": "Learn Margin's supported content blocks",
+        "operationId": "getAuthoringGuide",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIAuthoringGuide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/posts": {
+      "get": {
+        "description": "Returns published posts only, newest created first. No pagination.",
+        "tags": [
+          "Public posts"
+        ],
+        "summary": "List published posts",
+        "operationId": "publicPosts",
+        "parameters": [
+          {
+            "description": "Both values return published posts only",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "published",
+                "all"
+              ],
+              "default": "published"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIPostSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/posts/{slug}": {
+      "get": {
+        "description": "Draft and archived posts return 404.",
+        "tags": [
+          "Public posts"
+        ],
+        "summary": "Read a published post by slug",
+        "operationId": "publicPost",
+        "parameters": [
+          {
+            "description": "Slug",
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "content",
+                  "relatedPosts",
+                  "reviewedBy"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIPublicPost"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/search": {
+      "get": {
+        "description": "Searches published content only. Empty query returns an empty array.",
+        "tags": [
+          "Public posts"
+        ],
+        "summary": "Search published posts",
+        "operationId": "publicSearch",
+        "parameters": [
+          {
+            "description": "Both values return published posts only",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "published",
+                "all"
+              ],
+              "default": "published"
+            }
+          },
+          {
+            "description": "Search query; at most 12 terms of 64 characters each",
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "description": "Optional comma-separated top-level response fields. Omit to return all fields. Unknown or empty fields return 400.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "slug",
+                  "excerpt",
+                  "status",
+                  "tags",
+                  "cover",
+                  "coverMode",
+                  "seo",
+                  "createdAt",
+                  "updatedAt",
+                  "revision",
+                  "featured",
+                  "tableOfContents",
+                  "contentType",
+                  "searchSnippet",
+                  "searchMatches"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APISearchPost"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/design": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner only. Returns the current design JSON and revision. Homepage, article, guide, comments, publication branding and footer are independent fields. Read the native MCP resources margin://design/guide and margin://design/schema before editing. This uses the storage/API JSON format, not the grouped editor export format. Does not fetch the central template catalog.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Design"
+        ],
+        "summary": "Read the blog design",
+        "operationId": "getBlogDesign",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIBlogDesign"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner only. Applies changes as a JSON merge patch: omitted fields stay unchanged, nested objects merge, arrays replace in full, and null removes an optional override. Requires the revision from getBlogDesign. The complete merged design is validated before an atomic save; a concurrent editor/API change returns 409. Saves affect the live blog immediately. Use validateBlogDesign first to check without saving; it is not a visual preview. No central template fetch occurs.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Design"
+        ],
+        "summary": "Update selected blog design fields",
+        "operationId": "updateBlogDesign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUpdateBlogDesign"
+              }
+            }
+          },
+          "description": "Revision and partial design changes",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIBlogDesign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/design/validate": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owner only. Merges partial changes with the current saved design and validates the complete result, including hero bindings and section rules. Returns the candidate design and current saved revision. Does not save, render a visual preview, fetch central templates, or change the live blog. Arrays replace in full; null removes an optional override. Use the returned revision when saving the same changes.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Design"
+        ],
+        "summary": "Validate blog design changes without saving",
+        "operationId": "validateBlogDesign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIValidateBlogDesign"
+              }
+            }
+          },
+          "description": "Partial design changes",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIBlogDesign"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/profile": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Read the shared publication byline, profile website, image, bio and links.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Read the publication author profile",
+        "operationId": "getAuthorProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIAuthorProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Read getAuthorProfile first and preserve the other fields. This replaces the profile across all articles. Set name to the public author name and website to their HTTPS profile URL. An empty name hides the byline. Omitted fields reset to their defaults.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Replace the publication author profile",
+        "operationId": "updateAuthorProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIAuthorProfile"
+              }
+            }
+          },
+          "description": "Replacement publication author profile",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIAuthorProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/publishing/google/inspect": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Requires a connected Search Console account. Choose a property returned by listGoogleProperties.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Inspect Google’s recorded indexing status for a published article",
+        "operationId": "inspectGoogleArticle",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIGoogleInspectionInput"
+              }
+            }
+          },
+          "description": "Search Console target",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/publishing/google/properties": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Requires a connected Search Console account. Choose a property returned by listGoogleProperties.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "List accessible Search Console properties covering the publication",
+        "operationId": "listGoogleProperties",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/publishing/google/submit": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Requires a connected Search Console account. Choose a property returned by listGoogleProperties.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Submit this publication’s generated sitemap to Google",
+        "operationId": "submitGoogleSitemap",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIGoogleProperty"
+              }
+            }
+          },
+          "description": "Search Console target",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/settings/seo": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Read publication-wide search title, description, sharing image, indexing preference and Google verification token. Per-post SEO is returned by readPost. Requires an owner token.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Read publication SEO settings",
+        "operationId": "getSiteSEO",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APISiteSEO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Replace all publication-wide SEO settings. Read getSiteSEO first and preserve unchanged fields. Empty title and description use publication defaults; empty image clears the sharing-image override. Image accepts an uploaded URL or a public HTTPS URL without credentials. indexing=false disables search indexing. Saving googleVerification exposes the verification token but does not verify ownership with Google. Requires an owner token; use updatePost for per-post SEO.\n\nAllowed token roles: owner.",
+        "tags": [
+          "SEO"
+        ],
+        "summary": "Update publication SEO settings",
+        "operationId": "updateSiteSEO",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APISiteSEO"
+              }
+            }
+          },
+          "description": "Complete publication SEO settings",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APISiteSEO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or missing SEO field",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/tokens": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Returns token identifiers and roles, never secret API keys.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "List tokens",
+        "operationId": "tokens",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIToken"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Defaults to a reader token named CLI. The secret is returned once. Create the first owner API key from the signed-in token settings.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Create an API key",
+        "operationId": "createToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APICreateToken"
+              }
+            }
+          },
+          "description": "Request body"
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APITokenSecret"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    },
+    "/api/tokens/{id}": {
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Owners can revoke any token. Any role can revoke itself by using its own token identifier (SHA-256 hash of the secret) as id.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Revoke a token",
+        "operationId": "deleteToken",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIOK"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ],
+        "x-self-revocation-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Requires an owner token. Changes take effect immediately.\n\nAllowed token roles: owner.",
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Change a token role",
+        "operationId": "updateToken",
+        "parameters": [
+          {
+            "description": "Id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIUpdateToken"
+              }
+            }
+          },
+          "description": "Request body",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input, status or fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Role does not permit this action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "owner"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "components": {
+    "requestBodies": {
+      "blog.APIDeletePost": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/blog.APIDeletePost"
+            }
+          }
+        },
+        "description": "Reviewed draft revision",
+        "required": true
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Enter your Margin API key. Swagger UI adds the Bearer prefix."
+      }
+    },
+    "schemas": {
+      "blog.APIArticleAuditInput": {
+        "type": "object",
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/blog.APIAuditDraft"
+          },
+          "id": {
+            "type": "string"
+          },
+          "intent": {
+            "type": "string",
+            "enum": [
+              "index",
+              "hidden"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "public"
+            ]
+          }
+        }
+      },
+      "blog.APIAuditDraft": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "cover": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIAuthor": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api_token",
+              "owner",
+              "unknown"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIAuthorProfile": {
+        "type": "object",
+        "properties": {
+          "bio": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "image": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIProfileLink"
+            }
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIAuthoringBlock": {
+        "type": "object",
+        "required": [
+          "description",
+          "example",
+          "language",
+          "maxCharacters",
+          "rules",
+          "title"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "example": {
+            "description": "Raw fence body. Wrap with triple backticks and language when inserting.",
+            "type": "string"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "chart",
+              "mermaid",
+              "scene",
+              "illustration"
+            ]
+          },
+          "maxCharacters": {
+            "type": "integer"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schema": {
+            "description": "Structural JSON Schema; apply rules too. Mermaid has no JSON schema.",
+            "type": "object",
+            "additionalProperties": true
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIAuthoringGuide": {
+        "type": "object",
+        "required": [
+          "blocks",
+          "catalogUrl",
+          "codeLanguages",
+          "formatVersion",
+          "guideUrl",
+          "markdown",
+          "tags"
+        ],
+        "properties": {
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIAuthoringBlock"
+            }
+          },
+          "catalogUrl": {
+            "type": "string"
+          },
+          "codeLanguages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "formatVersion": {
+            "type": "integer"
+          },
+          "guideUrl": {
+            "type": "string"
+          },
+          "markdown": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "blog.APIBlogDesign": {
+        "type": "object",
+        "required": [
+          "design",
+          "revision"
+        ],
+        "properties": {
+          "design": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "revision": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIContentEdit": {
+        "type": "object",
+        "required": [
+          "newText",
+          "oldText"
+        ],
+        "properties": {
+          "newText": {
+            "type": "string",
+            "maxLength": 2000000
+          },
+          "oldText": {
+            "type": "string",
+            "maxLength": 2000000,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APICreatePost": {
+        "type": "object",
+        "required": [
+          "content",
+          "slug",
+          "title"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 2000000,
+            "example": "# Hello\nDraft content."
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ],
+            "default": "article"
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string",
+            "maxLength": 2048
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "featured": {
+            "description": "Featured published articles stay above the paginated homepage list.",
+            "type": "boolean"
+          },
+          "recommendations": {
+            "$ref": "#/components/schemas/blog.APIRecommendations"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 1,
+            "example": "my-first-post",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "default": "draft"
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1,
+            "example": "My first post"
+          }
+        }
+      },
+      "blog.APICreateToken": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "default": "CLI",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "default": "reader",
+            "enum": [
+              "reader",
+              "writer",
+              "publisher",
+              "owner"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIDeletePost": {
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "properties": {
+          "revision": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "publicationState": {
+            "type": "string"
+          },
+          "status": {
+            "description": "Included when a post has no public link.",
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIGoogleInspectionInput": {
+        "type": "object",
+        "required": [
+          "property",
+          "slug"
+        ],
+        "properties": {
+          "property": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APIGoogleProperty": {
+        "type": "object",
+        "required": [
+          "property"
+        ],
+        "properties": {
+          "property": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APILinkPreview": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APILinkPreviewInput": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIMediaAsset": {
+        "type": "object",
+        "required": [
+          "public_id",
+          "resource_type",
+          "secure_url"
+        ],
+        "properties": {
+          "contentType": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "format": {
+            "type": "string"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "public_id": {
+            "type": "string"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio"
+            ]
+          },
+          "secure_url": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        }
+      },
+      "blog.APIMediaLibrary": {
+        "type": "object",
+        "required": [
+          "resources"
+        ],
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIMediaAsset"
+            }
+          }
+        }
+      },
+      "blog.APIOK": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        }
+      },
+      "blog.APIPost": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/blog.APIAuthor"
+          },
+          "baseRevision": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string"
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "draftUrl": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "never_published",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "recommendations": {
+            "$ref": "#/components/schemas/blog.APIRecommendations"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "blog.APIPostLink": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIPostPreview": {
+        "type": "object",
+        "properties": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "previewUrl": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "blog.APIPostSummary": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string"
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APIProfileLink": {
+        "type": "object",
+        "required": [
+          "label",
+          "url"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIPublicPost": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string"
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relatedPosts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIPostSummary"
+            }
+          },
+          "reviewedBy": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "revision": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APIRecommendations": {
+        "type": "object",
+        "required": [
+          "mode",
+          "postIds"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "automatic",
+              "smart",
+              "manual"
+            ]
+          },
+          "postIds": {
+            "description": "Only manual mode accepts IDs: at most two distinct, published posts other than this post.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIResearchSource": {
+        "type": "object",
+        "required": [
+          "title",
+          "url"
+        ],
+        "properties": {
+          "excerpt": {
+            "description": "Abstract or source excerpt. Omit or send an empty string to retain an existing excerpt.",
+            "type": "string",
+            "maxLength": 4000
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APIRevision": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/blog.APIAuthor"
+          },
+          "baseRevision": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string"
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "draftUrl": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "previousRevision": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "never_published",
+              "published",
+              "unpublished",
+              "archived"
+            ]
+          },
+          "recommendations": {
+            "$ref": "#/components/schemas/blog.APIRecommendations"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "savedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "blog.APIRevisionSummary": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/blog.APIAuthor"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "revision": {
+            "type": "string"
+          },
+          "savedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          }
+        }
+      },
+      "blog.APISEO": {
+        "type": "object",
+        "required": [
+          "description",
+          "image",
+          "title"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 320
+          },
+          "image": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "nofollow": {
+            "type": "boolean"
+          },
+          "noindex": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APISavedResearchSource": {
+        "type": "object",
+        "required": [
+          "title",
+          "url"
+        ],
+        "properties": {
+          "excerpt": {
+            "description": "Abstract or source excerpt. Omit or send an empty string to retain an existing excerpt.",
+            "type": "string",
+            "maxLength": 4000
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APISavedThinkingNote": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "note": {
+            "$ref": "#/components/schemas/blog.APIThinkingNote"
+          },
+          "postId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "blog.APISearchPost": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string"
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "searchMatches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "searchSnippet": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APISiteSEO": {
+        "type": "object",
+        "required": [
+          "description",
+          "googleVerification",
+          "image",
+          "indexing",
+          "title"
+        ],
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 320
+          },
+          "googleVerification": {
+            "type": "string",
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9_-]*$"
+          },
+          "image": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "indexing": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIThinkingNote": {
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "properties": {
+          "audience": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "brief": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "feedback": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "includedDraft": {
+            "type": "boolean"
+          },
+          "passage": {
+            "type": "string",
+            "maxLength": 12000
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "sourceRevision": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          }
+        }
+      },
+      "blog.APIToken": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "description": "Token identifier (SHA-256 hash), not the secret API key.",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "reader",
+              "writer",
+              "publisher",
+              "owner"
+            ]
+          }
+        }
+      },
+      "blog.APITokenSecret": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "reader",
+              "writer",
+              "publisher",
+              "owner"
+            ]
+          },
+          "token": {
+            "description": "Secret is returned only once. Store it securely.",
+            "type": "string"
+          }
+        }
+      },
+      "blog.APIUpdateBlogDesign": {
+        "type": "object",
+        "required": [
+          "changes",
+          "revision"
+        ],
+        "properties": {
+          "changes": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "revision": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APIUpdatePost": {
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 2000000
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "article",
+              "guide"
+            ]
+          },
+          "cover": {
+            "description": "Cover image URL, direct audio URL, Spotify link, or canonical uploaded audio URL.",
+            "type": "string",
+            "maxLength": 2048
+          },
+          "coverMode": {
+            "type": "string",
+            "enum": [
+              "player",
+              "preview"
+            ]
+          },
+          "edits": {
+            "description": "Sequential exact text replacements. Each oldText must match once. Mutually exclusive with content.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIContentEdit"
+            }
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "featured": {
+            "description": "Featured published articles stay above the paginated homepage list.",
+            "type": "boolean"
+          },
+          "recommendations": {
+            "$ref": "#/components/schemas/blog.APIRecommendations"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/blog.APISEO"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tableOfContents": {
+            "type": "string",
+            "enum": [
+              "off",
+              "top",
+              "left",
+              "right"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1
+          }
+        }
+      },
+      "blog.APIUpdateToken": {
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "reader",
+              "writer",
+              "publisher",
+              "owner"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIUploadAudio": {
+        "type": "object",
+        "required": [
+          "contentType",
+          "data"
+        ],
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "audio/mpeg",
+              "audio/mp4",
+              "audio/wav",
+              "audio/ogg",
+              "audio/flac"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 13981016,
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIUploadImage": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/gif"
+            ]
+          },
+          "data": {
+            "description": "Standard base64, without data: prefix. Decoded limit is 10 MiB.",
+            "type": "string",
+            "format": "byte",
+            "maxLength": 13981016,
+            "minLength": 1
+          },
+          "url": {
+            "description": "Public HTTP(S) image URL; mutually exclusive with data. Local files use the binary REST cover upload.",
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIUploadVideo": {
+        "type": "object",
+        "required": [
+          "contentType",
+          "data"
+        ],
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "video/mp4",
+              "video/webm"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 13981016,
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIUploadedAudio": {
+        "type": "object",
+        "required": [
+          "contentType",
+          "id",
+          "sizeBytes",
+          "title",
+          "url"
+        ],
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "audio/mpeg",
+              "audio/mp4",
+              "audio/wav",
+              "audio/ogg",
+              "audio/flac"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "example": "/api/public/audio/00000000-0000-4000-8000-000000000000"
+          }
+        }
+      },
+      "blog.APIUploadedDiagramAsset": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "/api/public/models/00000000-0000-4000-8000-000000000000.glb"
+          }
+        }
+      },
+      "blog.APIUploadedImage": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "description": "Canonical URL. Store unchanged in Markdown, cover or seo.image; apply the blog mount path only when fetching it directly.",
+            "type": "string",
+            "example": "/api/public/covers/00000000-0000-4000-8000-000000000000"
+          }
+        }
+      },
+      "blog.APIUploadedVideo": {
+        "type": "object",
+        "required": [
+          "contentType",
+          "id",
+          "sizeBytes",
+          "title",
+          "url"
+        ],
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "video/mp4",
+              "video/webm"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "example": "/api/public/videos/00000000-0000-4000-8000-000000000000"
+          }
+        }
+      },
+      "blog.APIValidateBlogDesign": {
+        "type": "object",
+        "required": [
+          "changes"
+        ],
+        "properties": {
+          "changes": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "blog.APIWorkspacePostPage": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "pages": {
+            "type": "integer"
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APISearchPost"
+            }
+          },
+          "total": {
+            "type": "integer"
+          }
+        }
+      },
+      "blog.APIWritingChatExpiry": {
+        "type": "object",
+        "properties": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APIWritingChatSession": {
+        "type": "object",
+        "properties": {
+          "chats": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APIWritingChatsInput": {
+        "type": "object",
+        "required": [
+          "chats"
+        ],
+        "properties": {
+          "chats": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "postId": {
+            "type": "string"
+          },
+          "previousDraftKey": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.articleAuditReport": {
+        "type": "object",
+        "properties": {
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.auditFinding"
+            }
+          },
+          "intent": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "blog.auditFinding": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "passage": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "suggestion",
+              "unavailable"
+            ]
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Margin content authoring guide for LLMs",
+    "url": "/authoring.md"
+  }
+}

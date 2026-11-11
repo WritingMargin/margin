@@ -1,0 +1,15 @@
+.design-mode { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.design-mode > span { color: #62665b; font-size: 12px; line-height: 1.6; }
+.design-mode-buttons { display: flex; flex-shrink: 0; border: 1px solid #deded8; border-radius: 5px; padding: 3px; gap: 3px; }
+.design-mode-buttons button { padding: 8px 14px; font-size: 12px; border-radius: 3px; }
+.design-mode-buttons button[aria-pressed="true"] { background: #efefea; color: #202020; }
+.expanded-designer .designer-grid.json-mode { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.expanded-designer .json-mode .design-controls { display: block; min-width: 0; }
+.design-config { min-width: 0; }
+.design-config h3 { font-size: 15px; margin: 0 0 12px; }
+.design-config p { font-size: 12px; line-height: 1.7; margin-bottom: 18px; }
+.design-config label { font-size: 11px; }
+.design-config-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+@media (max-width: 800px) {
+  .expanded-designer .designer-grid.json-mode { grid-template-columns: minmax(0, 1fr); }
+}

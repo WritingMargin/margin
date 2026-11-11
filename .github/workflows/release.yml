@@ -1,0 +1,246 @@
+name: Margin CI and release
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  # Only superseded runs of the same PR share a workflow-level group.
+  group: margin-ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  # Integration tests that open a PostgreSQL schema include Postgres or PostgreSQL in their name.
+  POSTGRES_TEST_PATTERN: '(?i)postgres'
+jobs:
+  go-checks:
+    name: Go checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: |
+            backend/go.sum
+            cli/go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.22.1'
+      - run: npm run check:go
+      - run: node --test packaging/release-tag.test.mjs packaging/publish-release.test.mjs
+  sqlite:
+    name: Backend and SQLite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      MARGIN_TEST_POSTGRES_URL: ''
+      # Fail if a PostgreSQL test was misnamed and would silently skip here.
+      MARGIN_REQUIRE_POSTGRES_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: |
+            backend/go.sum
+            cli/go.mod
+      - name: Test backend with SQLite
+        run: go -C backend test -race -count=1 -skip "$POSTGRES_TEST_PATTERN" ./...
+      - name: Test CLI
+        run: go -C cli test -race -count=1 ./...
+  postgres:
+    name: PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        # Keep this major version aligned with docker-compose.yml.
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: margin_test
+          POSTGRES_PASSWORD: margin_ci_only
+          POSTGRES_DB: margin_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U margin_test -d margin_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Disposable service credentials, never a deployed database.
+      MARGIN_TEST_POSTGRES_URL: postgres://margin_test:margin_ci_only@127.0.0.1:5432/margin_test?sslmode=disable
+      MARGIN_REQUIRE_POSTGRES_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: |
+            backend/go.sum
+            cli/go.mod
+      - name: Test PostgreSQL integration
+        run: go -C backend test -race -count=1 -run "$POSTGRES_TEST_PATTERN" ./...
+  api-docs:
+    name: Generated OpenAPI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.22.1'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: backend/go.sum
+      - run: npm ci
+      - name: Validate specification and detect stale generated docs
+        if: github.event_name == 'pull_request'
+        run: npm run check:openapi
+      - name: Build release web assets and check generated files
+        if: github.event_name != 'pull_request'
+        run: |
+          npm run build:web
+          git diff --exit-code
+          tar -cf "$RUNNER_TEMP/margin-web.tar" -C dist/client .
+      - uses: actions/upload-artifact@v7
+        if: github.event_name != 'pull_request'
+        with:
+          name: margin-web-${{ github.sha }}
+          path: ${{ runner.temp }}/margin-web.tar
+          if-no-files-found: error
+          overwrite: true
+  prepare-release:
+    name: Prepare release
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    env:
+      MARGIN_PREBUILT_WEB: '1'
+    needs: [go-checks, sqlite, postgres, api-docs]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - name: Require the official repository
+        env:
+          OFFICIAL_REPOSITORY: ${{ github.repository }}
+        run: test "$OFFICIAL_REPOSITORY" = WritingMargin/margin
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.22.1'
+          package-manager-cache: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          # Keep cross-compiled packages in a release cache separate from the API docs job.
+          cache-dependency-path: |
+            backend/go.sum
+            cli/go.mod
+            .goreleaser.yaml
+      - uses: actions/download-artifact@v8
+        with:
+          name: margin-web-${{ github.sha }}
+          path: ${{ runner.temp }}/margin-web
+      - name: Restore compiled web assets
+        run: |
+          mkdir -p dist/client
+          tar -xf "$RUNNER_TEMP/margin-web/margin-web.tar" -C dist/client
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - name: Calculate local release version
+        id: version
+        if: github.event_name == 'push'
+        run: node packaging/release-tag.mjs
+      - name: Build and test release archives
+        if: github.event_name == 'push'
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: v2.18.3
+          args: release --clean --skip=publish,docker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build multi-platform image for publication
+        if: github.event_name == 'push'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          context="$RUNNER_TEMP/image-context"
+          mkdir -p candidate
+          cp release/*.tar.gz release/checksums.txt release/CHANGELOG.md candidate/
+          (cd candidate && sha256sum --check checksums.txt)
+          for arch in amd64 arm64; do
+            mkdir -p "$context/linux/$arch"
+            tar -xzf "candidate/margin_${TAG#v}_linux_${arch}.tar.gz" -C "$context/linux/$arch" margin
+          done
+          docker buildx build --platform linux/amd64,linux/arm64 -f packaging/Dockerfile.release \
+            --label org.opencontainers.image.title=Margin \
+            --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.version=${TAG#v}" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --tag "ghcr.io/${GITHUB_REPOSITORY,,}:$TAG" \
+            --output "type=oci,dest=candidate/image.tar" "$context"
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'push'
+        with:
+          name: margin-candidate-${{ github.sha }}
+          path: candidate/
+          compression-level: 0
+          if-no-files-found: error
+          overwrite: true
+      - name: Build unpublished snapshot
+        if: github.event_name == 'workflow_dispatch'
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: v2.18.3
+          args: release --snapshot --clean
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: margin-snapshot
+          path: |
+            release/*.tar.gz
+            release/checksums.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish stable release
+    needs: prepare-release
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      # Also interoperate with main runs still using the previous workflow lock.
+      group: release-refs/heads/main
+      queue: max
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: margin-candidate-${{ github.sha }}
+          path: candidate
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish verified archives and image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          if ! command -v skopeo >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y skopeo; fi
+          node packaging/publish-release.mjs

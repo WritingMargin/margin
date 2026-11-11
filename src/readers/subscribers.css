@@ -1,0 +1,57 @@
+.subscriber-header .settings-icon {
+  margin-bottom: 22px;
+}
+.subscriber-header h2 {
+  margin: 0 0 8px;
+}
+.subscriber-header p {
+  color: var(--muted, #777769);
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+}
+.subscriber-content {
+  margin-top: 24px;
+}
+.subscriber-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: #777769;
+}
+.subscriber-privacy svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.subscriber-privacy p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.reader-subscribers .reader-table {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+.reader-subscribers .reader-table th {
+  color: #777769;
+  font-weight: 500;
+  background: #fafaf7;
+}
+.reader-subscribers [data-status="subscribed"] {
+  color: #486036;
+  background: #edf3e6;
+}
+.reader-subscribers [data-status="pending"] {
+  color: #826325;
+  background: #faf3df;
+}
+.reader-subscribers .reader-pagination {
+  justify-content: flex-end;
+}
+@media (max-width: 600px) {
+  .readers-page .settings-card {
+    padding: 20px 16px;
+  }
+}

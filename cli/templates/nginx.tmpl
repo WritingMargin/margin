@@ -1,0 +1,48 @@
+# Margin engine — nginx site configuration.
+# Install inside nginx's http context (for example /etc/nginx/conf.d/margin.conf).
+# Validate with nginx -t, then reload nginx using your service manager.
+# Engine: PUBLIC_URL={{.PublicURL}} TRUST_PROXY=1 MARGIN_ENV=production
+# Keep the engine listener private (default HOST=127.0.0.1 PORT=3001).
+# This is a single, internet-facing proxy; client-supplied forwarding headers are replaced.
+# All routes, including public HTML, /admin, /api, and assets, go to Go.
+# No proxy cache is used; the engine owns authentication and cache policy.
+{{if .TLS}}# Provision the certificate and private key below before enabling this site.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.Domain}};
+    return 308 https://{{.Authority}}$request_uri;
+}
+{{else}}# HTTP-only: use for local/bootstrap setups. Secure production login requires HTTPS.
+{{end}}
+server {
+    listen {{.Port}}{{if .TLS}} ssl{{end}};
+    listen [::]:{{.Port}}{{if .TLS}} ssl{{end}};
+    server_name {{.Domain}};
+{{if .TLS}}
+    ssl_certificate "{{.Cert}}";
+    ssl_certificate_key "{{.Key}}";
+    ssl_protocols TLSv1.2 TLSv1.3;
+{{end}}
+    # The engine enforces per-route limits; its largest direct upload is 50 MiB.
+    client_max_body_size 50m;
+    client_body_timeout 300s;
+
+    location / {
+        proxy_pass {{.Upstream}};
+        proxy_http_version 1.1;
+        proxy_set_header Host {{.Authority}};
+        proxy_set_header X-Forwarded-Host {{.Authority}};
+        proxy_set_header X-Forwarded-Proto {{.Scheme}};
+        proxy_set_header X-Forwarded-Port {{.Port}};
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Forwarded "";
+        proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_buffering off;
+        proxy_cache off;
+    }
+}

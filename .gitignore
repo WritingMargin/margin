@@ -1,0 +1,27 @@
+node_modules/
+dist/
+.data/
+.env
+*.log
+
+.env.*
+!.env.example
+*.secret
+.fused/receipts/
+
+
+artifacts/
+/backend/margin-server
+
+
+.react-router/
+release/
+backend/assets/web/*
+!backend/assets/web/README.txt
+artifacts/release-notices.txt
+.DS_Store
+.fused/.state/
+.fused/imports/**/receipt.json
+
+# Separate repository kept alongside this workspace.
+/margin-central/

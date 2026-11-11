@@ -1,0 +1,97 @@
+.conflict-dialog {
+  width: min(1040px, 100%);
+}
+.conflict-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  scrollbar-width: none;
+}
+.conflict-scroll::-webkit-scrollbar,
+.conflict-scroll textarea::-webkit-scrollbar {
+  display: none;
+}
+.conflict-intro {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #747e68;
+  margin: 0 0 18px;
+}
+.conflict-section-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 30px 0 12px;
+}
+.conflict-field {
+  padding: 18px;
+  border: 1px solid #dbe2d1;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.conflict-field > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.conflict-field h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.conflict-field header span {
+  font-size: 10px;
+  color: #858e79;
+}
+.conflict-field summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: #677459;
+  margin: 16px 0;
+}
+.conflict-texts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.conflict-texts > div {
+  min-width: 0;
+}
+.conflict-texts h5 {
+  margin: 10px 0;
+  font-size: 11px;
+}
+.conflict-texts pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.8 monospace;
+}
+.conflict-edit label {
+  display: block;
+  font-size: 11px;
+}
+.conflict-edit textarea {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  resize: vertical;
+  min-height: 180px;
+  font: 11px/1.8 monospace;
+  scrollbar-width: none;
+}
+.conflict-clear {
+  background: #eaf3e2;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .conflict-scroll {
+    padding: 18px;
+  }
+  .conflict-texts {
+    grid-template-columns: 1fr;
+  }
+}

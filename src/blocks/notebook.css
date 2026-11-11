@@ -1,0 +1,21 @@
+.jupyter-notebook .block-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.jupyter-notebook .block-data {
+  overflow-wrap: anywhere;
+}
+.jupyter-notebook .block-data pre {
+  white-space: pre-wrap;
+  overflow: auto;
+}
+.jupyter-notebook .notebook-output {
+  border-inline-start: 3px solid #9caa91;
+}
+
+.jupyter-notebook .notebook-markdown {
+  padding-block: 0.75rem;
+  line-height: 1.65;
+  font-size: 0.95rem;
+}

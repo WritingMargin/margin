@@ -1,0 +1,1 @@
+{{define "post-byline"}}{{if .name}}<div class="post-byline">{{if .image}}<img src="{{mediaPath .image}}" alt="" width="32" height="32">{{end}}<span>By {{if .website}}<a rel="author" href="{{.website}}">{{.name}}</a>{{else}}{{.name}}{{end}}</span></div>{{end}}{{end}}

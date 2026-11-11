@@ -1,0 +1,16 @@
+body { margin:0; background:#f7f6f2; color:#292a25; }
+.sample-masthead { max-width:1040px; margin:auto; padding:28px 32px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #dcded3; gap:16px; }
+.sample-masthead>a { display:flex; align-items:center; gap:18px; font:600 25px Georgia,serif; text-decoration:none; }
+.sample-masthead>a>span { max-width:100px; padding-left:18px; border-left:1px solid #d4d8cb; font:10px/1.5 sans-serif; letter-spacing:.13em; text-transform:uppercase; }
+.sample-masthead>span { font:11px/1.5 sans-serif; color:#6b7164; }
+.sample-shell { max-width:800px; padding:48px 32px 0; margin:auto; }
+.sample-shell .public-article { --blog-background:#f7f6f2!important; --blog-text:#292a25!important; --accent:#526c48!important; }
+.sample-shell .article-topbar,.sample-shell .article-actions { display:none; }
+.sample-shell .article-header h1 { letter-spacing:-.035em; }
+.sample-howto { max-width:736px; margin:48px auto; padding:32px; background:#e9edde; border:1px solid #d7dec9; border-radius:16px; font-size:15px; line-height:1.7; }
+.sample-kicker { font:600 10px/1.5 sans-serif; text-transform:uppercase; letter-spacing:.16em; color:#526447; }
+.sample-howto h2 { margin:12px 0; font:600 28px/1.3 Georgia,serif; }
+.sample-howto pre { padding:18px; white-space:pre-wrap; overflow-wrap:anywhere; background:#f9faf6; border-radius:8px; font-size:12px; line-height:1.8; }
+.sample-howto>a { text-decoration:underline; text-underline-offset:4px; }
+.sample-footer { padding:28px 20px; text-align:center; border-top:1px solid #dcded3; color:#6b7164; font-size:12px; }
+@media(max-width:600px) { .sample-masthead { padding:20px; } .sample-shell { padding:32px 20px 0; } .sample-howto { margin:28px 20px; padding:24px; } .sample-masthead>span { max-width:85px; text-align:right; } }

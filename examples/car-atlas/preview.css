@@ -1,0 +1,7 @@
+:root{--accent:#32675d;--ink:#273c37}
+body{background:#f3f5f0}
+.atlas-brand>span:first-child,.markdown-body a,.rich-block .block-kicker{color:var(--accent)}
+.markdown-body .rich-block{background:#fafcf9;border-color:#d1ded7}
+.rich-block button[aria-pressed="true"]{background:#d7e7de;border-color:#7fa995;color:#244f43}
+.scene-selection{background:#edf3ed;border-left:3px solid #5c8977;margin:18px 24px;padding:16px 20px}
+.scene-selection p{margin:5px 0 0;max-width:80ch}

@@ -1,0 +1,57 @@
+.post-template-trigger { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.writing-template-dialog { width: min(1020px, calc(100vw - 40px)); max-height: calc(100dvh - 48px); margin: auto; padding: 0; overflow: auto; color: #282d26; border: 1px solid #e0e3d8; border-radius: 18px; background: #fff; box-shadow: 0 32px 100px #18201233; }
+.writing-template-dialog::backdrop { background: #1d251c66; backdrop-filter: blur(4px); }
+.writing-template-gallery { overflow: hidden; color: #282d26; border: 1px solid #e3e5dc; border-radius: 16px; background: #fff; font-family: 'Inter', Arial, sans-serif; }
+.writing-template-dialog .writing-template-gallery { border: 0; border-radius: 0; }
+.writing-template-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 32px 36px 28px; border-bottom: 1px solid #eceee6; }
+.writing-template-eyebrow { color: #7d856f; font-size: 10px; letter-spacing: 1.6px; font-weight: 600; }
+.writing-template-heading h2 { margin: 10px 0 9px; font-size: 28px; font-weight: 500; letter-spacing: -.9px; line-height: 1.25; }
+.writing-template-heading p { margin: 0; color: #777c70; font-size: 13px; line-height: 1.6; }
+.writing-template-close { flex: none; width: 36px; height: 36px; border-radius: 50%; color: #7b8174; background: #f5f6f1; }
+.writing-template-body { display: grid; grid-template-columns: minmax(280px, .9fr) minmax(0, 1.2fr); }
+.writing-template-options { display: flex; flex-direction: column; gap: 9px; padding: 24px; }
+.writing-template-option { display: grid; grid-template-columns: 42px minmax(0, 1fr) 16px; align-items: center; justify-content: normal; gap: 13px; padding: 14px; min-height: 82px; text-align: left; border: 1px solid transparent; border-radius: 11px; background: #fff; }
+.writing-template-option:hover { background: #f9faf6; }
+.writing-template-option[aria-pressed="true"] { border-color: #c6d1b7; background: #f4f7ee; }
+.writing-template-icon { display: grid; place-items: center; width: 42px; height: 46px; border-radius: 9px; color: #727f57; background: #eff2e7; }
+.writing-template-icon.research { color: #657d91; background: #eef3f7; }
+.writing-template-icon.engineering { color: #79718f; background: #f1eef6; }
+.writing-template-icon.tutorial { color: #aa8254; background: #faf2e6; }
+.writing-template-icon.release { color: #a1736d; background: #f8eeea; }
+.writing-template-option strong { display: block; margin-bottom: 5px; color: #353d2e; font-size: 13px; font-weight: 600; }
+.writing-template-option small { display: block; color: #6e7763; font-size: 12px; line-height: 1.6; }
+.writing-template-check { display: grid; place-items: center; width: 16px; height: 16px; color: #617548; }
+.writing-template-hint { margin: auto 10px 0; padding-top: 12px; color: #777f6b; font-size: 11px; line-height: 1.7; }
+.writing-template-preview { min-width: 0; padding: 24px 28px 28px; background: #f4f5f0; border-left: 1px solid #eceee6; }
+.writing-template-preview-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; color: #8b927f; font-size: 9px; letter-spacing: 1.2px; }
+.writing-template-preview-label > span:last-child { font-size: 10px; letter-spacing: 0; }
+.writing-template-paper { min-height: 430px; max-height: 460px; overflow: auto; padding: 30px; border: 1px solid #e5e7dd; border-radius: 3px; background: #fffefa; box-shadow: 0 4px 12px #36452106, 0 1px 2px #36452105; scrollbar-width: thin; scrollbar-color: #dce1d2 transparent; }
+.writing-template-paper-meta { color: #9a9b8d; font-size: 8px; letter-spacing: 1px; line-height: 1.8; }
+.writing-template-paper-meta span { padding: 0 5px; }
+.writing-template-paper h3 { margin: 18px 0 22px; color: #38422f; font: 400 26px/1.35 'Lora', Georgia, serif; letter-spacing: -.6px; }
+.writing-template-paper-rule { width: 34px; height: 2px; margin-bottom: 25px; background: #a9b697; }
+.writing-template-outline-section { display: flex; gap: 12px; margin: 0 0 23px; }
+.writing-template-outline-section > span { flex: none; padding-top: 2px; color: #aeb5a1; font-size: 9px; font-variant-numeric: tabular-nums; }
+.writing-template-outline-section h4 { margin: 0 0 7px; color: #525d47; font-size: 11px; font-weight: 600; }
+.writing-template-outline-section p { margin: 0; color: #747d69; font-size: 12px; line-height: 1.8; white-space: pre-line; }
+.writing-template-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 30px; border-top: 1px solid #eceee6; background: #fff; }
+.writing-template-footer p { display: flex; align-items: center; gap: 8px; margin: 0; color: #8c9380; font-size: 11px; }
+.writing-template-use { flex: none; min-height: 44px; padding: 12px 21px; color: #fff; background: #536443; border: 1px solid #536443; border-radius: 7px; font-size: 12px; font-weight: 500; }
+.writing-template-use:hover { color: #fff; background: #435334; }
+.writing-template-gallery button:focus-visible { outline: 2px solid #71875a; outline-offset: 3px; }
+@media (max-width: 700px) {
+  .writing-template-dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
+  .writing-template-heading { padding: 24px; }
+  .writing-template-heading h2 { font-size: 24px; }
+  .writing-template-body { grid-template-columns: 1fr; }
+  .writing-template-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 8px; }
+  .writing-template-option { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 12px; min-height: 72px; border-color: #eceee6; }
+  .writing-template-icon { width: 30px; height: 36px; }
+  .writing-template-option small, .writing-template-check, .writing-template-hint { display: none; }
+  .writing-template-option strong { margin: 0; font-size: 12px; line-height: 1.5; }
+  .writing-template-preview { border-top: 1px solid #eceee6; border-left: 0; padding: 20px; }
+  .writing-template-paper { min-height: 280px; max-height: 340px; padding: 24px; }
+  .writing-template-footer { flex-wrap: wrap; padding: 20px; }
+  .writing-template-footer p { line-height: 1.6; }
+  .writing-template-use { margin-left: auto; }
+}

@@ -1,0 +1,30 @@
+.modal.tabs-modal { width: 1040px; padding: 0; max-height: calc(100dvh - 48px); overflow: hidden; background: #fff; }
+.tabs-builder { display: flex; flex-direction: column; max-height: inherit; min-height: 0; }
+.tabs-builder > header { flex: none; padding: 24px 28px 18px; border-bottom: 1px solid #e6e6e2; }
+.tabs-builder > header .eyebrow { font-size: 9px; color: #8c8c80; }
+.tabs-builder > header h2 { margin: 10px 0 8px; font-size: 26px; }
+.tabs-builder > header p { color: #88887c; font-size: 12px; margin: 0; }
+.tabs-builder-body { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 28px; padding: 22px 28px; overflow-y: auto; overscroll-behavior: contain; min-height: 0; scrollbar-width: thin; scrollbar-color: #ccc transparent; }
+.tabs-builder-controls label { font-size: 11px; }
+.tabs-builder-controls input, .tabs-builder-controls select, .tabs-builder-controls textarea { font-size: 11px; }
+.tabs-builder-controls textarea { font-family: "IBM Plex Mono", monospace; font-size: 11px; line-height: 1.7; }
+.tabs-control-row { display: flex; gap: 12px; }
+.tabs-control-row > label { flex: 1; min-width: 0; }
+.tabs-control-row input[type="color"] { height: 37px; padding: 4px; width: 100%; }
+.tabs-builder-controls hr { margin: 22px 0; border: 0; border-top: 1px solid #e6e6e2; }
+.tab-edit-actions { display: flex; align-items: center; gap: 10px; margin: 10px 0 18px; }
+.tab-edit-actions > .button { margin-right: auto; font-size: 10px; padding: 7px 10px; }
+.tabs-builder-preview { min-width: 0; align-self: start; position: sticky; top: 0; padding: 20px; border: 1px solid #e4e4df; background: #fafaf8; border-radius: 6px; }
+.tabs-builder-preview > .eyebrow { font-size: 8px; color: #99998d; }
+.tabs-builder-preview > .markdown-body { font-size: 14px; }
+.tabs-builder-preview .content-tabs { margin-bottom: 0; }
+.tabs-builder > footer { flex: none; padding: 16px 28px; border-top: 1px solid #e6e6e2; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tabs-builder > footer > span { color: #8c8c80; font-size: 10px; }
+.tabs-modal > .modal-close { top: 18px; right: 18px; z-index: 1; }
+@media (max-width: 720px) {
+ .tabs-builder-body { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+ .tabs-builder-preview { position: static; }
+ .tabs-builder > header { padding: 24px 20px 16px; }
+ .tabs-builder > footer { padding: 14px 20px; }
+}
+.tabs-builder-controls input[type="range"] { display: block; width: 100%; margin-top: 10px; accent-color: #242424; }

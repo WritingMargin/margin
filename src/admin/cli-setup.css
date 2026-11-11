@@ -1,0 +1,102 @@
+.cli-setup {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.cli-setup > li {
+  min-width: 0;
+}
+.cli-setup-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.cli-setup-heading > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #edf0e7;
+  color: #60734e;
+  font-size: 11px;
+}
+.cli-setup-heading h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 550;
+}
+.cli-setup p {
+  margin: 9px 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #727668;
+  overflow-wrap: anywhere;
+}
+.cli-setup .cli-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  margin: 4px 0 12px;
+  font-size: 12px;
+}
+.cli-setup details {
+  font-size: 12px;
+  color: #727668;
+}
+.cli-setup summary {
+  cursor: pointer;
+  line-height: 1.6;
+}
+.cli-command {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #282a26;
+  color: #e7e8de;
+  border-radius: 8px;
+  min-width: 0;
+}
+.cli-command pre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.7 monospace;
+}
+.cli-command button {
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 5px;
+  background: #ffffff12;
+  color: inherit;
+  cursor: pointer;
+}
+.cli-command button:focus-visible {
+  outline: 2px solid #bdcba9;
+  outline-offset: 3px;
+}
+.cli-copy-status {
+  display: block;
+  margin-top: 5px;
+  color: #60734e;
+  font-size: 11px;
+}
+@media (max-width: 540px) {
+  .cli-command {
+    padding: 12px;
+  }
+  .cli-command pre {
+    font-size: 11px;
+  }
+}

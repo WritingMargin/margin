@@ -1,0 +1,46 @@
+.designer-mobile-jump { display: none; }
+
+@media (max-width: 800px) {
+  .expanded-designer .designer-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .expanded-designer .design-controls { display: block; min-width: 0; margin-bottom: 0; }
+  .expanded-designer .design-controls > * { min-width: 0; }
+  .expanded-designer .design-controls .control-divider { display: block; margin: 24px 0; }
+  .expanded-designer .design-control-heading h3 { font-size: 18px; margin: 10px 0; }
+  .expanded-designer .design-control-heading p { font-size: 13px; margin-bottom: 24px; }
+  .expanded-designer .design-controls label,
+  .expanded-designer .design-controls .design-field-heading > label { font-size: 13px; }
+  .expanded-designer .design-controls :is(input, select, textarea):not([type="checkbox"]):not([type="range"]):not([type="color"]) {
+    min-width: 0;
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .expanded-designer .design-controls textarea { resize: vertical; }
+  .expanded-designer .design-controls input[type="range"] { min-height: 44px; margin-top: 4px; }
+  .expanded-designer .design-controls :is(.small-text, .muted, .design-toggle small, .font-picker-current small) { font-size: 12px; line-height: 1.6; }
+  .expanded-designer .design-controls :is(.design-toggle strong, .font-picker-current strong) { font-size: 14px; }
+  .expanded-designer .design-controls .design-toggle { min-height: 44px; margin: 12px 0; }
+  .expanded-designer .design-controls .design-toggle > span { min-width: 0; }
+  .expanded-designer .design-controls .design-toggle input[type="checkbox"] { width: 44px; height: 44px; }
+  .expanded-designer .design-controls .design-field-heading .design-toggle { min-width: 44px; }
+  .expanded-designer :is(.logo-source-switch button, .design-config-actions button, .design-mode-buttons button, .design-preview-top button) { min-height: 44px; min-width: 44px; }
+  .expanded-designer .logo-source-switch button { font-size: 13px; }
+  .expanded-designer .designer-mobile-jump { display: flex; align-items: center; width: fit-content; min-height: 44px; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; margin: 0 0 12px; }
+  .expanded-designer .design-preview-shell > .designer-mobile-jump { margin: 0; padding: 8px 16px; }
+  .expanded-designer :is(#design-preview-panel, #design-controls-panel) { scroll-margin-top: 20px; }
+  .expanded-designer .design-mode { margin-bottom: 0; }
+  .expanded-designer .design-preview-viewport { max-height: 75dvh; }
+}
+
+@media (max-width: 600px) {
+  .expanded-designer .page-heading { flex-direction: column; gap: 20px; margin-bottom: 24px; }
+  .expanded-designer .page-heading h1 { font-size: 26px; }
+  .expanded-designer .page-heading p { font-size: 13px; }
+  .expanded-designer .design-save-actions { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+  .expanded-designer .design-save-actions > span { display: inline; font-size: 12px; }
+  .expanded-designer .design-save-actions .button { min-height: 44px; font-size: 13px; }
+  .expanded-designer .design-section-tabs { margin-bottom: 16px; overflow-x: auto; }
+  .expanded-designer .design-section-tabs > button { flex: 0 0 auto; min-height: 48px; font-size: 12px; white-space: nowrap; padding-inline: 12px; }
+  .expanded-designer .design-mode { flex-wrap: wrap; gap: 8px; }
+  .expanded-designer .design-preview-top { flex-wrap: wrap; gap: 8px; }
+}

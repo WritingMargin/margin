@@ -1,0 +1,25 @@
+.live-post-notice {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 12px;
+  padding: 12px 16px;
+  background: #f3f6ef;
+  border: 1px solid #dce3d5;
+  border-radius: 6px;
+  color: #43503c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.live-post-notice .button {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .live-post-notice {
+    margin-inline: 8px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

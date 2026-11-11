@@ -1,0 +1,53 @@
+.pwa-icon-control {
+  display: flex;
+  align-items: start;
+  gap: 16px;
+  margin: 20px 0;
+}
+.pwa-icon-control > img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--surface, #f5f5f5);
+}
+.pwa-icon-control > div {
+  min-width: 0;
+}
+.pwa-colors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.publication-settings-grid .settings-card .pwa-colors > label {
+  margin-top: 0;
+  min-width: 0;
+}
+.pwa-saved-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+.pwa-saved-icon img {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  border: 1px solid var(--border, #ddd);
+}
+@media (max-width: 520px) {
+  .pwa-colors {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pwa-install-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.settings-card .pwa-install-toggle input {
+  width: auto;
+  margin: 0;
+}

@@ -1,0 +1,79 @@
+version: 2
+project_name: margin
+# Keep release output separate from the frontend's dist/client directory.
+dist: release
+
+before:
+  hooks:
+    - go -C backend mod download all
+    - node packaging/prepare-release.mjs
+
+builds:
+  - id: margin
+    dir: backend
+    main: ./cmd/margin-server
+    binary: margin
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ['-s -w -X main.version={{.Version}}']
+    hooks:
+      post:
+        - cmd: 'node packaging/verify-release.mjs "{{ .Path }}" "{{ .Version }}" "{{ .Target }}"'
+          dir: .
+          output: true
+  - id: margin-cli
+    dir: cli
+    main: ./cmd/margin
+    binary: margin
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ['-s -w -X main.version={{.Version}}']
+
+archives:
+  - id: margin
+    ids: [margin]
+    name_template: margin_{{.Version}}_{{.Os}}_{{.Arch}}
+    formats: [tar.gz]
+    files:
+      - README.md
+      - src: artifacts/release-notices.txt
+        dst: LICENSES.txt
+  - id: margin-cli
+    ids: [margin-cli]
+    name_template: margin-cli_{{.Version}}_{{.Os}}_{{.Arch}}
+    formats: [tar.gz]
+    files:
+      - src: cli/README.md
+        dst: README.md
+      - src: artifacts/release-notices.txt
+        dst: LICENSES.txt
+
+checksum:
+  name_template: checksums.txt
+snapshot:
+  version_template: '{{ .Version }}-dev-{{ .ShortCommit }}'
+release:
+  prerelease: auto
+changelog:
+  sort: asc
+  format: '{{ .Message }}'
+
+dockers_v2:
+  - id: margin
+    ids: [margin]
+    dockerfile: packaging/Dockerfile.release
+    images:
+      - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}'
+    tags:
+      - '{{ .Tag }}'
+      - '{{ if and (not .IsSnapshot) (not .Prerelease) }}latest{{ end }}'
+    platforms: [linux/amd64, linux/arm64]
+    labels:
+      org.opencontainers.image.title: Margin
+      org.opencontainers.image.source: 'https://github.com/{{ .Env.GITHUB_REPOSITORY }}'
+      org.opencontainers.image.version: '{{ .Version }}'
+      org.opencontainers.image.revision: '{{ .FullCommit }}'

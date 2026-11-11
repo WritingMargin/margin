@@ -1,0 +1,31 @@
+.remember-commenter {
+  margin: 10px 0;
+}
+.remember-commenter > label,
+.passage-dialog .remember-commenter > label,
+.redesigned-blog .public-comments .remember-commenter > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: #555b50;
+  font:
+    400 12px/1.5 Inter,
+    sans-serif;
+  cursor: pointer;
+}
+.remember-commenter > label > input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: #465a3c;
+}
+.remember-commenter > p {
+  margin: 6px 0 0;
+  font:
+    12px/1.5 Inter,
+    sans-serif;
+  color: #775133;
+}

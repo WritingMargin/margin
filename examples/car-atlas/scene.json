@@ -1,0 +1,23 @@
+{
+  "title": "Explore the electric coupe",
+  "description": "An original schematic car made from real three-dimensional geometry. Orbit it to see the wheel depth, glazing, curved body and underside. It is not a manufacturer model or an engineering drawing.",
+  "background": "#edf1ef",
+  "objects": [
+    {
+      "shape": "model",
+      "label": "Electric coupe · complete exterior",
+      "description": "The assembled view shows the outer proportions. Compare it with the separated components below to see where the energy system fits.",
+      "src": "/assets/car.glb",
+      "color": "#477c71",
+      "rotation": [
+        0,
+        -0.35,
+        0
+      ]
+    }
+  ],
+  "poster": {
+    "src": "/assets/car-poster.jpg",
+    "alt": "Front three-quarter view of the original green electric coupe, with dark glazing and four detailed wheels."
+  }
+}

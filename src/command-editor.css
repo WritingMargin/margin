@@ -1,0 +1,12 @@
+.command-suggestions { position: fixed; z-index: 100; width: min(330px, calc(100vw - 16px)); overflow: hidden; color: #292923; background: #fffffd; border: 1px solid #ddddd5; border-radius: 12px; box-shadow: 0 12px 36px #22221a24; font: 12px/1.4 Inter, sans-serif; }
+.command-suggestions-heading { display: flex; justify-content: space-between; align-items: center; padding: 12px 13px 10px; font-weight: 600; border-bottom: 1px solid #eeeee8; }
+.command-suggestions-heading span { font-size: 10px; color: #85857a; font-weight: 400; }
+.command-suggestions-list { max-height: min(240px, 40vh); overflow-y: auto; padding: 5px; overscroll-behavior: contain; }
+.command-suggestion { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 7px; cursor: pointer; }
+.command-suggestion[aria-selected="true"] { background: #eeeee6; }
+.command-suggestion-icon { display: grid; place-items: center; flex: 0 0 32px; height: 32px; font-size: 20px; border: 1px solid #deded4; border-radius: 6px; background: #fafaf6; }
+.command-suggestion > span:nth-child(2) { flex: 1; min-width: 0; }
+.command-suggestion strong { display: block; font-size: 15px; font-weight: 500; }
+.command-suggestion small { display: block; color: #717167; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.command-suggestion-enter { color: #77776a; }
+.command-suggestions-footer { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-top: 1px solid #eeeee8; font-size: 10px; color: #77776d; }

@@ -1,0 +1,88 @@
+.agent-connection-panel {
+  min-width: 0;
+}
+.agent-connection-panel > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #77776e;
+}
+.mcp-setup h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #30332c;
+}
+.mcp-setup p {
+  margin: 8px 0 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #77776e;
+}
+.mcp-setup label {
+  display: block;
+  margin: 22px 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #484c42;
+}
+.mcp-address {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.mcp-address input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line, #e4e7dc);
+  border-radius: 5px;
+  padding: 11px 12px;
+  background: #fafbf8;
+  color: #30332c;
+  font:
+    11px/1.5 "IBM Plex Mono",
+    monospace;
+}
+.mcp-address .button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.mcp-connection-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 22px 0;
+}
+.mcp-connection-details dt {
+  margin-bottom: 5px;
+  font-size: 11px;
+  color: #77776e;
+}
+.mcp-connection-details dd {
+  margin: 0;
+  font-size: 12px;
+  color: #30332c;
+}
+.mcp-auth-header {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.7;
+  padding: 11px 12px;
+  border-radius: 5px;
+  background: #f5f6f1;
+  color: #4d5744;
+  margin-bottom: 16px;
+}
+.mcp-setup .mcp-copy-status {
+  margin: 8px 0 0;
+  color: #4d5744;
+  font-size: 11px;
+}
+@media (max-width: 480px) {
+  .mcp-address {
+    flex-wrap: wrap;
+  }
+  .mcp-address input {
+    flex-basis: 100%;
+  }
+}

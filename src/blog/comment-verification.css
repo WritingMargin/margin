@@ -1,0 +1,30 @@
+.comment-verification {
+  margin: 10px 0;
+  font:
+    12px/1.5 Inter,
+    sans-serif;
+}
+.comment-verification-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 9px 11px;
+  border: 1px solid #e0ddd2;
+  border-radius: 8px;
+  background: #faf9f5;
+  color: #5c5140;
+}
+.comment-verification-error button {
+  color: #3f4f38;
+  font: inherit;
+  font-weight: 600;
+  padding: 3px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.comment-verification-pending {
+  margin: 5px 0;
+  color: #62645d;
+  font: inherit;
+}

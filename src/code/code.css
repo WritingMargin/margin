@@ -1,0 +1,241 @@
+.code-block {
+  margin: 24px 0;
+  border: 1px solid #deded8;
+  border-radius: 6px;
+  background: #f7f7f3;
+  overflow: hidden;
+  color: #242424;
+}
+.code-block-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #deded8;
+  font:
+    11px/1.5 Inter,
+    sans-serif;
+  color: #62625b;
+}
+.code-block-heading button {
+  min-height: 30px;
+  padding: 3px 6px;
+}
+.markdown-body .code-block pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 16px;
+  max-height: none;
+  overflow: visible;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.markdown-body .code-block-nowrap pre {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.code-highlight {
+  font:
+    13px/1.7 "IBM Plex Mono",
+    monospace;
+  white-space: pre;
+  tab-size: 4;
+}
+.code-highlight .hljs-keyword,
+.code-highlight .hljs-selector-tag,
+.code-highlight .hljs-literal {
+  color: #7939a2;
+}
+.code-highlight .hljs-string,
+.code-highlight .hljs-attr,
+.code-highlight .hljs-regexp {
+  color: #32623b;
+}
+.code-highlight .hljs-number,
+.code-highlight .hljs-symbol,
+.code-highlight .hljs-built_in {
+  color: #9c4f10;
+}
+.code-highlight .hljs-title,
+.code-highlight .hljs-section,
+.code-highlight .hljs-type {
+  color: #225e9c;
+}
+.code-highlight .hljs-comment,
+.code-highlight .hljs-quote {
+  color: #6c7268;
+  font-style: italic;
+}
+.code-highlight .hljs-meta,
+.code-highlight .hljs-tag {
+  color: #6a477c;
+}
+.code-highlight .hljs-addition {
+  color: #28613a;
+  background: #e8f3e8;
+}
+.code-highlight .hljs-deletion {
+  color: #983c3c;
+  background: #f9e8e8;
+}
+.modal.code-dialog {
+  width: min(880px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  background: #fcfcf9;
+}
+.code-dialog .dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.code-dialog .dialog-header h2 {
+  margin: 0;
+}
+.code-dialog .dialog-body {
+  overflow: auto;
+  min-height: 0;
+}
+.code-dialog .code-wrap-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.code-notebook-import {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0;
+}
+.code-notebook-import .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-notebook-import .small-text {
+  margin: 0;
+}
+.code-dialog .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.code-input {
+  position: relative;
+  height: min(44dvh, 400px);
+  min-height: 180px;
+  border: 1px solid #87877e;
+  border-radius: 5px;
+  background: #f7f7f3;
+  overflow: hidden;
+}
+.code-input pre,
+.code-input textarea {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  font:
+    13px/1.7 "IBM Plex Mono",
+    monospace;
+  letter-spacing: normal;
+  white-space: pre;
+  tab-size: 4;
+  overflow: auto;
+  box-sizing: border-box;
+}
+.code-input pre {
+  pointer-events: none;
+  color: #242424;
+}
+.code-input textarea {
+  background: transparent;
+  color: transparent;
+  caret-color: #242424;
+  resize: none;
+  -webkit-text-fill-color: transparent;
+}
+.code-input textarea::selection {
+  background: #a9c5e966;
+}
+.code-input:focus-within {
+  outline: 2px solid #c2c2bb;
+  outline-offset: 2px;
+}
+.code-input textarea:focus {
+  outline: none;
+}
+@media (max-width: 600px) {
+  .code-input pre,
+  .code-input textarea,
+  .code-input .code-highlight {
+    font-size: 16px;
+  }
+  .modal.code-dialog {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+}
+@media (forced-colors: active) {
+  .code-input pre {
+    display: none;
+  }
+  .code-input textarea {
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+    caret-color: auto;
+  }
+}
+
+.markdown-body .code-block pre code {
+  font:
+    13px/1.7 "IBM Plex Mono",
+    monospace;
+  white-space: inherit;
+  overflow-wrap: inherit;
+}
+.code-block-heading button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-block .code-copy-status {
+  display: block;
+  padding: 0 14px 10px;
+  font:
+    11px/1.5 Inter,
+    sans-serif;
+}
+.code-input-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.code-input-actions button {
+  font-size: 11px;
+}
+@media print {
+  .code-block-heading button,
+  .code-copy-status {
+    display: none;
+  }
+  .markdown-body .code-block pre,
+  .code-block code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

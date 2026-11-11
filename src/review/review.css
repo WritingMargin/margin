@@ -1,0 +1,138 @@
+.peer-page {
+  margin: 3rem auto;
+  color: var(--blog-text);
+  font-family: var(--article-font, inherit);
+}
+.peer-access {
+  width: min(calc(100% - 2rem), 52ch);
+  padding-block: 2rem;
+}
+.peer-access h1,
+.peer-page h2 {
+  font-family: var(--heading-font, var(--article-font));
+}
+.peer-section-heading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.peer-section-heading h2,
+.peer-author .peer-section-heading h3 {
+  margin: 0;
+}
+.peer-instruction,
+.peer-review-status {
+  font:
+    500 0.8rem/1.5 Inter,
+    sans-serif;
+  color: var(--blog-muted, #62625c);
+}
+.peer-changes {
+  margin-bottom: 1.4rem;
+}
+.peer-changes > summary,
+.review-note summary {
+  cursor: pointer;
+}
+.peer-author form,
+.peer-approval {
+  display: grid;
+  gap: 0.8rem;
+}
+.peer-author label,
+.peer-approval label {
+  display: grid;
+  gap: 0.35rem;
+}
+.peer-author .peer-section-heading,
+.peer-notes,
+.peer-approval {
+  margin-top: 1.5rem;
+}
+.peer-notes,
+.peer-approval {
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--theme-border, #dedfd6);
+}
+.peer-approval label.peer-consent {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.peer-approval h2,
+.peer-approval p,
+.peer-author form p {
+  margin: 0;
+}
+.peer-approval .button {
+  justify-self: start;
+}
+.peer-approval label:has(input:not([type="checkbox"])) {
+  max-width: 35ch;
+}
+.peer-author form .button {
+  justify-self: start;
+}
+.peer-author .peer-fix-form {
+  margin-bottom: 0.5rem;
+}
+.review-note {
+  border-inline-start: 2px solid var(--theme-border, #dedfd6);
+  padding-inline-start: 1rem;
+  margin: 1rem 0;
+  overflow-wrap: anywhere;
+}
+.review-note blockquote {
+  margin: 0;
+  color: var(--blog-muted, #62625c);
+}
+.review-note small {
+  overflow-wrap: anywhere;
+}
+.peer-review-status {
+  margin: 0.2rem 0 0.5rem;
+}
+.review-badge {
+  display: table;
+  border: 1px solid var(--theme-border, currentColor);
+  border-radius: 1rem;
+  padding: 0.25rem 0.75rem;
+  font:
+    500 0.85rem/1.5 Inter,
+    sans-serif;
+}
+.peer-page .passage-dialog textarea {
+  width: 100%;
+  min-height: 6rem;
+}
+.peer-page .passage-dialog label {
+  display: grid;
+  gap: 0.35rem;
+}
+@media (max-width: 600px) {
+  .peer-access {
+    padding-block: 1rem;
+  }
+  .peer-author .peer-section-heading h3 {
+    margin-top: 0;
+  }
+}
+.peer-marker {
+  right: 0;
+  min-width: 32px;
+  min-height: 28px;
+  justify-content: center;
+  transform: translateY(-100%);
+}
+@media (min-width: 800px) {
+  .peer-marker {
+    right: -36px;
+    transform: none;
+  }
+}
+.peer-notes .review-note:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

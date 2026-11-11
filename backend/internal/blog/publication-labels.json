@@ -1,0 +1,5 @@
+{
+  "blog": { "label": "Blog", "singular": "post", "plural": "posts", "heading": "THE BLOG", "navigation": "Blog", "eyebrow": "AN INDEPENDENT BLOG", "schemaType": "BlogPosting" },
+  "article": { "label": "Articles", "singular": "article", "plural": "articles", "heading": "ARTICLES", "navigation": "Articles", "eyebrow": "INDEPENDENT WRITING", "schemaType": "Article" },
+  "research": { "label": "Research papers", "singular": "paper", "plural": "papers", "heading": "RESEARCH PAPERS", "navigation": "Research", "eyebrow": "INDEPENDENT RESEARCH", "schemaType": "ScholarlyArticle" }
+}

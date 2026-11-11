@@ -1,0 +1,16 @@
+/* Shared by the server-rendered feed and the interactive designer. */
+.redesigned-blog .template-post-feed > .journal-section-title { padding-block: var(--feed-padding, 17px); gap: var(--feed-gap, 18px); flex-wrap: wrap; }
+.redesigned-blog .template-post-feed > .journal-section-title .journal-feed-count { margin-left: auto; gap: var(--feed-gap, 18px); }
+.redesigned-blog .template-post-feed .journal-filters { padding-block: var(--feed-padding, 18px); gap: var(--feed-gap, 16px); }
+.redesigned-blog .template-post-feed [data-feed-border="none"] { border-top: 0; border-bottom: 0; }
+.redesigned-blog .template-post-feed [data-feed-border="top"] { border-top: 1px solid var(--theme-border); border-bottom: 0; }
+.redesigned-blog .template-post-feed [data-feed-border="bottom"] { border-top: 0; border-bottom: 1px solid var(--theme-border); }
+.redesigned-blog .template-post-feed [data-feed-border="top-and-bottom"] { border-top: 1px solid var(--theme-border); border-bottom: 1px solid var(--theme-border); }
+.redesigned-blog .template-post-feed .journal-filters[data-feed-layout="stacked"] { flex-direction: column; align-items: stretch; }
+.redesigned-blog .template-post-feed .journal-filters[data-feed-layout="stacked"] .journal-search { flex: none; width: 100%; }
+@container (max-width: 680px) {
+  .redesigned-blog .template-post-feed .journal-filters.search-position-inline[data-feed-mobile-layout="wrap"] { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .redesigned-blog .template-post-feed .journal-filters.search-position-inline[data-feed-mobile-layout="wrap"] .journal-search { flex: 1 1 280px; }
+  .redesigned-blog .template-post-feed .journal-filters[data-feed-mobile-layout="stacked"] { flex-direction: column; align-items: stretch; }
+  .redesigned-blog .template-post-feed .journal-filters[data-feed-mobile-layout="stacked"] .journal-search { flex: none; width: 100%; }
+}

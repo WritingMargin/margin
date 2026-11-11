@@ -1,0 +1,37 @@
+# Include INSIDE the existing {{.Domain}} {{.Scheme}} server block.
+# Run the engine with MARGIN_BASE_PATH={{.BasePath}}; no frontend rebuild is needed.
+# Engine: PUBLIC_URL={{.PublicURL}} TRUST_PROXY=1 MARGIN_ENV=production
+# Keep the engine listener private. This assumes one trusted proxy hop.
+# This snippet reuses the host's certificate and leaves all other site routes alone.
+# Validate with nginx -t before reloading.
+{{define "proxy"}}
+    # No URI suffix here: Go receives and validates the complete mount path.
+    proxy_pass {{.Upstream}};
+    proxy_http_version 1.1;
+    proxy_set_header Host {{.Authority}};
+    proxy_set_header X-Forwarded-Host {{.Authority}};
+    proxy_set_header X-Forwarded-Proto {{.Scheme}};
+    proxy_set_header X-Forwarded-Port {{.Port}};
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Forwarded "";
+    proxy_set_header Connection "";
+    client_max_body_size 50m;
+    client_body_timeout 300s;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_buffering off;
+    proxy_cache off;
+{{end}}
+location = {{.BasePath}} {
+{{template "proxy" .}}}
+location ^~ {{.BasePath}}/ {
+{{template "proxy" .}}}
+# OAuth discovery lives at the origin root, outside the publication mount.
+location = /.well-known/oauth-authorization-server{{.BasePath}} {
+{{template "proxy" .}}}
+location = /.well-known/oauth-protected-resource{{.BasePath}}/mcp {
+{{template "proxy" .}}}
+location = /.well-known/oauth-protected-resource{{.BasePath}}/api {
+{{template "proxy" .}}}

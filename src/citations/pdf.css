@@ -1,0 +1,138 @@
+.pdf-page-wrap {
+  max-width: 100%;
+}
+.pdf-page {
+  position: relative;
+  max-width: 100%;
+  width: fit-content;
+  margin: 0 auto;
+  line-height: 0;
+  background: white;
+  box-shadow: 0 2px 16px #00000012;
+}
+.pdf-page[hidden] {
+  display: none;
+}
+.pdf-page canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.pdf-page.can-select {
+  cursor: crosshair;
+  touch-action: none;
+}
+.pdf-highlight {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #b99b27;
+  background: #f3d85944;
+  pointer-events: none;
+}
+.pdf-viewer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  font:
+    14px/1.5 system-ui,
+    sans-serif;
+  color: #252a23;
+}
+body:has(.pdf-viewer) {
+  margin: 0;
+  background: #f2f3ef;
+}
+.pdf-viewer header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.pdf-viewer header span {
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: #727969;
+}
+.pdf-viewer h1 {
+  font-size: 22px;
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+.pdf-viewer a {
+  color: inherit;
+}
+.pdf-viewer nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.pdf-viewer button {
+  background: white;
+  color: inherit;
+  border: 1px solid #d6dbd0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.pdf-viewer button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pdf-selection-note {
+  color: #70785f;
+  font-size: 12px;
+}
+.citation-builder .source-mode {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.citation-builder .source-mode button {
+  border: 1px solid #ddd;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+}
+.citation-builder .source-mode button[aria-pressed="true"] {
+  border-color: #506843;
+  background: #eef2e8;
+}
+.citation-builder .pdf-library {
+  max-height: 150px;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.citation-builder .pdf-library button {
+  text-align: left;
+  padding: 10px;
+  background: #f5f6f1;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.citation-builder .pdf-library button[aria-pressed="true"] {
+  border-color: #718365;
+}
+.citation-builder .pdf-page-wrap {
+  max-height: 430px;
+  overflow: auto;
+  margin: 16px 0;
+}
+.citation-builder .source-upload {
+  margin: 12px 0;
+}
+.citation-builder .citation-insert {
+  margin-top: 20px;
+}
+.citation-print-source {
+  display: none;
+}
+@media print {
+  .citation-print-source {
+    display: inline;
+  }
+}

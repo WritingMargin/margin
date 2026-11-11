@@ -1,0 +1,1401 @@
+{
+  "formatVersion": 1,
+  "format": "Margin storage/API design JSON (not the grouped editor export)",
+  "schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "publicationType": {
+        "type": "string",
+        "enum": [
+          "blog",
+          "article",
+          "research"
+        ]
+      },
+      "footerTitle": {
+        "type": "string",
+        "maxLength": 150
+      },
+      "showFooterTitle": {
+        "type": "boolean"
+      },
+      "showFooterLogo": {
+        "type": "boolean"
+      },
+      "footerDescription": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "footerLinks": {
+        "maxItems": 8,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "url": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "label",
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "footerLayout": {
+        "type": "string",
+        "enum": [
+          "split",
+          "stacked",
+          "centered"
+        ]
+      },
+      "footerBackground": {
+        "anyOf": [
+          {
+            "type": "string",
+            "const": ""
+          },
+          {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          }
+        ]
+      },
+      "footerText": {
+        "anyOf": [
+          {
+            "type": "string",
+            "const": ""
+          },
+          {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          }
+        ]
+      },
+      "footerFont": {
+        "anyOf": [
+          {
+            "type": "string",
+            "const": "inherit"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          }
+        ]
+      },
+      "logo": {
+        "type": "string",
+        "maxLength": 2048
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "description": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "accent": {
+        "type": "string",
+        "pattern": "^#[a-fA-F0-9]{6}$"
+      },
+      "background": {
+        "type": "string",
+        "pattern": "^#[a-fA-F0-9]{6}$"
+      },
+      "text": {
+        "type": "string",
+        "pattern": "^#[a-fA-F0-9]{6}$"
+      },
+      "imageBorder": {
+        "type": "string",
+        "enum": [
+          "none",
+          "subtle",
+          "bold"
+        ]
+      },
+      "videoBorder": {
+        "type": "string",
+        "enum": [
+          "none",
+          "subtle",
+          "bold"
+        ]
+      },
+      "homepage": {
+        "type": "object",
+        "properties": {
+          "feedHeader": {
+            "type": "object",
+            "properties": {
+              "border": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "top",
+                  "bottom",
+                  "top-and-bottom"
+                ]
+              },
+              "paddingBlock": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 80
+              },
+              "gap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 64
+              },
+              "title": {
+                "type": "string",
+                "maxLength": 150
+              },
+              "showArrow": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "feedFilters": {
+            "type": "object",
+            "properties": {
+              "border": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "top",
+                  "bottom",
+                  "top-and-bottom"
+                ]
+              },
+              "paddingBlock": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 80
+              },
+              "gap": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 64
+              },
+              "layout": {
+                "type": "string",
+                "enum": [
+                  "inline",
+                  "stacked"
+                ]
+              },
+              "mobileLayout": {
+                "type": "string",
+                "enum": [
+                  "wrap",
+                  "stacked"
+                ]
+              },
+              "topics": {
+                "type": "object",
+                "properties": {
+                  "allLabel": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "labels": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "search": {
+                "type": "object",
+                "properties": {
+                  "placeholder": {
+                    "type": "string",
+                    "maxLength": 150
+                  },
+                  "position": {
+                    "type": "string",
+                    "enum": [
+                      "start",
+                      "end"
+                    ]
+                  },
+                  "maxWidth": {
+                    "type": "integer",
+                    "minimum": 160,
+                    "maximum": 800
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "sections": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                    },
+                    "component": {
+                      "type": "string",
+                      "const": "hero"
+                    },
+                    "variant": {
+                      "type": "string",
+                      "enum": [
+                        "split",
+                        "centered",
+                        "image-background"
+                      ]
+                    },
+                    "props": {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "latest",
+                            "featured"
+                          ]
+                        },
+                        "title": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 200
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "bind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "blog.title",
+                                    "blog.description",
+                                    "homepage.title",
+                                    "homepage.description",
+                                    "content.title",
+                                    "content.description"
+                                  ]
+                                },
+                                "fallback": {
+                                  "type": "string",
+                                  "maxLength": 200
+                                }
+                              },
+                              "required": [
+                                "bind"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "description": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "bind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "blog.title",
+                                    "blog.description",
+                                    "homepage.title",
+                                    "homepage.description",
+                                    "content.title",
+                                    "content.description"
+                                  ]
+                                },
+                                "fallback": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                }
+                              },
+                              "required": [
+                                "bind"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "image": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 2048
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "bind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "blog.logo",
+                                    "homepage.image",
+                                    "content.cover"
+                                  ]
+                                },
+                                "fallback": {
+                                  "type": "string",
+                                  "maxLength": 2048
+                                }
+                              },
+                              "required": [
+                                "bind"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "mediaType": {
+                          "type": "string",
+                          "enum": [
+                            "image",
+                            "video"
+                          ]
+                        },
+                        "video": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "buttonLabel": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "bind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "blog.title",
+                                    "blog.description",
+                                    "homepage.title",
+                                    "homepage.description",
+                                    "content.title",
+                                    "content.description"
+                                  ]
+                                },
+                                "fallback": {
+                                  "type": "string",
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "bind"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "buttonHref": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "maxLength": 2048
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "bind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "blog.url",
+                                    "content.url"
+                                  ]
+                                },
+                                "fallback": {
+                                  "type": "string",
+                                  "maxLength": 2048
+                                }
+                              },
+                              "required": [
+                                "bind"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "source",
+                        "title",
+                        "description",
+                        "image",
+                        "buttonLabel",
+                        "buttonHref"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "component",
+                    "variant",
+                    "props"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                    },
+                    "component": {
+                      "type": "string",
+                      "const": "featured-posts"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "component"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+                    },
+                    "component": {
+                      "type": "string",
+                      "const": "post-feed"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "component"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "sectionSpacing": {
+            "type": "string",
+            "enum": [
+              "none",
+              "compact",
+              "standard",
+              "airy"
+            ]
+          },
+          "border": {
+            "type": "string",
+            "enum": [
+              "subtle",
+              "bold"
+            ]
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32
+          },
+          "headingFont": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "headingScale": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "display"
+            ]
+          },
+          "spacing": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "airy"
+            ]
+          },
+          "font": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "width": {
+            "type": "string",
+            "enum": [
+              "narrow",
+              "wide"
+            ]
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "accent": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "cardStyle": {
+            "type": "string",
+            "enum": [
+              "classic",
+              "flat",
+              "outlined",
+              "filled"
+            ]
+          },
+          "imageRatio": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "landscape",
+              "square",
+              "portrait"
+            ]
+          },
+          "gridColumns": {
+            "type": "string",
+            "enum": [
+              "two",
+              "three"
+            ]
+          },
+          "showNumbers": {
+            "type": "boolean"
+          },
+          "showSearch": {
+            "type": "boolean"
+          },
+          "showTopicFilters": {
+            "type": "boolean"
+          },
+          "showPostCount": {
+            "type": "boolean"
+          },
+          "showFeedHeading": {
+            "type": "boolean"
+          },
+          "showFeatured": {
+            "type": "boolean"
+          },
+          "searchPosition": {
+            "type": "string",
+            "enum": [
+              "inline",
+              "above",
+              "below"
+            ]
+          },
+          "featuredPosition": {
+            "type": "string",
+            "enum": [
+              "before",
+              "after"
+            ]
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "pagination": {
+            "type": "string",
+            "enum": [
+              "pages",
+              "more"
+            ]
+          },
+          "tagline": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "showTagline": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "list",
+              "grid",
+              "magazine"
+            ]
+          },
+          "heroLayout": {
+            "type": "string",
+            "enum": [
+              "split",
+              "centered",
+              "sidebar"
+            ]
+          },
+          "showHero": {
+            "type": "boolean"
+          },
+          "showArtwork": {
+            "type": "boolean"
+          },
+          "includeFeaturedInFeed": {
+            "type": "boolean"
+          },
+          "artworkType": {
+            "type": "string",
+            "enum": [
+              "logo",
+              "emoji",
+              "image",
+              "video"
+            ]
+          },
+          "artworkEmoji": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "artworkImage": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "artworkVideo": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "showExcerpts": {
+            "type": "boolean"
+          },
+          "showImages": {
+            "type": "boolean"
+          },
+          "showDates": {
+            "type": "boolean"
+          },
+          "showTags": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "border",
+          "radius",
+          "font",
+          "width",
+          "pageSize",
+          "pagination",
+          "tagline",
+          "showTagline",
+          "title",
+          "description",
+          "layout",
+          "showHero",
+          "showArtwork",
+          "includeFeaturedInFeed",
+          "artworkType",
+          "artworkEmoji",
+          "artworkImage",
+          "showExcerpts",
+          "showImages",
+          "showDates",
+          "showTags"
+        ],
+        "additionalProperties": false
+      },
+      "article": {
+        "type": "object",
+        "properties": {
+          "border": {
+            "type": "string",
+            "enum": [
+              "subtle",
+              "bold"
+            ]
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32
+          },
+          "headingFont": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "headingScale": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "display"
+            ]
+          },
+          "spacing": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "airy"
+            ]
+          },
+          "font": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "width": {
+            "type": "string",
+            "enum": [
+              "narrow",
+              "wide"
+            ]
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "accent": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "tableOfContents": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "description": "Panel heading. Empty hides it; omitted: On this page.",
+                "type": "string",
+                "maxLength": 80
+              },
+              "style": {
+                "description": "Panel treatment. Omitted: outlined.",
+                "type": "string",
+                "enum": [
+                  "plain",
+                  "outlined",
+                  "filled"
+                ]
+              },
+              "numbered": {
+                "description": "Number links in reading order. Omitted: false.",
+                "type": "boolean"
+              },
+              "maxDepth": {
+                "description": "Deepest heading level included: 2 includes H1 and H2. Omitted: 6.",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              },
+              "sticky": {
+                "description": "Keep sidebars visible while scrolling on desktop. Omitted: true.",
+                "type": "boolean"
+              },
+              "width": {
+                "description": "Desktop sidebar width in pixels. Omitted: 210.",
+                "type": "integer",
+                "minimum": 160,
+                "maximum": 320
+              },
+              "radius": {
+                "description": "Panel corner radius in pixels. Omitted: 8.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 32
+              },
+              "background": {
+                "description": "Panel background. Omit for the style default.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "text": {
+                "description": "Panel text. Omit to inherit article text.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "accent": {
+                "description": "Current section marker and focus colour. Omit to inherit the article accent.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "bodySize": {
+            "type": "string",
+            "enum": [
+              "small",
+              "regular",
+              "large"
+            ]
+          },
+          "lineSpacing": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "relaxed",
+              "loose"
+            ]
+          },
+          "measure": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "focused",
+              "reading",
+              "wide"
+            ]
+          },
+          "headingStyle": {
+            "type": "string",
+            "enum": [
+              "plain",
+              "ruled",
+              "accent"
+            ]
+          },
+          "quoteStyle": {
+            "type": "string",
+            "enum": [
+              "border",
+              "pull",
+              "panel"
+            ]
+          },
+          "headerLayout": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "cover-first",
+              "split",
+              "centered"
+            ]
+          },
+          "showDates": {
+            "type": "boolean"
+          },
+          "showTags": {
+            "type": "boolean"
+          },
+          "showCover": {
+            "type": "boolean"
+          },
+          "showExcerpt": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "border",
+          "radius",
+          "font",
+          "width",
+          "showDates",
+          "showTags",
+          "showCover",
+          "showExcerpt"
+        ],
+        "additionalProperties": false
+      },
+      "guide": {
+        "type": "object",
+        "properties": {
+          "border": {
+            "type": "string",
+            "enum": [
+              "subtle",
+              "bold"
+            ]
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32
+          },
+          "headingFont": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "headingScale": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "display"
+            ]
+          },
+          "spacing": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "airy"
+            ]
+          },
+          "font": {
+            "type": "string",
+            "enum": [
+              "serif",
+              "sans",
+              "source-serif",
+              "playfair",
+              "dm-sans",
+              "plex-mono",
+              "caveat",
+              "kalam",
+              "dancing-script",
+              "oswald"
+            ]
+          },
+          "width": {
+            "type": "string",
+            "enum": [
+              "narrow",
+              "wide"
+            ]
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "accent": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          },
+          "tableOfContents": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "description": "Panel heading. Empty hides it; omitted: On this page.",
+                "type": "string",
+                "maxLength": 80
+              },
+              "style": {
+                "description": "Panel treatment. Omitted: outlined.",
+                "type": "string",
+                "enum": [
+                  "plain",
+                  "outlined",
+                  "filled"
+                ]
+              },
+              "numbered": {
+                "description": "Number links in reading order. Omitted: false.",
+                "type": "boolean"
+              },
+              "maxDepth": {
+                "description": "Deepest heading level included: 2 includes H1 and H2. Omitted: 6.",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              },
+              "sticky": {
+                "description": "Keep sidebars visible while scrolling on desktop. Omitted: true.",
+                "type": "boolean"
+              },
+              "width": {
+                "description": "Desktop sidebar width in pixels. Omitted: 210.",
+                "type": "integer",
+                "minimum": 160,
+                "maximum": 320
+              },
+              "radius": {
+                "description": "Panel corner radius in pixels. Omitted: 8.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 32
+              },
+              "background": {
+                "description": "Panel background. Omit for the style default.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "text": {
+                "description": "Panel text. Omit to inherit article text.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "accent": {
+                "description": "Current section marker and focus colour. Omit to inherit the article accent.",
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "bodySize": {
+            "type": "string",
+            "enum": [
+              "small",
+              "regular",
+              "large"
+            ]
+          },
+          "lineSpacing": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "relaxed",
+              "loose"
+            ]
+          },
+          "measure": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "focused",
+              "reading",
+              "wide"
+            ]
+          },
+          "headingStyle": {
+            "type": "string",
+            "enum": [
+              "plain",
+              "ruled",
+              "accent"
+            ]
+          },
+          "quoteStyle": {
+            "type": "string",
+            "enum": [
+              "border",
+              "pull",
+              "panel"
+            ]
+          },
+          "headerLayout": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "cover-first",
+              "split",
+              "centered"
+            ]
+          },
+          "showDates": {
+            "type": "boolean"
+          },
+          "showTags": {
+            "type": "boolean"
+          },
+          "showCover": {
+            "type": "boolean"
+          },
+          "showExcerpt": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "border",
+          "radius",
+          "font",
+          "width",
+          "showDates",
+          "showTags",
+          "showCover",
+          "showExcerpt"
+        ],
+        "additionalProperties": false
+      },
+      "comments": {
+        "type": "object",
+        "properties": {
+          "border": {
+            "type": "string",
+            "enum": [
+              "subtle",
+              "bold"
+            ]
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "minimal",
+              "cards"
+            ]
+          },
+          "heading": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "introduction": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "buttonLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "showAvatars": {
+            "type": "boolean"
+          },
+          "showDates": {
+            "type": "boolean"
+          },
+          "nameLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "emailLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "bodyLabel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "placeholder": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[a-fA-F0-9]{6}$"
+          }
+        },
+        "required": [
+          "border",
+          "radius",
+          "visible",
+          "enabled",
+          "layout",
+          "heading",
+          "introduction",
+          "buttonLabel",
+          "showAvatars",
+          "showDates",
+          "nameLabel",
+          "emailLabel",
+          "bodyLabel",
+          "placeholder",
+          "background"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "publicationType",
+      "footerTitle",
+      "showFooterTitle",
+      "showFooterLogo",
+      "footerDescription",
+      "footerLinks",
+      "footerLayout",
+      "footerBackground",
+      "footerText",
+      "footerFont",
+      "logo",
+      "name",
+      "description",
+      "accent",
+      "background",
+      "text",
+      "imageBorder",
+      "videoBorder",
+      "homepage",
+      "article",
+      "comments"
+    ],
+    "additionalProperties": false
+  },
+  "defaults": {
+    "publicationType": "blog",
+    "footerTitle": "",
+    "showFooterTitle": true,
+    "showFooterLogo": false,
+    "footerDescription": "",
+    "footerLinks": [],
+    "footerLayout": "split",
+    "footerBackground": "",
+    "footerText": "",
+    "footerFont": "inherit",
+    "logo": "",
+    "name": "Margin",
+    "description": "Notes on design, making things, and paying attention.",
+    "accent": "#202020",
+    "background": "#ffffff",
+    "text": "#242424",
+    "imageBorder": "subtle",
+    "videoBorder": "subtle",
+    "homepage": {
+      "border": "subtle",
+      "radius": 4,
+      "font": "serif",
+      "width": "wide",
+      "pageSize": 10,
+      "pagination": "pages",
+      "tagline": "",
+      "showTagline": true,
+      "title": "A little room for good ideas.",
+      "description": "Notes on design, making things, and paying attention.",
+      "layout": "list",
+      "heroLayout": "split",
+      "showHero": true,
+      "showArtwork": true,
+      "includeFeaturedInFeed": false,
+      "artworkType": "logo",
+      "artworkEmoji": "✳",
+      "artworkImage": "",
+      "showExcerpts": true,
+      "showImages": true,
+      "showDates": true,
+      "showTags": true
+    },
+    "article": {
+      "border": "subtle",
+      "radius": 4,
+      "font": "serif",
+      "width": "narrow",
+      "headerLayout": "standard",
+      "showDates": true,
+      "showTags": true,
+      "showCover": true,
+      "showExcerpt": true
+    },
+    "comments": {
+      "border": "subtle",
+      "radius": 4,
+      "visible": true,
+      "enabled": true,
+      "layout": "minimal",
+      "heading": "Join the conversation.",
+      "introduction": "A good story is the beginning of a conversation. Leave a thoughtful comment.",
+      "buttonLabel": "Leave a comment",
+      "showAvatars": true,
+      "showDates": true,
+      "nameLabel": "Your name",
+      "emailLabel": "Email",
+      "bodyLabel": "Your thoughts",
+      "placeholder": "Leave a thoughtful comment…",
+      "background": "#fafafa"
+    }
+  }
+}

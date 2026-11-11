@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{{.Subject}}</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .issue-outer { padding: 24px 12px !important; }
+      .issue-header { padding: 0 8px 24px !important; }
+      .issue-content { padding: 28px 24px !important; }
+      .issue-title { font-size: 30px !important; line-height: 36px !important; letter-spacing: -1px !important; }
+      .issue-intro { padding: 0 8px 24px !important; }
+      .issue-more { padding: 28px 0 !important; }
+      .issue-footer { padding: 24px 8px 0 !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;width:100%;background-color:#f1f4f8;color:#172033;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;max-width:0;opacity:0;overflow:hidden;font-size:1px;line-height:1px;mso-hide:all;">{{.Featured.Excerpt}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f1f4f8"><tr><td class="issue-outer" align="center" style="padding:40px 20px;">
+    <!--[if mso]><table role="presentation" width="620"><tr><td><![endif]-->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:620px;">
+      <tr><td class="issue-header" style="padding:0 4px 28px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td valign="middle"><a href="{{.PublicationURL}}" style="color:#172033;text-decoration:none;font-size:30px;line-height:36px;font-weight:800;letter-spacing:-1.5px;overflow-wrap:anywhere;">{{.Publication}}</a><span style="color:{{.AccentText}};font-size:30px;line-height:36px;font-weight:800;">.</span></td>
+          <td width="116" align="right" valign="middle" style="width:116px;"><span style="display:inline-block;padding:7px 11px;border:1px solid #dbe2ec;border-radius:30px;color:#58677c;font-size:9px;line-height:15px;letter-spacing:1.5px;white-space:nowrap;">THE JOURNAL</span></td>
+        </tr></table>
+      </td></tr>
+      {{if .Intro}}<tr><td class="issue-intro" style="padding:0 4px 26px;"><p style="margin:0;color:#617086;font-size:14px;line-height:24px;">{{.Intro}}</p></td></tr>{{end}}
+      <tr><td bgcolor="#ffffff" style="background-color:#ffffff;border:1px solid #e0e6ee;border-radius:16px;overflow:hidden;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td bgcolor="{{.Accent}}" style="height:5px;border-radius:16px 16px 0 0;background-color:{{.Accent}};font-size:1px;line-height:5px;">&nbsp;</td></tr>
+          {{if .Featured.CoverURL}}<tr><td><a href="{{.Featured.URL}}" style="text-decoration:none;"><img src="{{.Featured.CoverURL}}" alt="{{.Featured.Title}}" width="620" border="0" style="display:block;width:100%;max-width:620px;height:auto;border:0;"></a></td></tr>{{end}}
+          <tr><td class="issue-content" style="padding:36px 36px 34px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+              <td style="color:{{.AccentText}};font-size:10px;font-weight:700;line-height:18px;letter-spacing:1.6px;">THE LATEST STORY</td>
+              <td align="right" style="color:#617086;font-size:10px;line-height:18px;">{{.Featured.Category}}</td>
+            </tr></table>
+            <h1 class="issue-title" style="margin:22px 0 20px;color:#172033;font-size:38px;line-height:44px;letter-spacing:-1.35px;font-weight:750;overflow-wrap:anywhere;"><a href="{{.Featured.URL}}" style="color:#172033;text-decoration:none;">{{.Featured.Title}}</a></h1>
+            {{if .Featured.Excerpt}}<p style="margin:0 0 28px;color:#617086;font-size:16px;line-height:27px;">{{.Featured.Excerpt}}</p>{{end}}
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="{{.Accent}}" style="background-color:{{.Accent}};border-radius:7px;mso-padding-alt:16px 22px;">
+              <a href="{{.Featured.URL}}" style="display:inline-block;padding:16px 22px;border:1px solid {{.Accent}};border-radius:7px;color:{{.ButtonText}};font-size:14px;line-height:20px;font-weight:700;text-decoration:none;">Read the story &nbsp;&#8599;</a>
+            </td></tr></table>
+            <p style="margin:17px 0 0;color:#58677c;font-size:11px;line-height:19px;">The full article, on the journal. Pick up where the preview leaves off.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+      {{if .More}}<tr><td class="issue-more" style="padding:32px 0 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:0 0 16px;color:#58677c;font-size:10px;line-height:18px;font-weight:700;letter-spacing:1.8px;">ALSO WORTH YOUR TIME</td></tr></table>
+        {{range .More}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;"><tr><td bgcolor="#ffffff" style="padding:24px;border:1px solid #e0e6ee;border-radius:12px;background-color:#ffffff;">
+          {{if .Category}}<p style="margin:0 0 10px;color:{{$.AccentText}};font-size:9px;line-height:15px;letter-spacing:1.4px;font-weight:700;">{{.Category}}</p>{{end}}
+          <h2 style="margin:0 0 10px;font-size:21px;line-height:28px;letter-spacing:-.4px;font-weight:700;"><a href="{{.URL}}" style="color:#172033;text-decoration:none;">{{.Title}}</a></h2>
+          {{if .Excerpt}}<p style="margin:0 0 15px;color:#617086;font-size:13px;line-height:23px;">{{.Excerpt}}</p>{{end}}
+          <a href="{{.URL}}" style="color:{{$.AccentText}};font-size:12px;line-height:20px;font-weight:700;text-decoration:none;">Keep reading &nbsp;&#8594;</a>
+        </td></tr></table>{{end}}
+      </td></tr>{{end}}
+      <tr><td class="issue-footer" style="padding:26px 4px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #dce3ec;"><tr><td style="padding-top:21px;">
+          <p style="margin:0 0 10px;color:#334155;font-size:12px;line-height:20px;font-weight:700;">More ideas. Less noise.</p>
+          <p style="margin:0 0 14px;color:#58677c;font-size:11px;line-height:20px;">{{if .Preview}}NEWSLETTER CONTENT PREVIEW &middot; This design test was sent only to you.{{else}}You’re receiving this because you subscribed to {{.Publication}}.{{end}}</p>
+          <p style="margin:0;color:#58677c;font-size:11px;line-height:20px;"><a href="{{.PublicationURL}}" style="color:#58677c;text-decoration:underline;">Visit the journal</a> {{if not .Preview}} &nbsp;&middot;&nbsp; <a href="{{.UnsubscribeURL}}" style="color:#58677c;text-decoration:underline;">Unsubscribe</a>{{end}}</p>
+          <p style="margin:18px 0 0;color:#58677c;font-size:10px;line-height:18px;">{{.Publication}} &nbsp;/&nbsp; Published with Margin</p>
+        </td></tr></table>
+      </td></tr>
+    </table>
+    <!--[if mso]></td></tr></table><![endif]-->
+  </td></tr></table>
+</body>
+</html>

@@ -1,0 +1,10 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const read=async name=>JSON.parse(await readFile(new URL(name,import.meta.url),'utf8'));
+const scenes=[await read('scene.json'),await read('exploded.json')];
+let index=0;
+let source=await readFile(new URL('article.md',import.meta.url),'utf8');
+source=source.replace(/(\[Scene[^\]]*\]\n)[\s\S]*?(\n\[\/Scene\])/g,(_,open,close)=>open+JSON.stringify(scenes[index++],null,2)+close);
+const illustration=await read('power-flow.json');
+source=source.replace(/(\[Illustration\]\n)[\s\S]*?(\n\[\/Illustration\])/g,(_,open,close)=>open+JSON.stringify(illustration,null,2)+close);
+if(index!==2) throw new Error('Expected two scene blocks');
+await writeFile(new URL('article.md',import.meta.url),source);

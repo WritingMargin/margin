@@ -1,0 +1,20 @@
+.settings-card.settings-disclosure { padding:0; min-width:0; align-self:start; }
+.settings-disclosure > summary { align-items:flex-start; gap:14px; padding:20px; border-radius:7px; }
+.settings-disclosure > summary .settings-icon { flex-shrink:0; margin:0; }
+.settings-disclosure > summary .settings-icon svg { transform:none; transition:none; }
+.settings-disclosure-copy { display:block; flex:1; min-width:0; overflow-wrap:anywhere; }
+.settings-disclosure-title { display:block; font-size:16px; font-weight:500; letter-spacing:-0.3px; color:#30332c; line-height:1.4; }
+.settings-disclosure-description { display:block; margin-top:5px; font-size:12px; line-height:1.6; color:#77776e; }
+.settings-disclosure-status { display:block; margin-top:10px; font-size:11px; color:#62665b; }
+.settings-disclosure-status .connection-status { margin:0; }
+.settings-disclosure-caret { margin-top:3px; }
+.settings-disclosure[open] > summary { border-bottom:1px solid var(--line, #e4e7dc); border-radius:7px 7px 0 0; }
+.settings-disclosure-body { padding:20px; min-width:0; }
+.settings-disclosure-body > p { font-size:11px; line-height:1.8; color:#77776e; }
+.settings-disclosure-body > :first-child { margin-top:0; }
+.settings-disclosure-body > :last-child { margin-bottom:0; }
+.settings-grid { align-items:start; }
+@media(max-width:600px) {
+  .settings-disclosure > summary { padding:16px; gap:12px; }
+  .settings-disclosure-body { padding:16px; }
+}
