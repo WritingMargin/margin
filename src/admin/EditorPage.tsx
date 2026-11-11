@@ -79,6 +79,8 @@ function EditorWorkspace({ state }: { state: AdminController }) {
                 <button
                   title="Simplified version"
                   aria-label="Simplified version"
+                  aria-haspopup="dialog"
+                  aria-expanded={openPanel === "Simplified"}
                   onClick={() => showPanel("Simplified")}
                 >
                   <BookOpenText size={16} />

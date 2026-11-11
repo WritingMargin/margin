@@ -41,7 +41,7 @@ export default function EditorActions({ state }: { state: State }) {
       <span id={`${id}-tip`} role="tooltip" className="editor-actions-tooltip">{label} options</span>
       {open && <div id={id} className="editor-actions-panel" role="group" aria-label={`${label} options`}>
         <button onClick={() => select(() => setModal("details"))}><SlidersHorizontal size={16} aria-hidden="true" />{label} details</button>
-        <button onClick={() => select(() => writing.setOpen(!writing.open))}><Lightbulb size={16} aria-hidden="true" />{writing.open ? "Close writing assistant" : "Writing assistant"}</button>
+        <button aria-expanded={writing.open} aria-controls="writing-companion" onClick={() => select(() => writing.setOpen(!writing.open))}><Lightbulb size={16} aria-hidden="true" />{writing.open ? "Close writing assistant" : "Writing assistant"}</button>
         {post.status === "published" && <button onClick={() => select(() => openAI("social"))}><Sparkles size={16} aria-hidden="true" />Social summaries</button>}
         {post.id && <button onClick={() => select(() => setModal("history"))}><History size={16} aria-hidden="true" />Revision history</button>}
         {post.id && <p>Updated {date(post.updatedAt)}</p>}

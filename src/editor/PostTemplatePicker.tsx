@@ -16,8 +16,8 @@ export default function PostTemplatePicker({ post, onChange, busy }: { post: Pos
   useEffect(() => { if (open) dialog.current?.showModal(); }, [open]);
   if (!canUsePostTemplate(post)) return null;
   return <>
-    <button type="button" className="post-template-trigger" disabled={busy} aria-label="Browse writing templates" title="Browse writing templates" aria-haspopup="dialog" onClick={() => setOpen(true)}><FileText size={16} aria-hidden="true" /><span className="editor-control-label">Templates</span></button>
-    <dialog className="writing-template-dialog" ref={dialog} aria-labelledby={titleId} onClose={() => setOpen(false)}>
+    <button type="button" className="post-template-trigger" disabled={busy} aria-label="Browse writing templates" title="Browse writing templates" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}><FileText size={16} aria-hidden="true" /><span className="editor-control-label">Templates</span></button>
+    <dialog className="writing-template-dialog editor-button-surface" ref={dialog} aria-labelledby={titleId} onClose={() => setOpen(false)}>
       {open && <PostTemplateGallery contentType={post.contentType} titleId={titleId} busy={busy} onClose={() => dialog.current?.close()} onSelect={template => {
         if (busy || !canUsePostTemplate(post)) return;
         dialog.current?.close();

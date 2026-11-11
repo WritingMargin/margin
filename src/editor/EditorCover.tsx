@@ -16,7 +16,7 @@ export default function EditorCover({ cover, showCover, onEdit, mode }: Props) {
       <CoverMedia mode={mode} className="preview-post-cover" src={cover} alt="Article cover" />
     ) : null;
   return (
-    <div className="writer-cover">
+    <div className="writer-cover editor-button-surface">
       <CoverMedia mode={mode} src={cover} alt="Selected article cover" />
       <div>
         <span>{resolveAudio(cover) ? "Audio cover" : resolveVideo(cover) ? "Video cover" : "Cover image"}</span>

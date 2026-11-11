@@ -7,6 +7,7 @@ import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
 import { themeStyle } from "./post-utils";
 import { useAdminController } from "./useAdminController";
+import "../editor/editor-button-states.css";
 
 export default function Admin(props: Parameters<typeof useAdminController>[0]) {
   const state = useAdminController(props);

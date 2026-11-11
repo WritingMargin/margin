@@ -73,7 +73,7 @@ export default function SimplifiedPanel({ post, close }: { post: Post; close: ()
   useOverlayFocus(panel, true, close);
   const state = useSimplifiedVersion(post);
   return <div className="modal-backdrop simplified-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) close(); }}>
-    <section ref={panel} className="modal post-details-modal simplified-modal" role="dialog" aria-modal="true" aria-labelledby="simplified-title" aria-describedby="simplified-intro">
+    <section ref={panel} className="modal post-details-modal simplified-modal editor-button-surface" role="dialog" aria-modal="true" aria-labelledby="simplified-title" aria-describedby="simplified-intro">
       <button type="button" className="modal-close icon-button" aria-label="Close Simplified version" onClick={close}><X size={18} /></button>
       <header className="dialog-header"><span className="eyebrow">ARTICLE VIEW</span><h2 id="simplified-title">Simplified version</h2><p id="simplified-intro">Review the shorter version for accuracy, then mark it reviewed. Changes here do not edit the full article.</p></header>
       <SimplifiedBody post={post} state={state} />

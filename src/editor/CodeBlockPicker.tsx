@@ -37,6 +37,8 @@ export default function CodeBlockPicker(props: Props) {
         onClick={open}
         title="Insert or edit code block"
         aria-label="Insert or edit code block"
+        aria-haspopup="dialog"
+        aria-expanded={!!selection}
       >
         <Code2 size={16} aria-hidden="true" /> Code block
       </button>
@@ -92,7 +94,7 @@ function CodeDialog({
   return (
     <div className="modal-backdrop" onClick={close}>
       <div
-        className="modal code-dialog"
+        className="modal code-dialog editor-button-surface"
         role="dialog"
         aria-modal="true"
         aria-labelledby="code-dialog-title"

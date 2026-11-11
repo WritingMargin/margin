@@ -36,7 +36,7 @@ export default function RevisionHistory({ state }: Props) {
     <div className="modal-backdrop" onClick={close}>
       <section
         ref={panel}
-        className="revision-dialog"
+        className="revision-dialog editor-button-surface"
         role="dialog"
         aria-modal="true"
         aria-labelledby="revision-history-title"

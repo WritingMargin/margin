@@ -6,13 +6,13 @@ import type { AdminController } from "./useAdminController";
 type Props = {
   state: Pick<
     AdminController,
-    "post" | "theme" | "setModal" | "openAI" | "editor" | "change" | "words" | "writing"
+    "post" | "theme" | "modal" | "setModal" | "openAI" | "editor" | "change" | "words" | "writing"
   >;
 };
 export default function EditorHeading({ state }: Props) {
   const { post, setModal, change, words } = state;
   return (
-    <section className="editor-heading">
+    <section className="editor-heading editor-button-surface">
       <div className="editor-overline">
         <span>
           <i
@@ -45,7 +45,7 @@ export default function EditorHeading({ state }: Props) {
               {t}
             </span>
           ))}
-          <button onClick={() => setModal("details")}>
+          <button aria-haspopup="dialog" aria-expanded={state.modal === "details"} onClick={() => setModal("details")}>
             <Plus size={13} />
             Add tag
           </button>

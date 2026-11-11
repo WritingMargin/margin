@@ -25,7 +25,7 @@ export default function EditorFooter({ state }: Props) {
   const status = visibility && !busy ? { label: "Visibility change not saved", detail: visibility.detail } : editorSaveState(published, !!post.id, dirty, busy, localDraft.status, storageConfigured, post.status === "archived", label);
   const displayed = localSaveState(status, localDraft, busy, post.status);
   return (
-    <footer className="editor-bottom">
+    <footer className="editor-bottom editor-button-surface">
       <div className="save-state" role="status" aria-live="polite" title={displayed.detail}>
         {dirty ? <span className="draft-dot" /> : <CheckCheck size={15} />}
         <span className="save-state-copy">

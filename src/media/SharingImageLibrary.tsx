@@ -129,6 +129,7 @@ export default function SharingImageLibrary(props: Props) {
         <button
           type="button"
           className={source === "uploads" ? "active" : ""}
+          aria-pressed={source === "uploads"}
           onClick={() => setSource("uploads")}
         >
           Uploaded images
@@ -136,6 +137,7 @@ export default function SharingImageLibrary(props: Props) {
         <button
           type="button"
           className={source === "cloudinary" ? "active" : ""}
+          aria-pressed={source === "cloudinary"}
           onClick={() => setSource("cloudinary")}
         >
           Cloudinary

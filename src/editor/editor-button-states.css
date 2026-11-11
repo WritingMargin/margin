@@ -1,0 +1,60 @@
+/* Editor chrome only: article previews and plugin-owned frames keep their own styles. */
+.editor-button-surface {
+  --editor-button-ink: #34462e;
+  --editor-button-hover: #eef1e8;
+  --editor-button-selected: #e7eddc;
+  --editor-button-active: #40543b;
+  --editor-button-ring: #607654;
+}
+:root .editor-button-surface button:not(:disabled):hover {
+  background-color: var(--editor-button-hover);
+  color: var(--editor-button-ink);
+}
+:root .editor-button-surface button:not(:disabled):is([aria-pressed="true"], [aria-selected="true"], [aria-expanded="true"]) {
+  background-color: var(--editor-button-selected);
+  color: var(--editor-button-ink);
+  border-color: var(--editor-button-ring);
+  box-shadow: inset 0 0 0 1px var(--editor-button-ring);
+}
+:root .editor-button-surface button.primary:not(:disabled):hover {
+  background-color: #303d2b;
+  color: #fff;
+}
+:root .editor-button-surface button:not(:disabled):is(:active, [data-feedback]) {
+  background-color: var(--editor-button-active);
+  border-color: var(--editor-button-active);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--editor-button-active);
+}
+:root .editor-button-surface button:focus-visible {
+  outline: 2px solid var(--editor-button-ring);
+  outline-offset: 2px;
+}
+/* Keep the ring inside the horizontally clipped formatting toolbar. */
+:root .format-toolbar.editor-button-surface button:focus-visible {
+  outline-offset: -2px;
+}
+:root .editor-button-surface button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+:root .editor-button-surface button:is([aria-pressed="true"], [aria-selected="true"], [aria-expanded="true"], [data-feedback], :active) :is(small, .muted) {
+  color: inherit;
+}
+.editor-controls.editor-button-surface .editor-control-right > button {
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+@media (forced-colors: active) {
+  :root .editor-button-surface button:not(:disabled):is(:active, [data-feedback], [aria-pressed="true"], [aria-selected="true"], [aria-expanded="true"]) {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+    box-shadow: inset 0 0 0 1px Highlight;
+    forced-color-adjust: none;
+  }
+  :root .editor-button-surface button:focus-visible {
+    outline-color: Highlight;
+  }
+}

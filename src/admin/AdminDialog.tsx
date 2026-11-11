@@ -41,7 +41,7 @@ export default function AdminDialog({ state }: Props) {
   return (
     <div className="modal-backdrop" onClick={close}>
       <section
-        className={`modal ${dialogClass(modal)}`}
+        className={`modal editor-button-surface ${dialogClass(modal)}`}
         role="dialog"
         aria-modal="true"
         aria-label={modal}

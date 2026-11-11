@@ -82,7 +82,7 @@ export default function MediaMenu({
           <div
             ref={menu}
             id={id}
-            className="editor-media-menu"
+            className="editor-media-menu editor-button-surface"
             role="menu"
             aria-label="Add media"
             style={position}

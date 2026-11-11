@@ -42,7 +42,7 @@ export default function EditorSidePanel({
       <aside
         ref={panel}
         id={id}
-        className={`writing-sidebar ${className} ${expanded ? "sheet-expanded" : ""} ${drag.height === null ? "" : "sheet-dragging"}`}
+        className={`writing-sidebar editor-button-surface ${className} ${expanded ? "sheet-expanded" : ""} ${drag.height === null ? "" : "sheet-dragging"}`}
         style={sheetStyle(drag.height)}
         role={compact ? "dialog" : "complementary"}
         aria-modal={compact || undefined}
@@ -63,6 +63,7 @@ export default function EditorSidePanel({
               className="icon-button writing-resize-button"
               title={sizeLabel}
               aria-label={sizeLabel}
+              aria-pressed={expanded}
               onClick={() => setExpanded(!expanded)}
             >
               <SizeIcon expanded={expanded} />

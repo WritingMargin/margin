@@ -47,7 +47,7 @@ export default function PostConflict(props: Props) {
     <div className="modal-backdrop">
       <section
         ref={panel}
-        className="revision-dialog conflict-dialog"
+        className="revision-dialog conflict-dialog editor-button-surface"
         role="dialog"
         aria-modal="true"
         aria-labelledby="conflict-title"

@@ -4,26 +4,26 @@ type Props = { state: Pick<MediaPickerController, "tab" | "setTab" | "onInsert">
 export default function MediaTabs({ state }: Props) {
   const { tab, setTab } = state;
   return (
-    <div className="section-tabs">
+    <div className="section-tabs" role="group" aria-label="Media source">
       {state.onInsert && <button
-        className={tab === "link" ? "active" : ""}
+        className={tab === "link" ? "active" : ""} aria-pressed={tab === "link"}
         onClick={() => setTab("link")}
       >
         <Link size={15} />
         From a link
       </button>}
-      <button className={tab === "uploads" ? "active" : ""} onClick={() => setTab("uploads")}>
+      <button className={tab === "uploads" ? "active" : ""} aria-pressed={tab === "uploads"} onClick={() => setTab("uploads")}>
         <Images size={15} /> Uploads
       </button>
       <button
-        className={tab === "library" ? "active" : ""}
+        className={tab === "library" ? "active" : ""} aria-pressed={tab === "library"}
         onClick={() => setTab("library")}
       >
         <Cloud size={15} />
         Cloudinary library
       </button>
       <button
-        className={tab === "defaults" ? "active" : ""}
+        className={tab === "defaults" ? "active" : ""} aria-pressed={tab === "defaults"}
         onClick={() => setTab("defaults")}
       >
         <SlidersHorizontal size={15} />

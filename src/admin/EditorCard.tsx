@@ -38,6 +38,7 @@ type Props = {
     | "setMode"
     | "setView"
     | "setModal"
+    | "modal"
     | "openAI"
     | "editor"
     | "change"
@@ -63,7 +64,7 @@ export default function EditorCard({ state, templateAction }: Props) {
   } = state;
   return (
     <section className="editor-card">
-      <div className="editor-controls">
+      <div className="editor-controls editor-button-surface">
         <div className="mode-tabs" role="group" aria-label="Editor view">
           <button
             className={mode === "write" ? "active" : ""}
@@ -98,7 +99,7 @@ export default function EditorCard({ state, templateAction }: Props) {
         </div>
         <div className="editor-control-right">
           {templateAction}
-          <button title="Markdown guide" aria-label="Markdown guide" onClick={() => setModal("help")}>
+          <button title="Markdown guide" aria-label="Markdown guide" aria-haspopup="dialog" aria-expanded={state.modal === "help"} onClick={() => setModal("help")}>
             <CircleHelp size={16} aria-hidden="true" />
             <span className="editor-control-label">Guide</span>
           </button>
@@ -145,6 +146,8 @@ export default function EditorCard({ state, templateAction }: Props) {
             <button
               title="Attach citation"
               aria-label="Attach citation"
+              aria-haspopup="dialog"
+              aria-expanded={state.modal === "citation"}
               onClick={() => setModal("citation")}
             >
               <MessageSquareQuote size={16} aria-hidden="true" /> Citation
@@ -163,6 +166,8 @@ export default function EditorCard({ state, templateAction }: Props) {
             <button
               title="Insert tabs"
               aria-label="Insert tabs"
+              aria-haspopup="dialog"
+              aria-expanded={state.modal === "tabs"}
               onClick={() => setModal("tabs")}
             >
               <Columns2 size={16} aria-hidden="true" /> Tabs
@@ -170,11 +175,13 @@ export default function EditorCard({ state, templateAction }: Props) {
             <button
               title="Insert interactive block"
               aria-label="Insert interactive block"
+              aria-haspopup="dialog"
+              aria-expanded={state.modal === "blocks"}
               onClick={() => setModal("blocks")}
             >
               <Boxes size={16} aria-hidden="true" /> Interactive
             </button>
-            <button className="markdown-label" onClick={() => setModal("help")}>
+            <button className="markdown-label" aria-haspopup="dialog" aria-expanded={state.modal === "help"} onClick={() => setModal("help")}>
               Markdown <ChevronDown size={12} />
             </button>
           </FormattingToolbar>
@@ -188,7 +195,7 @@ export default function EditorCard({ state, templateAction }: Props) {
           />
         </div>
         <div className="preview-pane">
-          <div className="preview-label">
+          <div className="preview-label editor-button-surface">
             <span className="editor-live-status"><span className="live-dot" aria-hidden="true" />Live preview</span>
             <button onClick={() => setView("designer")} title="Customize your blog theme">
               <Paintbrush size={13} aria-hidden="true" /> Customize
