@@ -1,3 +1,4 @@
+import SettingsDisclosure from "../settings/SettingsDisclosure";
 import AccountGate from "../auth/AccountGate";
 import { Sparkles } from "lucide-react";
 import { useEffect,useState } from "react";
@@ -14,11 +15,7 @@ function ConnectedAISettings() {
       .catch((e) => setError(e.message));
   }, []);
   return (
-    <div className="settings-card">
-      <div className="settings-icon">
-        <Sparkles />
-      </div>
-      <h2>A creative second pair of hands.</h2>
+    <div>
       <p>
         Turn an article into social copy and original images from the AI studio
         in your editor.
@@ -45,5 +42,11 @@ function ConnectedAISettings() {
 }
 
 export default function AISettings() {
-  return <AccountGate feature="AI tools"><ConnectedAISettings /></AccountGate>;
+  return <SettingsDisclosure
+    title="AI tools"
+    description="Writing, research and creative help, alongside your own voice."
+    icon={<Sparkles />}
+  >
+    <AccountGate feature="AI tools" embedded><ConnectedAISettings /></AccountGate>
+  </SettingsDisclosure>;
 }

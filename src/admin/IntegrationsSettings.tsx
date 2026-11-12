@@ -5,6 +5,7 @@ import StorageSettings from "./StorageSettings";
 import OAuthSettings from "./OAuthSettings";
 import TokenSettings from "./TokenSettings";
 
+import "./integrations-settings.css";
 import { useSettings } from "./useSettings";
 export default function IntegrationsSettings(
   props: Parameters<typeof useSettings>[0],
@@ -12,7 +13,7 @@ export default function IntegrationsSettings(
   const state = useSettings(props);
   return (
     <>
-      <div className="settings-grid">
+      <div className="integrations-settings">
         <LinkedInConnection />
         <AISettings />
         <StorageSettings state={state} />

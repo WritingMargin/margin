@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, json } from "../api";
+import { Linkedin } from "lucide-react";
+import SettingsDisclosure from "./SettingsDisclosure";
 
 type Status = { available: boolean; connected: boolean; name: string };
 const path = "/settings/publishing/linkedin";
@@ -37,8 +39,12 @@ export default function LinkedInConnection() {
     }
   }
   return (
-    <section className="settings-card">
-      <h2>LinkedIn personal profile</h2>
+    <SettingsDisclosure
+      title="LinkedIn personal profile"
+      description="Share published articles with your LinkedIn audience."
+      icon={<Linkedin />}
+      status={connectionLabel(status, error)}
+    >
       <p>
         Review and publish a public LinkedIn post from a published article’s SEO
         &amp; sharing tab.
@@ -60,6 +66,12 @@ export default function LinkedInConnection() {
           </p>
         ))}
       {error && <p role="alert">{error}</p>}
-    </section>
+    </SettingsDisclosure>
   );
+}
+
+function connectionLabel(status: Status | undefined, error: string) {
+  if (error) return "Connection needs attention";
+  if (!status) return "Checking connection…";
+  return status.connected ? "Connected" : "Not connected";
 }
