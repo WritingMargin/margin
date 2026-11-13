@@ -49,7 +49,7 @@
     </div>
     <nav class="public-footer-links" aria-label="Footer">{{range .Theme.footerLinks}}<a href="{{footerURL .url}}">{{.label}}</a>{{end}}<a href="{{sitePath `/privacy`}}">Privacy</a><a class="rss-link" href="{{sitePath `/rss.xml`}}">Follow via RSS</a></nav>
   </div>
-  <small class="public-footer-credit">Powered by <a href="https://github.com/WritingMargin/margin">Margin</a></small>
+  <small class="public-footer-credit">Powered by <a href="https://usemargin.studio">Margin</a></small>
 </footer>
 </div></div>
 {{if and .Data .Script}}<script id="public-data" type="application/json" nonce="{{.Nonce}}">{{.Data}}</script><script type="module" src="{{.Script}}"></script>{{end}}
