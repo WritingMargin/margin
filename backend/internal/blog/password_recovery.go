@@ -85,7 +85,7 @@ func (a *App) resetPassword(w http.ResponseWriter, r *http.Request) {
 		fail(400, "Password must be at most 72 UTF-8 bytes.")
 	}
 	if a.cloudOwner(r.Context()).str("subject") != "" {
-		fail(400, "Reset your password through your Margin Central account.")
+		fail(400, "Reset your password through your Margin account.")
 	}
 	digest, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	must(err)

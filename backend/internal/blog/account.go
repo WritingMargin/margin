@@ -22,7 +22,7 @@ func (a *App) connection(ctx context.Context) Row {
 }
 func decryptAccount(row Row) string {
 	if row.str("service_url") != serviceAddress() {
-		coded(503, "The saved account belongs to a different Central address. Restore AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
+		coded(503, "The saved account belongs to a different Margin service address. Restore AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
 	}
 	return decryptStoredAccount(row)
 }
@@ -43,7 +43,7 @@ func (a *App) accountToken(ctx context.Context) string {
 	}
 	if row.str("service_url") != serviceAddress() {
 		if os.Getenv("AI_SERVICE_URL_MIGRATE_FROM") != row.str("service_url") {
-			coded(503, "The saved account belongs to a different Central address. Restore AI_SERVICE_URL or explicitly set AI_SERVICE_URL_MIGRATE_FROM to the saved address.", "ACCOUNT_CONFIGURATION")
+			coded(503, "The saved account belongs to a different Margin service address. Restore AI_SERVICE_URL or explicitly set AI_SERVICE_URL_MIGRATE_FROM to the saved address.", "ACCOUNT_CONFIGURATION")
 		}
 		return a.migrateAccountURL(ctx, row)
 	}
@@ -59,7 +59,7 @@ func (a *App) migrateAccountURL(ctx context.Context, row Row) string {
 	result, status, err := a.fetchJSON(ctx, "GET", base.ResolveReference(&url.URL{Path: "/v1/account"}).String(), nil,
 		map[string]string{"Authorization": "Bearer " + key, "Content-Type": "application/json"}, 10*time.Second)
 	if err != nil || status != 200 || !validEntitlements(object(result["entitlements"])) {
-		coded(503, "The new Central could not verify the saved account. Check AI_SERVICE_URL, its TLS certificate and shared account database; restore the old URL until this succeeds.", "ACCOUNT_MIGRATION_FAILED")
+		coded(503, "The new Margin service address could not verify the saved account. Check AI_SERVICE_URL, its TLS certificate and shared account database; restore the old URL until this succeeds.", "ACCOUNT_MIGRATION_FAILED")
 	}
 	encrypted, err := accountEncryption().Encrypt([]byte(key), "settings", "central-account:"+serviceAddress())
 	must(err)
@@ -72,7 +72,7 @@ func (a *App) migrateAccountURL(ctx context.Context, row Row) string {
 	if count == 0 {
 		current := a.connection(ctx)
 		if current.str("service_url") != serviceAddress() {
-			coded(409, "The saved Central connection changed during migration. Retry after checking AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
+			coded(409, "The saved Margin account connection changed during migration. Retry after checking AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
 		}
 		return decryptAccount(current)
 	}

@@ -183,7 +183,7 @@ export function ClassificationAction({
     return (
       <p className="analytics-inline-note">
         {config.connected
-          ? "Margin’s Classifier is unavailable on your account. Check your subscription and Margin Central configuration."
+          ? "Margin’s Classifier is unavailable on your account. Check your AI credits and account connection in Settings."
           : "Connect your Margin account in Settings to use Margin’s Classifier."}
       </p>
     );

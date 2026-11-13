@@ -80,7 +80,7 @@ func (a *App) access(ctx context.Context) Row {
 	base := accountURL()
 	result, status, err := a.fetchJSON(ctx, "GET", base.ResolveReference(&url.URL{Path: "/v1/account"}).String(), nil, a.serviceHeaders(ctx), 10*time.Second)
 	if err != nil || status < 200 || status >= 300 || !validEntitlements(object(result["entitlements"])) {
-		coded(503, "Margin Central could not verify this engine. Check the connection and account key, then try again.", "ACCOUNT_UNAVAILABLE")
+		coded(503, "Margin could not verify this publication. Check the connection and account key, then try again.", "ACCOUNT_UNAVAILABLE")
 	}
 	return entitlements(object(result["entitlements"]))
 }

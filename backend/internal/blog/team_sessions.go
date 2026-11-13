@@ -76,7 +76,7 @@ func (a *App) primaryOwnerSession(r *http.Request) bool {
 func (a *App) centralIdentityRequest(ctx context.Context, path string, input Row) (Row, int) {
 	binding := a.cloudOwner(ctx)
 	if binding.str("subject") == "" {
-		coded(503, "Connect this publication to Margin Central to manage its team.", "CENTRAL_REQUIRED")
+		coded(503, "Connect this publication to your Margin account to manage its team.", "CENTRAL_REQUIRED")
 	}
 	secret := os.Getenv("SETUP_TOKEN")
 	if len(secret) < 32 {

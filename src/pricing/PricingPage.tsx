@@ -38,11 +38,10 @@ function ConnectedPricingPage() {
         <div className="pricing-loading" role="status">
           {loading ? (
             <>
-              <Loader2 size={18} className="spin" /> Getting plans from Margin
-              Central…
+              <Loader2 size={18} className="spin" /> Loading plans…
             </>
           ) : (
-            "Pricing is unavailable until Margin Central reconnects."
+            "Pricing is unavailable right now. Please try again."
           )}
         </div>
       ) : (

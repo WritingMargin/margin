@@ -313,7 +313,7 @@ func pricingAccount(row Row) {
 func validPricing(row Row) Row {
 	defer func() {
 		if recover() != nil {
-			coded(502, "Margin Central returned invalid pricing. Please try again.", "PRICING_INVALID")
+			coded(502, "Margin could not load pricing. Please try again.", "PRICING_INVALID")
 		}
 	}()
 	if _, ok := row["audience"]; ok {

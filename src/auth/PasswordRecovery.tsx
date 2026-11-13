@@ -93,8 +93,7 @@ function CentralRecovery({ url }: { url: string }) {
   return (
     <>
       <p>
-        Your password is managed by Margin Central. Reset it there, then return
-        to your blog to sign in.
+        Reset your Margin account password, then return to your blog to sign in.
       </p>
       <a className="button primary" href={url}>
         Recover your Margin account

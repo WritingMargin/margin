@@ -67,7 +67,7 @@ export default function TeamSettings({ cloudManaged }: { cloudManaged: boolean }
     }
     void mutate(`/team/members/${encodeURIComponent(member.id)}`, "PATCH", { role }, "Role updated.");
   }
-  if (!cloudManaged) return <section className="settings-card"><div className="settings-icon"><Users /></div><h2>Your publication team</h2><p>Team invitations require a publication connected to Margin Central.</p></section>;
+  if (!cloudManaged) return <section className="settings-card"><div className="settings-icon"><Users /></div><h2>Your publication team</h2><p>Connect this publication to your Margin account to invite teammates.</p></section>;
   return <div className="team-settings">
     <InvitationForm posts={posts} busy={busy} loaded={members.loaded} mutate={mutate} />
     <TeamStatus error={error} notice={notice} />

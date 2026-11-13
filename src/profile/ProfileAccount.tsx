@@ -50,6 +50,6 @@ function LocalProfileAccount() {
 function CentralProfileAccount({ email, primaryOwner }: { email: string; primaryOwner: boolean }) {
  return <div className="profile-account">
   <section className="settings-card"><div className="profile-section-heading"><Mail size={20} /><h2>Your Margin account</h2><span className="profile-private">Private</span></div><strong>{email}</strong><p>You use this account across publications. Your role and article invitations are managed separately in each publication.</p></section>
-  <section className="settings-card"><div className="profile-section-heading"><ShieldCheck size={20} /><h2>Account security</h2></div><p>Reset your password through Margin Central. The new password applies to your Margin account across all publications.</p><a className="button" href={sitePath("/admin/forgot-password")}>Reset password</a>{primaryOwner && <p><a href={sitePath("/admin/settings?tab=integrations")}>Manage publication API credentials</a></p>}</section>
+  <section className="settings-card"><div className="profile-section-heading"><ShieldCheck size={20} /><h2>Account security</h2></div><p>Reset your Margin account password. The new password applies to your Margin account across all publications.</p><a className="button" href={sitePath("/admin/forgot-password")}>Reset password</a>{primaryOwner && <p><a href={sitePath("/admin/settings?tab=integrations")}>Manage publication API credentials</a></p>}</section>
  </div>;
 }

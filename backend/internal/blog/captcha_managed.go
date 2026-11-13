@@ -39,7 +39,7 @@ func (a *App) loadManagedCaptcha(ctx context.Context, refresh bool) Row {
 	}
 	base, err := serviceURL()
 	if err != nil {
-		return Row{"issue": "Margin Central needs a valid HTTPS address."}
+		return Row{"issue": "The Margin account connection requires a valid HTTPS address."}
 	}
 	cache := &a.captchaCache
 	cache.mu.Lock()
@@ -60,14 +60,14 @@ func (a *App) loadManagedCaptcha(ctx context.Context, refresh bool) Row {
 
 func managedCaptchaResult(result Row, status int, err error, hostname string) Row {
 	if err != nil || status != http.StatusOK {
-		issue := "Margin Central bot protection is unavailable. Try again or use your own keys."
+		issue := "Margin bot protection is unavailable. Try again or use your own keys."
 		if status == 503 && strings.HasPrefix(result.str("code"), "CAPTCHA_") {
 			issue = result.str("error")
 		}
 		return Row{"issue": issue}
 	}
 	if result.str("provider") != "recaptcha-v2" || !keyRE.MatchString(result.str("siteKey")) {
-		return Row{"issue": "Margin Central returned an invalid bot protection configuration."}
+		return Row{"issue": "Margin could not load bot protection. Please try again."}
 	}
 	if result.str("hostname") != strings.ToLower(hostname) {
 		return Row{"issue": "Your public blog hostname does not match the registered Margin account. Use your own keys or update the account hostname."}
