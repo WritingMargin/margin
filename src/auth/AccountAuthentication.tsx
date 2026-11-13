@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { api, APIError, json } from "../api";
+import "./AccountAuthentication.css";
 export type AccountAuthenticationStatus = {
   connected: boolean;
   email: string;
@@ -44,13 +45,13 @@ export default function AccountAuthentication<T extends AccountAuthenticationSta
 
   return <section className="settings-card" aria-label={heading}>
     <h2>{heading}</h2>
-    <ConnectionDescription status={status} description={description} />
+    <div className="account-connection-copy"><ConnectionDescription status={status} description={description} /></div>
     {expired ? <p>This sign-in request expired. Start again to get a new link.</p> : <>
-      <a className="button primary" href={url} target="_blank" rel="noopener noreferrer">Sign in to Margin</a>
-      <p role="status">Waiting for approval. This page will connect automatically when you finish in Margin.</p>
+      <div className="settings-actions"><a className="button primary" href={url} target="_blank" rel="noopener noreferrer">Sign in to Margin</a></div>
+      <p className="small-text account-connection-status" role="status">Waiting for approval. This page will connect automatically when you finish in Margin.</p>
     </>}
     {(error || problem) && <p className="error-box" role="alert">{error || problem}</p>}
-    {expired && <button className="button" disabled={busy} onClick={() => void restart()}>{busy ? "Connecting…" : "Start again"}</button>}
+    {expired && <div className="settings-actions"><button className="button" disabled={busy} onClick={() => void restart()}>{busy ? "Connecting…" : "Start again"}</button></div>}
   </section>;
 }
 

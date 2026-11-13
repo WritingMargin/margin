@@ -17,7 +17,7 @@ type Invitation = { id: string; email: string; role: TeamRole; articleId?: strin
 type Mutation = (path: string, method: string, input: object, message: string) => Promise<boolean>;
 
 export default function TeamSettings({ cloudManaged }: { cloudManaged: boolean }) {
-  return cloudManaged ? <ConnectedTeamSettings /> : <TeamConnection><ConnectedTeamSettings /></TeamConnection>;
+  return <div className="team-settings">{cloudManaged ? <ConnectedTeamSettings /> : <TeamConnection><ConnectedTeamSettings /></TeamConnection>}</div>;
 }
 
 function ConnectedTeamSettings() {
@@ -71,7 +71,7 @@ function ConnectedTeamSettings() {
     }
     void mutate(`/team/members/${encodeURIComponent(member.id)}`, "PATCH", { role }, "Role updated.");
   }
-  return <div className="team-settings">
+  return <>
     <InvitationForm posts={posts} busy={busy} loaded={members.loaded} mutate={mutate} />
     <TeamStatus error={error} notice={notice} />
       <section className="settings-card" aria-labelledby="team-members-heading">
@@ -84,7 +84,7 @@ function ConnectedTeamSettings() {
       </section>
       <PendingInvitations feed={invitations} posts={posts} busy={busy} mutate={mutate} />
     <ConfirmDialog confirmation={confirmation} icon={<Users size={21} />} />
-  </div>;
+  </>;
 }
 
 function InvitationForm({ posts, busy, loaded, mutate }: { posts: Post[]; busy: boolean; loaded: boolean; mutate: Mutation }) {

@@ -1,0 +1,14 @@
+.account-connection-copy {
+  display: grid;
+  gap: 12px;
+  max-width: 65ch;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #62625c;
+  overflow-wrap: anywhere;
+}
+.account-connection-copy > p { margin: 0; }
+.settings-card > .account-connection-status {
+  max-width: 65ch;
+  margin: 16px 0 0;
+}

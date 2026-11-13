@@ -50,11 +50,11 @@ function ConnectTeam({ initial }: { initial: TeamConnectionStatus }) {
   />;
   return <section className="settings-card">
     <div className="settings-icon"><Users /></div><h2>Your publication team</h2>
-    <p>Connect your Margin account to invite teammates. Each person’s role and article access apply only to this publication.</p>
+    <div className="account-connection-copy"><p>Connect your Margin account to invite teammates. Each person’s role and article access apply only to this publication.</p>
     <p>Your existing owner login stays available.</p>
-    <ReviewInvitationNotice />
+    <ReviewInvitationNotice /></div>
     {error && <p className="error-box" role="alert">{error}</p>}
-    <button className="button primary" disabled={busy} onClick={() => void connect()}>{busy ? "Connecting…" : "Connect team access"}</button>
+    <div className="settings-actions"><button className="button primary" disabled={busy} onClick={() => void connect()}>{busy ? "Connecting…" : "Connect team access"}</button></div>
   </section>;
 }
 
