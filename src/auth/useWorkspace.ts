@@ -18,6 +18,8 @@ export function useWorkspace() {
     setupRequired: boolean;
     storageConfigured: boolean;
     cloudManaged?: boolean;
+    teamConnected?: boolean;
+    teamPasswordRecoveryUrl?: string;
     passwordRecoveryUrl?: string;
     ownerEmail?: OwnerEmailStatus | null;
   } | null>(null);

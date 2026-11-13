@@ -8,6 +8,8 @@ import { useLogin } from "./useLogin";
 export default function Login(
   props: Parameters<typeof useLogin>[0] & {
     cloudManaged?: boolean;
+    teamConnected?: boolean;
+    teamPasswordRecoveryUrl?: string;
     passwordRecoveryUrl?: string;
   },
 ) {
@@ -32,7 +34,9 @@ export default function Login(
             ? "Create the owner account for your publication."
             : props.cloudManaged
               ? "Sign in with the same email and password you used to create your Margin account."
-              : "Sign in to your writing workspace."}
+              : props.teamConnected
+                ? "Teammates sign in with their Margin account. The publication owner uses their existing local login."
+                : "Sign in to your writing workspace."}
         </p>
         <label>
           Email address

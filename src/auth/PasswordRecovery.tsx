@@ -65,8 +65,10 @@ function usePasswordRecovery() {
 type RecoveryState = ReturnType<typeof usePasswordRecovery>;
 export default function PasswordRecovery({
   recoveryUrl,
+  teamRecoveryUrl,
 }: {
   recoveryUrl?: string;
+  teamRecoveryUrl?: string;
 }) {
   const state = usePasswordRecovery();
   return (
@@ -78,6 +80,7 @@ export default function PasswordRecovery({
         ) : (
           <LocalRecovery state={state} />
         )}
+        {!state.reset && !recoveryUrl && teamRecoveryUrl && <p>Invited teammate? <a href={teamRecoveryUrl}>Reset your Margin account password</a>.</p>}
         <a className="password-recovery-back" href={sitePath("/admin")}>
           Back to sign in
         </a>

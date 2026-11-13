@@ -29,7 +29,7 @@ func (a *App) peerPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) activePeer(r *http.Request, id string) (Row, Row) {
-	if a.cloudOwner(r.Context()).str("subject") != "" {
+	if a.teamOwnerSubject(r.Context()) != "" {
 		member := a.peerReviewPrincipal(r)
 		if member == nil {
 			fail(401, "Sign in with your Margin account to review this article.")
@@ -233,7 +233,7 @@ func (a *App) reviewerBadges(ctx context.Context, row Row) []string {
 }
 
 func (a *App) peerMediaGrant(r *http.Request, value string) (Row, Row) {
-	if a.cloudOwner(r.Context()).str("subject") != "" {
+	if a.teamOwnerSubject(r.Context()) != "" {
 		review := a.memberPeerReview(r, a.peerReviewPrincipal(r), value)
 		if review == nil {
 			return nil, nil

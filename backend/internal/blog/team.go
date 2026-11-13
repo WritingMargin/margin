@@ -7,6 +7,7 @@ import (
 )
 
 func (a *App) teamRoutes() {
+	a.teamConnectionRoutes()
 	a.mux.HandleFunc("GET /api/team", a.teamList)
 	a.mux.HandleFunc("GET /api/team/members", a.teamMembersPage)
 	a.mux.HandleFunc("GET /api/team/invitations", a.teamInvitationsPage)

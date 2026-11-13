@@ -22,7 +22,7 @@ export default function ReviewerPage({
   const auth = useCommentAuth();
   const [cloud, setCloud] = useState<boolean | null>(null);
   useEffect(() => {
-    api<{ cloudManaged?: boolean }>("/session").then(session => setCloud(Boolean(session.cloudManaged))).catch(() => setCloud(null));
+    api<{ cloudManaged?: boolean; teamConnected?: boolean }>("/session").then(session => setCloud(Boolean(session.teamConnected || session.cloudManaged))).catch(() => setCloud(null));
   }, []);
   if (state.visit)
     return (

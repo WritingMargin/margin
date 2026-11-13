@@ -7,8 +7,8 @@ import (
 // Cloud credentials are checked by their issuing Central service, never copied
 // into the publication database. Self-hosted password authentication is unchanged.
 func (a *App) cloudPasswordLogin(w http.ResponseWriter, r *http.Request, email, password string) bool {
-	binding := a.cloudOwner(r.Context())
-	if binding.str("subject") == "" {
+	binding := a.teamBinding(r.Context())
+	if binding.str("subject") == "" || a.selfHostedOwnerLogin(r, binding, email) {
 		return false
 	}
 	result, status := a.centralIdentityRequest(r.Context(), "/cloud/api/engine-login", Row{"email": email, "password": password})
@@ -27,4 +27,13 @@ func (a *App) cloudPasswordLogin(w http.ResponseWriter, r *http.Request, email, 
 	}
 	send(w, 200, Row{"authenticated": true})
 	return true
+}
+
+// A self-hosted owner's password is checked locally and is never forwarded.
+func (a *App) selfHostedOwnerLogin(r *http.Request, binding Row, email string) bool {
+	if binding.str("publicationId") == "" {
+		return false
+	}
+	owner := first(a.DB.Must(r.Context(), "SELECT email FROM admins WHERE id=1"))
+	return owner.str("email") == email
 }

@@ -144,7 +144,7 @@ function AccountConnection({ feature, embedded, status, error, busy, connect, di
       <p>{feature} requires a Margin account. If you continue, we’ll use <strong>{status.email}</strong>{status.blogUrl && <> and <strong>{status.blogUrl}</strong></>} to connect it.</p>
       <p>Your password and posts aren’t sent when we create your account. Creating the account is free; paid features require a separate subscription you choose.</p>
     </>}
-    <p>If your email already has a Margin Studio account, we’ll ask you to sign in and approve this publication. Otherwise, we’ll create your account automatically.</p>
+    <p>If your email already has a Margin account, we’ll ask you to sign in and approve this publication. Otherwise, we’ll create your account automatically.</p>
     {!status.registrationAvailable && <p className="notice">Account services aren’t configured for this installation yet. Contact your server administrator. You can keep writing and publishing.</p>}
     {error && <p className="error-box" role="alert">{error}</p>}
     <div className="account-actions">

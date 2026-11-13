@@ -22,7 +22,7 @@ func (a *App) revisionAuthor(r *http.Request) Row {
 		}
 		return Row{"kind": "api_token", "name": token["name"]}
 	}
-	if principal := a.browserPrincipal(r); principal != nil && principal.str("subject") != "" && principal.str("subject") != a.cloudOwner(r.Context()).str("subject") {
+	if principal := a.browserPrincipal(r); principal != nil && principal.str("subject") != "" && principal.str("subject") != a.teamOwnerSubject(r.Context()) {
 		return Row{"kind": "member", "id": principal["subject"], "name": principal["email"]}
 	}
 	owner := first(a.DB.Must(r.Context(), "SELECT email FROM admins WHERE id=1"))

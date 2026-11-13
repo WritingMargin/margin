@@ -8,7 +8,7 @@ import (
 )
 
 func (a *App) invitePeer(w http.ResponseWriter, r *http.Request) {
-	if a.cloudOwner(r.Context()).str("subject") != "" {
+	if a.teamOwnerSubject(r.Context()) != "" {
 		input := body(w, r)
 		input["articleId"] = r.PathValue("id")
 		input["role"] = "peer_reviewer"

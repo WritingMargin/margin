@@ -4,7 +4,7 @@ Write Markdown with live preview, save a draft, and publish when ready. Choose B
 
 ## Publication teams
 
-For a publication connected to a Margin account, open **Settings → Team** to invite someone by email. They accept with their Margin account; new users create an account and verify their email first. The same email and password work across publications, while each publication grants its own access. Being an Owner on one publication does not grant access to another.
+Open **Settings → Team** to invite someone by email. On a self-hosted publication, first choose **Connect team access**, sign in to Margin, and approve the publication shown. The owner keeps their existing local login; teammates use their Margin accounts. Team access is independent of where the publication is hosted. They accept with their Margin account; new users create an account and verify their email first. The same email and password work across publications, while each publication grants its own access. Being an Owner on one publication does not grant access to another.
 
 Members and Pending invitations have separate page controls and page-size selectors. Central counts and selects each requested page in SQL; the browser loads only that page. Removing the last item on a page returns that list to its last available page.
 

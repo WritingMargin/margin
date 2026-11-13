@@ -9,6 +9,7 @@ import ConfirmDialog from "../admin/ConfirmDialog";
 import { useConfirmation } from "../admin/useConfirmation";
 import { useTeamPage, type TeamPageController } from "./useTeamPage";
 import { TeamPageToolbar, TeamPageNavigation } from "./TeamPagination";
+import TeamConnection from "./TeamConnection";
 import "./team.css";
 
 type Member = TeamUser & { role: TeamRole; articleIds: string[]; primaryOwner?: boolean };
@@ -16,22 +17,25 @@ type Invitation = { id: string; email: string; role: TeamRole; articleId?: strin
 type Mutation = (path: string, method: string, input: object, message: string) => Promise<boolean>;
 
 export default function TeamSettings({ cloudManaged }: { cloudManaged: boolean }) {
+  return cloudManaged ? <ConnectedTeamSettings /> : <TeamConnection><ConnectedTeamSettings /></TeamConnection>;
+}
+
+function ConnectedTeamSettings() {
   const confirmation = useConfirmation();
   const [version, setVersion] = useState(0);
-  const members = useTeamPage<Member>("members", cloudManaged, version);
-  const invitations = useTeamPage<Invitation>("invitations", cloudManaged, version);
+  const members = useTeamPage<Member>("members", true, version);
+  const invitations = useTeamPage<Invitation>("invitations", true, version);
   const [posts, setPosts] = useState<Post[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   useEffect(() => {
-    if (!cloudManaged) return;
     const controller = new AbortController();
     api<Post[]>("/posts", { signal: controller.signal })
       .then(articles => setPosts(articles.filter(post => post.status !== "archived")))
       .catch(cause => { if (!controller.signal.aborted) setError(cause.message); });
     return () => controller.abort();
-  }, [cloudManaged]);
+  }, []);
   async function mutate(path: string, method: string, input: object, message: string) {
     setBusy(true); setError(""); setNotice("");
     try {
@@ -67,7 +71,6 @@ export default function TeamSettings({ cloudManaged }: { cloudManaged: boolean }
     }
     void mutate(`/team/members/${encodeURIComponent(member.id)}`, "PATCH", { role }, "Role updated.");
   }
-  if (!cloudManaged) return <section className="settings-card"><div className="settings-icon"><Users /></div><h2>Your publication team</h2><p>Connect this publication to your Margin account to invite teammates.</p></section>;
   return <div className="team-settings">
     <InvitationForm posts={posts} busy={busy} loaded={members.loaded} mutate={mutate} />
     <TeamStatus error={error} notice={notice} />
