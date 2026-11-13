@@ -19,6 +19,13 @@ including separate publications using the same PostgreSQL server. Leave room
 for other applications, maintenance tools, and PostgreSQL's reserved slots.
 This setting cannot prevent another application from exhausting a shared server.
 
+Cancelled queries release their checked-out connection, and transactions defer
+rollback so errors and panics do not leave a transaction open. Background status
+updates that must survive request cancellation have a separate five-second
+cleanup deadline. Engine shutdown calls `Database.Close()` to close both the
+query pool and notification listener, including sockets still starting a
+PostgreSQL connection.
+
 ## Diagnosing exhausted connections
 
 PostgreSQL error `53300`, including “remaining connection slots are reserved”,

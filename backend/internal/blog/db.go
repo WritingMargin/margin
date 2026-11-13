@@ -268,3 +268,9 @@ func first(rows []Row) Row {
 	}
 	return rows[0]
 }
+
+// Close releases the query pool and the independently owned notification socket.
+func (d *Database) Close() error {
+	d.postListener.close()
+	return d.SQL.Close()
+}

@@ -65,7 +65,7 @@ func reencrypt(args []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.SQL.Close()
+	defer db.Close()
 	storage, err := blog.NewStorage(ctx)
 	if err != nil {
 		return err

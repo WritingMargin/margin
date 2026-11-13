@@ -168,6 +168,7 @@ func (a *App) reconcileQuestions(ctx context.Context, tx *sql.Tx, post Row, text
 	query, args := a.DB.adapt("SELECT q.comment_id,q.quote FROM passage_questions q JOIN comments c ON c.id=q.comment_id WHERE c.post_id=$1 AND q.anchor_status='active'", []any{post["id"]})
 	rows, err := tx.QueryContext(ctx, query, args...)
 	must(err)
+	defer rows.Close()
 	pending := []Row{}
 	for rows.Next() {
 		var id, quote string
