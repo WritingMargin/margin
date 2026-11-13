@@ -543,16 +543,6 @@
               }
             }
           },
-          "402": {
-            "description": "Cloudinary integration requires an active plan",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/blog.APIError"
-                }
-              }
-            }
-          },
           "503": {
             "description": "Cloudinary is not configured",
             "content": {

@@ -1,6 +1,7 @@
 import { ArrowUpRight,RefreshCw } from "lucide-react";
 import "../pricing.css";
 import type { PricingPageController } from "./usePricingPage";
+import { subscriptionPlans, isLegacyPlan } from "../../shared/plans";
 type Props = {
   state: Pick<
     PricingPageController,
@@ -14,12 +15,12 @@ export default function PricingAccount({ state }: Props) {
     <div className="pricing-account">
       <div>
         <p>
-          Your plan:{" "}
-          <strong>{data.plans.find((p) => p.id === current)?.name}</strong>
+          AI billing:{" "}
+          <strong>{data.plans.find((p) => p.id === current)?.name ?? subscriptionPlans.find((p) => p.id === current)?.name ?? "Prepaid credits"}</strong>
           {data.account.renewsAt && (
             <>
               {" "}
-              · {data.account.cancelsAtPeriodEnd
+              · {renewalStopped(data.account)
                 ? "Access until"
                 : "Renews"}{" "}
               {new Date(data.account.renewsAt).toLocaleDateString("en-GB", {
@@ -30,6 +31,7 @@ export default function PricingAccount({ state }: Props) {
             </>
           )}
         </p>
+        <ExistingCredits audience={data.audience} current={current} />
       </div>
       <div className="pricing-account-actions">
         {data.account.canManage && (
@@ -53,3 +55,10 @@ export default function PricingAccount({ state }: Props) {
     </div>
   );
 }
+
+function ExistingCredits({ audience, current }: { audience: string | null | undefined; current: string | undefined }) {
+  if (audience !== "ai" || !isLegacyPlan(current)) return null;
+  return <p>Your existing subscription already includes AI credits for this engine.</p>;
+}
+
+function renewalStopped(account: { aiRenewalStopped?: boolean | null; cancelsAtPeriodEnd: boolean }) { return account.aiRenewalStopped || account.cancelsAtPeriodEnd; }

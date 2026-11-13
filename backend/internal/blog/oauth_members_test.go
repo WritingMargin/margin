@@ -186,7 +186,7 @@ func TestOAuthMemberConsentCancelAndRequestSnapshot(t *testing.T) {
 func TestOAuthInvitedOwnerCannotDelegatePrimaryAccount(t *testing.T) {
 	a, _ := oauthMemberFixture(t, "owner")
 	_, tokens := oauthTokenTest(t, a, "administration:manage", "https://blog.test/api")
-	for _, path := range []string{"/api/account", "/api/account/connection", "/api/account/email-verification", "/api/ai/checkout", "/api/ai/topups", "/api/ai/billing/portal", "/api/ai/billing/stop"} {
+	for _, path := range []string{"/api/account", "/api/account/connection", "/api/account/email-verification", "/api/ai/checkout", "/api/ai/topups", "/api/ai/billing/portal", "/api/ai/billing/stop", "/api/ai/billing/auto-topup"} {
 		expectStatus(t, tokenRequest(a, tokens.str("access_token"), "POST", path, Row{"consent": true}), 403)
 	}
 }

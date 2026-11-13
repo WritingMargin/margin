@@ -1,9 +1,12 @@
 import { useCallback,useEffect,useRef,useState } from "react";
 import type { Pricing } from "../../shared/pricing";
 import { api,json } from "../api";
+import { useConfirmation } from "../admin/useConfirmation";
+import { money } from "./format";
 import "../pricing.css";
 
 export function usePricingPage() {
+  const confirmation = useConfirmation();
   const [data, setData] = useState<Pricing | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
@@ -35,6 +38,7 @@ export function usePricingPage() {
   }, [refresh]);
   async function checkout(id: string, kind: "plan" | "topup" | "manage" | "change") {
     if (inFlight.current) return;
+    if (kind === "change" && !await confirmPlanChange(data, id, confirmation.ask)) return;
     inFlight.current = true;
     setBusy(id);
     setError("");
@@ -47,7 +51,7 @@ export function usePricingPage() {
       const url = new URL(result.url);
       if (
         url.protocol !== "https:" ||
-        !["checkout.stripe.com", "billing.stripe.com"].includes(url.hostname)
+        !["checkout.stripe.com", "billing.stripe.com", "invoice.stripe.com"].includes(url.hostname)
       )
         throw new Error("Checkout returned an unexpected address.");
       tab.location.href = url.href;
@@ -69,7 +73,7 @@ export function usePricingPage() {
       data.account.subscriptionStatus || "",
     ),
   );
-  return { data, error, loading, busy, checkoutNotice, refresh, checkout, current, existing };
+  return { data, error, loading, busy, checkoutNotice, refresh, checkout, current, existing, confirmation };
 }
 export type PricingPageController = ReturnType<typeof usePricingPage>;
 
@@ -83,4 +87,10 @@ function requestCheckout(id: string, kind: "plan" | "topup" | "manage" | "change
   const payload =
     kind === "topup" ? { packId: id } : kind === "plan" || kind === "change" ? { planId: id } : {};
   return api<{ url: string }>(endpoint, json("POST", payload));
+}
+
+function confirmPlanChange(data: Pricing | null, id: string, ask: ReturnType<typeof useConfirmation>["ask"]) {
+  const plan = [...(data?.plans ?? []), ...(data?.hostingPlans ?? [])].find(p => p.id === id);
+  if (!plan) return false;
+  return ask({ title: `Change to ${plan.name}?`, description: `${money(plan.amount, plan.currency)} per month. The remaining part of this billing month is charged now. Your other subscription items stay unchanged.`, confirmLabel: "Continue to payment", cancelLabel: "Keep current plan" });
 }

@@ -1,3 +1,4 @@
+import StorageQuota from "./StorageQuota";
 import { Cloud } from "lucide-react";
 import type { SettingsPanelController } from "./useSettings";
 import SettingsDisclosure from "../settings/SettingsDisclosure";
@@ -39,6 +40,7 @@ export default function StorageSettings({ state }: Props) {
           </code>
         </div>
       )}
+      <StorageQuota />
       <div className="env-snippet">
         <code>
           S3_BUCKET=your-blog

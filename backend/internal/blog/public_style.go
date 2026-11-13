@@ -40,9 +40,15 @@ func publicThemeStyle(theme Row, section string) template.CSS {
 func publicFooterStyle(theme Row) template.CSS {
 	// Footer colors and font come from validTheme's fixed or validated values.
 	background, text, font := theme.str("footerBackground"), theme.str("footerText"), publicFonts[theme.str("footerFont")]
-	if background == "" { background = "transparent" }
-	if text == "" { text = "inherit" }
-	if font == "" { font = "inherit" }
+	if background == "" {
+		background = "transparent"
+	}
+	if text == "" {
+		text = "inherit"
+	}
+	if font == "" {
+		font = "inherit"
+	}
 	return template.CSS(fmt.Sprintf("background-color:%s;color:%s;font-family:%s", background, text, font)) // #nosec G203 -- validTheme validates colors and selects fonts from publicFonts.
 }
 

@@ -95,7 +95,7 @@ func (a *App) privacyHTML(w http.ResponseWriter, r *http.Request) {
 	a.renderPublic(w, r, publicPage{
 		Theme: theme, Title: "Privacy — " + theme.str("name"),
 		Description: "How " + theme.str("name") + " uses Margin's built-in analytics and reader features.",
-		Canonical: a.publicationOrigin(r) + "/privacy", Action: "privacy", Status: http.StatusOK,
+		Canonical:   a.publicationOrigin(r) + "/privacy", Action: "privacy", Status: http.StatusOK,
 	})
 }
 func (a *App) articleHTML(w http.ResponseWriter, r *http.Request) {

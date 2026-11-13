@@ -179,7 +179,7 @@ func primaryOwnerRoute(path, pattern string) bool {
 	}
 	switch pattern {
 	case "POST /api/account", "POST /api/account/connection", "GET /api/account/email-verification", "POST /api/account/email-verification",
-		"POST /api/ai/checkout", "POST /api/ai/topups", "POST /api/ai/billing/portal", "POST /api/ai/billing/stop":
+		"POST /api/ai/checkout", "POST /api/ai/topups", "POST /api/ai/billing/portal", "POST /api/ai/billing/stop", "POST /api/ai/billing/auto-topup":
 		return true
 	}
 	return false

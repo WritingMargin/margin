@@ -12,6 +12,20 @@ To move an existing account to a different Central address, first confirm that t
 
 AI assistance, images, social drafts and smart recommendations use this connection. Provider keys and model configuration live exclusively in Margin Central. Engine installations do not accept OpenAI or Jev credentials.
 
+## Independent AI and hosting
+
+Every installation offers prepaid AI packs: **£5 for 100 credits**, **£20 for 800 credits**, and **£50 for 3,200 credits**. Credits do not expire, and AI needs no subscription. Hosting customers can separately choose **Hosting Starter** (£10/month) or **Hosting Studio** (£30/month), with 1 GiB or 10 GiB of Margin-managed storage. Purchase buttons become available once the matching Stripe prices are configured.
+
+**Auto top-up** is optional and off by default. Choose a pack, balance threshold and monthly spending cap, agree to automatic payments, then save a card through Stripe. The cap covers calendar months in UTC and includes pending payments. Disable it at any time to prevent new automatic purchases; a payment already started can still complete. Payment uncertainty or required authentication pauses automatic purchases for review.
+
+Existing subscribers can be migrated by an operator: Starter/Studio bundles retain the matching hosting tier; AI-only subscriptions stop renewing at the paid-period end. Remaining spendable credits are preserved as non-expiring prepaid credits. Migration never opts anyone into auto top-up. Review removed legacy email/newsletter benefits before applying it. Historical plan definitions remain available for invoice reconciliation, but monthly AI plans are no longer offered to new buyers.
+
+Margin imposes no storage quota on user-owned buckets, including buckets attached to a Margin-hosted engine. **Settings → Integrations → Content storage** and **Plans & credits** show measured bucket usage. Managed storage also shows the allowance and remaining bytes; owner storage says **No Margin quota**. Listing failures show an error, not a zero balance. Figures include all current objects in the configured bucket, including encrypted content, revisions and files; provider version history and other provider overhead are not included.
+
+Your own SMTP delivery and Cloudinary credentials work without a paid Margin plan. Managed email remains a paid service included in legacy bundles; AI or the new hosting-only plans do not unlock it.
+
+Rollout: validate and publish the updated billing adapter, configure the prepaid pack and hosting Stripe prices, deploy Studio with the additive database migration, let it reconcile storage ownership flags, then deploy the Engine. Managed storage uses `MARGIN_STORAGE_MANAGED=true` with `S3_STORAGE_LIMIT_BYTES`; a user-owned bucket ignores Margin plan limits. No existing subscription is automatically migrated.
+
 ## Simplified articles
 
 In **Readers → Settings**, enable **Simplified articles** to generate a shorter version on each newly published article revision. The setting shows Central's current credit charge before it can be enabled. Draft saves and software deployments do not generate or charge. A failed generation leaves the original article published and returns reserved credits; the writer can retry from the article editor. The editor's **Simplified** panel lets the writer review, edit, hide, or restore the version for the current published revision. Publishing another revision hides the previous Simplified version until the new one is ready.

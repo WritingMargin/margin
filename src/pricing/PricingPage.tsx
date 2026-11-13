@@ -1,9 +1,14 @@
+import SubscriptionControls from "./SubscriptionControls";
+import StorageQuota from "../admin/StorageQuota";
+import HostingPlans from "./HostingPlans";
 import AccountGate from "../auth/AccountGate";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Cloud, Loader2 } from "lucide-react";
+import SettingsDisclosure from "../settings/SettingsDisclosure";
+import ConfirmDialog from "../admin/ConfirmDialog";
 import "../pricing.css";
 import PricingAccount from "./PricingAccount";
-import PricingPlans from "./PricingPlans";
+import AutoTopup from "./AutoTopup";
 import PricingTopups from "./PricingTopups";
 import { usePricingPage } from "./usePricingPage";
 
@@ -13,17 +18,8 @@ function ConnectedPricingPage() {
   const [paymentReturned] = useState(() => new URLSearchParams(window.location.search).get("aiCredits") === "success");
   return (
     <section className="pricing-page">
-      <header className="pricing-intro">
-        <span className="pricing-eyebrow">A LITTLE SPACE. ROOM TO GROW.</span>
-        <h1>
-          Your words.
-          <br />
-          Your next chapter.
-        </h1>
-        <p>
-          Start with a home for your ideas. Add the tools to take them further.
-        </p>
-      </header>
+      <ConfirmDialog confirmation={state.confirmation} icon={<Cloud size={21} />} />
+      <PricingIntro />
       {paymentReturned && (
         <p role="status">
           Payment confirmation can take a few moments. Your plan and credits
@@ -52,8 +48,13 @@ function ConnectedPricingPage() {
       ) : (
         <>
           <PricingAccount state={state} />
-          <PricingPlans state={state} />
+          <SubscriptionControls state={state} />
+          <HostingPlans state={state} />
+          <SettingsDisclosure title="Content storage" description="Used storage and your remaining allowance." icon={<Cloud />} className="pricing-storage">
+            <StorageQuota />
+          </SettingsDisclosure>
           <PricingTopups state={state} />
+          <AutoTopup state={state} />
           <footer className="pricing-footer">
             <span>Good to know</span>
             {data.terms.map((term) => (
@@ -65,6 +66,14 @@ function ConnectedPricingPage() {
       )}
     </section>
   );
+}
+
+function PricingIntro() {
+  return <header className="pricing-intro">
+    <span className="pricing-eyebrow">MARGIN AI</span>
+    <h1>AI credits, wherever you host.</h1>
+    <p>Buy AI credits as you need them, with optional auto top-up. No AI subscription. Hosting is billed separately.</p>
+  </header>;
 }
 
 export default function PricingPage() {

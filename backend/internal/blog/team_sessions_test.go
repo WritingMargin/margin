@@ -121,7 +121,7 @@ func TestInvitedOwnerCannotCreateUnrevocableCredentials(t *testing.T) {
 func TestInvitedOwnerCannotManagePrimaryAccountOrBilling(t *testing.T) {
 	a, cookie, _ := memberFixture(t, "owner")
 	t.Setenv("AI_SERVICE_TOKEN", "")
-	for _, path := range []string{"/api/account", "/api/account/connection", "/api/account/email-verification", "/api/ai/checkout", "/api/ai/topups", "/api/ai/billing/portal"} {
+	for _, path := range []string{"/api/account", "/api/account/connection", "/api/account/email-verification", "/api/ai/checkout", "/api/ai/topups", "/api/ai/billing/portal", "/api/ai/billing/stop"} {
 		result := responseRow(t, memberRequest(a, cookie, "POST", path, Row{"consent": true}), 403)
 		if result.str("code") != "PERMISSION_DENIED" {
 			t.Fatal(path, result)

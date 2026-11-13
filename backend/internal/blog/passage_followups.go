@@ -84,7 +84,9 @@ func (a *App) moderatePassageFollowup(w http.ResponseWriter, r *http.Request) {
 	if answer != "" && followup.str("answer") == "" && approved {
 		recipient := first(a.DB.Must(r.Context(), `SELECT f.reader_id,c.post_id FROM passage_followups f
 			JOIN passage_questions q ON q.comment_id=f.question_id JOIN comments c ON c.id=q.comment_id WHERE f.id=$1`, followup["id"]))
-		if recipient != nil { a.insertReaderAlert(r.Context(), recipient.str("reader_id"), "author_answered", recipient.str("post_id"), r.PathValue("id"), "followup-answer:"+followup.str("id"), "The author answered you") }
+		if recipient != nil {
+			a.insertReaderAlert(r.Context(), recipient.str("reader_id"), "author_answered", recipient.str("post_id"), r.PathValue("id"), "followup-answer:"+followup.str("id"), "The author answered you")
+		}
 	}
 	send(w, 200, Row{"ok": true})
 }

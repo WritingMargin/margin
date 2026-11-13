@@ -49,11 +49,9 @@ func NewStorage(ctx context.Context) (*S3Storage, error) {
 		return nil, err
 	}
 	result := &S3Storage{bucket: os.Getenv("S3_BUCKET"), region: region}
-	if raw := os.Getenv("S3_STORAGE_LIMIT_BYTES"); raw != "" {
-		result.limit, err = strconv.ParseInt(raw, 10, 64)
-		if err != nil || result.limit <= 0 {
-			return nil, fmt.Errorf("S3_STORAGE_LIMIT_BYTES must be a positive byte count")
-		}
+	result.limit, err = configuredStorageLimit()
+	if err != nil {
+		return nil, err
 	}
 	result.client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		if ep := os.Getenv("S3_ENDPOINT"); ep != "" {
@@ -70,6 +68,18 @@ func NewStorage(ctx context.Context) (*S3Storage, error) {
 	}
 	return result, nil
 }
+func configuredStorageLimit() (int64, error) {
+	raw := os.Getenv("S3_STORAGE_LIMIT_BYTES")
+	if raw == "" || os.Getenv("MARGIN_STORAGE_MANAGED") != "true" {
+		return 0, nil
+	}
+	limit, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || limit <= 0 {
+		return 0, fmt.Errorf("S3_STORAGE_LIMIT_BYTES must be a positive byte count")
+	}
+	return limit, nil
+}
+
 func (s *S3Storage) Configured() bool { return s.issue == "" }
 func (s *S3Storage) Info() Row {
 	format := "not-configured"

@@ -33,7 +33,7 @@ func (a *App) coreRoutes() {
 		"GET /api/posts/{id}/writing-notes": a.writingNotes, "POST /api/posts/{id}/writing-notes": a.saveWritingNote,
 		"GET /api/settings": a.readSettings, "PUT /api/settings": a.saveSettings, "GET /api/settings/captcha": a.readTurnstile, "PUT /api/settings/captcha": a.saveTurnstile, "GET /api/settings/turnstile": a.readTurnstile, "PUT /api/settings/turnstile": a.saveTurnstile,
 		"GET /api/comments": a.comments, "PATCH /api/comments/{id}": a.moderateComment, "DELETE /api/comments/{id}": a.deleteComment,
-		"PATCH /api/tokens/{id}": a.updateToken, "GET /api/tokens": a.tokens, "POST /api/tokens": a.createToken, "DELETE /api/tokens/{id}": a.deleteToken, "GET /api/storage": a.storageStatus,
+		"PATCH /api/tokens/{id}": a.updateToken, "GET /api/tokens": a.tokens, "POST /api/tokens": a.createToken, "DELETE /api/tokens/{id}": a.deleteToken, "GET /api/storage": a.storageStatus, "GET /api/storage/usage": a.storageUsageStatus,
 	}
 	for pattern, handler := range routes {
 		a.mux.HandleFunc(pattern, handler)

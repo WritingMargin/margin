@@ -11,10 +11,10 @@ export default function PricingTopups({ state }: Props) {
     <section className="pricing-topups" aria-labelledby="topup-title">
       <div className="pricing-topup-intro">
         <span className="pricing-eyebrow">KEEP THE IDEAS COMING</span>
-        <h2 id="topup-title">A little extra creative energy.</h2>
+        <h2 id="topup-title">AI credits, when you need them.</h2>
         <p>
-          Add credits whenever you need them. Purchased credits carry over and
-          are usable with an active paid plan.
+          Buy a one-time credit pack. Purchased credits do not expire and work
+          without a hosting or AI subscription.
         </p>
         <div className="pricing-balance">
           <strong>{data.account.credits.toLocaleString("en-GB")}</strong>
@@ -46,7 +46,7 @@ export default function PricingTopups({ state }: Props) {
                 {busy === pack.id
                   ? "Opening…"
                   : pack.available
-                    ? "Top up credits"
+                    ? "Buy credits"
                     : "Coming soon"}
                 <ArrowUpRight size={15} />
               </button>

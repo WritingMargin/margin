@@ -90,6 +90,10 @@ func TestFooterDesignRejectsUnsafeLinks(t *testing.T) {
 
 func TestFooterLinkUsesPublicationBasePath(t *testing.T) {
 	t.Setenv("MARGIN_BASE_PATH", "/journal")
-	if got := footerLinkURL("/post/hello"); got != "/journal/post/hello" { t.Fatalf("internal link = %q", got) }
-	if got := footerLinkURL("https://example.test/about"); got != "https://example.test/about" { t.Fatalf("external link = %q", got) }
+	if got := footerLinkURL("/post/hello"); got != "/journal/post/hello" {
+		t.Fatalf("internal link = %q", got)
+	}
+	if got := footerLinkURL("https://example.test/about"); got != "https://example.test/about" {
+		t.Fatalf("external link = %q", got)
+	}
 }

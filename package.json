@@ -11,11 +11,11 @@
     "test:binary": "node packaging/smoke.mjs",
     "test:runtime-path": "node packaging/runtime-path-smoke.mjs",
     "lint": "npm run lint:web && npm run check:go",
-    "build:web": "npm run generate:openapi && npm run lint:web && react-router typegen && tsc --noEmit && node packaging/build-web.mjs",
+    "build:web": "npm run check:plans && npm run generate:openapi && npm run lint:web && react-router typegen && tsc --noEmit && node packaging/build-web.mjs",
     "build:server": "go -C backend build -o ../artifacts/margin-server ./cmd/margin-server",
-    "test:node": "tsx --test cli/*.test.ts src/*.test.ts src/blocks/*.test.ts && node --test packaging/offline-worker.test.mjs",
+    "test:node": "npm run check:plans && tsx --test cli/*.test.ts src/*.test.ts src/blocks/*.test.ts && node --test packaging/offline-worker.test.mjs",
     "test:go": "go -C backend test -race ./... && go -C cli test -race ./...",
-    "check:go": "go -C backend tool gocyclo -ignore third_party/ -over 10 . && go -C backend tool gocyclo -over 10 ../cli && go -C backend vet ./... && go -C cli vet ./...",
+    "check:go": "npm run check:plans && go -C backend tool gocyclo -ignore third_party/ -over 10 . && go -C backend tool gocyclo -over 10 ../cli && go -C backend vet ./... && go -C cli vet ./...",
     "lint:web": "eslint src shared cli tests packaging examples *.ts --max-warnings 0",
     "test:frontend": "go -C backend test ./internal/blog -run \"PublicHTML|PublicDiscovery|WorkspaceHTML\"",
     "test:backend": "npm run build:server && node --import tsx tests/backend-contract.ts",
@@ -23,7 +23,9 @@
     "generate:openapi": "npm run generate:authoring && node packaging/generate-openapi.mjs",
     "check:openapi": "npm run check:authoring && node packaging/generate-openapi.mjs --check",
     "generate:authoring": "node --import tsx packaging/generate-authoring.ts",
-    "check:authoring": "node --import tsx packaging/generate-authoring.ts --check"
+    "check:authoring": "node --import tsx packaging/generate-authoring.ts --check",
+    "generate:plans": "node margin-central/packaging/generate-plan-catalog.mjs --engine .",
+    "check:plans": "node packaging/check-plan-catalog.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.900.0",

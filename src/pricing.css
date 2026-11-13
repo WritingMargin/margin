@@ -6,8 +6,13 @@
 .pricing-account {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;}
 .pricing-account p {font-size:12px;margin:8px 0 0;color:#737373;}
 .pricing-account strong {color:#171717;font-weight:500;}
-.pricing-account-actions {display:flex;gap:8px;}
+.pricing-account-actions {display:flex;gap:8px;flex-wrap:wrap;}
+.pricing-hosting {margin-top:32px;}
+.pricing-hosting>h2 {font-size:23px;font-weight:500;letter-spacing:-.8px;margin:0 0 12px;}
+.pricing-hosting>p {font-size:12px;line-height:1.8;color:#737373;}
+.pricing-storage {margin-top:30px;}
 .pricing-plans {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;}
+.pricing-hosting-plans {grid-template-columns:repeat(2,minmax(0,1fr));}
 .pricing-plan {border:1px solid #dcdcdc;background:#fff;border-radius:12px;padding:26px;display:flex;flex-direction:column;}
 .pricing-plan-featured {border:1.5px solid #181818;box-shadow:0 4px 20px #00000006;}
 .pricing-plan-label {min-height:27px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}

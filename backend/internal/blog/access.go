@@ -92,28 +92,46 @@ func validEntitlements(row Row) bool {
 	if !ok {
 		return false
 	}
-	if p != nil && p != "starter" && p != "studio" {
+	if p != nil && !enginePlanFeature(row.str("planId"), "ai") {
 		return false
 	}
 	e, ok := row["expiresAt"]
+	if row.str("billingModel") == "prepaid" {
+		n, valid := row["creditBalance"].(float64)
+		if !valid || n < 0 || n != float64(int64(n)) {
+			return false
+		}
+	}
 	return ok && nullableString(e)
 }
 func entitlements(row Row) Row {
 	end, err := time.Parse(time.RFC3339Nano, row.str("expiresAt"))
-	active := row.yes("active") && row.str("planId") != "" && err == nil && end.After(time.Now())
-	result := Row{"active": active, "planId": nil, "expiresAt": nil, "ai": active, "email": active, "newsletter": active, "integrations": active && row.str("planId") == "studio"}
+	plan := row.str("planId")
+	active := row.yes("active") && enginePlanFeature(plan, "ai") && err == nil && end.After(time.Now())
+	ai := aiEntitlement(row, active)
+	result := Row{"active": active || ai, "planId": nil, "expiresAt": nil, "ai": ai, "email": active && enginePlanFeature(plan, "email"), "newsletter": active && enginePlanFeature(plan, "newsletter"), "integrations": active && enginePlanFeature(plan, "integrations")}
 	if active {
 		result["planId"] = row["planId"]
 		result["expiresAt"] = end.UTC().Format("2006-01-02T15:04:05.000Z")
 	}
 	return result
 }
+func aiEntitlement(row Row, active bool) bool {
+	if row.str("billingModel") == "prepaid" {
+		balance, _ := row["creditBalance"].(float64)
+		return row.yes("ai") && balance > 0
+	}
+	return active
+}
 func (a *App) require(ctx context.Context, feature string) Row {
 	access := a.access(ctx)
 	if !access.yes(feature) {
-		message := "This feature requires an active £10 Starter or £50 Studio subscription."
+		message := "This feature requires an active subscription that includes it."
+		if feature == "ai" {
+			message = "Buy AI credits to use this feature. No subscription is required."
+		}
 		if feature == "integrations" {
-			message = "Integration services require an active £50 Studio subscription."
+			message = "Integration services require an active subscription that includes integrations."
 		}
 		coded(402, message, "SUBSCRIPTION_REQUIRED")
 	}
