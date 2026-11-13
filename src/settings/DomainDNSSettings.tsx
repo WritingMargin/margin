@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Copy, Globe2 } from "lucide-react";
-import SettingsDisclosure from "./SettingsDisclosure";
+import { Copy } from "lucide-react";
 import { cnameRecord, publicDNSName } from "./domain-dns";
 import "./DeploymentSettings.css";
 
@@ -29,15 +28,14 @@ export default function DomainDNSSettings({
     }
   }
   return (
-    <SettingsDisclosure
-      className="deployment-settings"
-      title="Connect your domain with DNS"
-      description="Set up a CNAME for a subdomain, or point your root domain to your server."
-      icon={<Globe2 />}
+    <section
+      className="settings-card settings-guide deployment-settings"
+      aria-labelledby="domain-dns-heading"
     >
+      <h2 id="domain-dns-heading">DNS setup</h2>
       <p>
-        First enter your new public URL above. At the company that manages your
-        domain’s DNS, add a record for{" "}
+        First enter your new public URL in this tab. At the company that manages
+        your domain’s DNS, add a record for{" "}
         {host ? <strong>{host}</strong> : "your chosen hostname"}.
       </p>
       <p>
@@ -69,8 +67,8 @@ export default function DomainDNSSettings({
       </p>
       {!host && (
         <p className="small-text">
-          Enter a public HTTPS domain above to prepare the record. Localhost and
-          IP addresses cannot be CNAME names.
+          Enter a public HTTPS domain in this tab to prepare the record.
+          Localhost and IP addresses cannot be CNAME names.
         </p>
       )}
       {target.trim() && record.error && (
@@ -117,9 +115,9 @@ export default function DomainDNSSettings({
       <p className="deployment-note">
         After DNS updates, configure the domain and an HTTPS certificate on your
         web server or with your hosting provider. Open the new address to check
-        it serves this publication, then save it above. These instructions do
-        not change your DNS or issue a certificate.
+        it serves this publication, then save your public URL in this tab. These
+        instructions do not change your DNS or issue a certificate.
       </p>
-    </SettingsDisclosure>
+    </section>
   );
 }
