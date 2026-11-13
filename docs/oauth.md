@@ -5,10 +5,12 @@ authorization. A publication member signs in to Margin, reviews the client, reso
 requested permissions, selects which ones to grant, and approves or cancels. This is separate from reader sign-in.
 Existing manually issued API tokens continue to work.
 
-OAuth uses the same Central account and publication membership as the browser.
-The same email can authorize different roles on different publications; tokens
-remain bound to the publication and resource that issued them. Each person owns
-their own consent and connections, including when several people use the same client.
+OAuth uses the same publication session and membership as the browser. Invited
+teammates sign in with their local publication accounts. Teammate accounts with
+the same email on different Margin installations have separate passwords, roles
+and article grants. Tokens remain bound to the publication and resource that
+issued them. Each person owns their own consent and connections, including
+when several people use the same client.
 
 Set `PUBLIC_URL` to the canonical HTTPS publication URL, including any mount
 path (`https://example.com/blog`). HTTP is accepted only for loopback development.
@@ -72,10 +74,10 @@ Any role with an article invitation can explicitly approve `review:assigned`.
 Clients supporting reviewers must request that scope; `content:read` does not
 grant review access. Reviewer consent captures the assigned articles at approval.
 Newly assigned or regranted articles require new consent. Every request intersects
-approved permissions and article grants with current Central access. Downgrades
-apply immediately; removal, reinvitation and password changes invalidate old
-member credentials. A temporary Central outage fails closed without revoking
-otherwise valid consent.
+approved permissions and article grants with current access in the publication’s
+own database. Downgrades apply immediately; removal, reinvitation and password
+changes invalidate old member credentials. Team authorization does not depend
+on an external account service.
 
 The legacy role names `reader`, `writer`, `publisher`, and `owner` remain accepted
 as registration/request aliases and expand to their equivalent capability sets.

@@ -4,9 +4,9 @@ Write Markdown with live preview, save a draft, and publish when ready. Choose B
 
 ## Publication teams
 
-Open **Settings → Team** to invite someone by email. On a self-hosted publication, first choose **Connect team access**, sign in to Margin, and approve the publication shown. The owner keeps their existing local login; teammates use their Margin accounts. Team access is independent of where the publication is hosted. They accept with their Margin account; new users create an account and verify their email first. The same email and password work across publications, while each publication grants its own access. Being an Owner on one publication does not grant access to another.
+Open **Settings → Team** to invite someone by email. This works on hosted and self-hosted publications without connecting a separate account service. The invitation lets a new teammate create an account on this publication, or sign in if they already have an account here. The owner keeps their existing login. Using the same email on another Margin installation creates a separate account with its own password, role and article access. Being an Owner on one publication does not grant access to another.
 
-Members and Pending invitations have separate page controls and page-size selectors. Central counts and selects each requested page in SQL; the browser loads only that page. Removing the last item on a page returns that list to its last available page.
+Members and Pending invitations have separate page controls and page-size selectors. The engine counts and selects each requested page in SQL; the browser loads only that page. Removing the last item on a page returns that list to its last available page.
 
 | Role | Publication access |
 | --- | --- |
@@ -15,11 +15,11 @@ Members and Pending invitations have separate page controls and page-size select
 | Publisher | Writer access plus publishing, archiving and deleting content. |
 | Peer reviewer | Read and annotate only assigned articles, compare addressed notes and approve a review. Cannot edit article content or browse the workspace. |
 
-Invitations expire and can be resent or revoked. Resending replaces the old link. Owners can change a member's role or remove access; Central checks the current membership on subsequent requests. Removing someone from one publication leaves their Margin account and other publication memberships intact. Central must be reachable to validate team sessions.
+Invitations expire and can be resent or revoked. Resending replaces the old link. Owners can change a member's role or remove access; the engine checks current membership on subsequent browser, API and OAuth requests. Removing someone revokes their publication access while retaining their account for a future invitation. It does not change accounts or access on other Margin installations. Team sign-in and permission checks use the publication's own database.
 
 Peer-review access is granted per article. Invite from the article's review panel or choose **Peer reviewer** and an article in Team. A person can review several assigned articles. Inviting an existing Writer, Publisher or Owner to review an article adds that review assignment without replacing their publication role. Reviewer access to private media and source documents is restricted to the assigned draft.
 
-Existing reader-based review invitations on a Central-managed publication must be sent again through the review panel to grant Central access; this reuses their review history. Self-hosted publications without a Central ownership connection retain the existing owner and reader sign-in flows.
+Peer review requires a publication account and an article assignment. Reader accounts do not grant draft access. Send a team invitation to give an existing reader access to review an article.
 
 Team edits identify the member in revision history. Public bylines remain the publication's shared author profile. Concurrent editing uses revision checks and conflict review; it does not merge keystrokes live.
 

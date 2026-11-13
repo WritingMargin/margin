@@ -93,7 +93,7 @@ export default function SettingsPanel({
 }
 
 function SettingsContent({ state, tab, cloudManaged, notify, theme, setTab }: Pick<Props, "tab" | "cloudManaged" | "notify" | "theme" | "setTab"> & { state: ReturnType<typeof usePublicationSettings> }) {
- return <> {tab === "team" ? <TeamSettings cloudManaged={cloudManaged} /> : tab === "integrations" ? (
+ return <> {tab === "team" ? <TeamSettings /> : tab === "integrations" ? (
           <IntegrationsSettings notify={notify} />
         ) : (
           <>

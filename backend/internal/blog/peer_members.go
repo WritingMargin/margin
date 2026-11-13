@@ -36,7 +36,7 @@ func (a *App) memberPeerReview(r *http.Request, member Row, id string) Row {
 func (a *App) memberPeerReviews(w http.ResponseWriter, r *http.Request) {
 	member := a.peerReviewPrincipal(r)
 	if member == nil {
-		fail(401, "Sign in with your Margin account.")
+		fail(401, "Sign in to your account on this publication.")
 	}
 	result := []Row{}
 	rows := a.DB.Must(r.Context(), `SELECT review.id,review.post_id,review.status,p.title FROM peer_reviews review
@@ -49,9 +49,9 @@ func (a *App) memberPeerReviews(w http.ResponseWriter, r *http.Request) {
 	send(w, 200, result)
 }
 
-// The local review contains the notes and draft lifecycle; Central owns the
+// The local review contains the notes and draft lifecycle. The engine owns the
 // identity, invitation and revocable article grant. A resend reuses that review.
-func (a *App) inviteCentralPeer(w http.ResponseWriter, r *http.Request, input Row) {
+func (a *App) inviteLocalPeer(w http.ResponseWriter, r *http.Request, input Row) {
 	a.limit(r, "peer-invite", 30, time.Hour, true)
 	email := emailField(input, "email", true)
 	article := stringField(input, "articleId", 1, 100, true)
@@ -69,10 +69,10 @@ func (a *App) inviteCentralPeer(w http.ResponseWriter, r *http.Request, input Ro
 		id = row.str("id")
 	}
 	must(tx.Commit())
-	// Keep the review if delivery fails: Central preserves the pending invite
+	// Keep the review if delivery fails: the engine preserves the pending invite
 	// for resend, and its eventual acceptance must still find this draft history.
-	// This row alone grants no access without an accepted Central article grant.
-	result := a.centralTeamRequest(r, "invite", Row{"email": email, "role": "peer_reviewer", "articleId": article})
+	// This row alone grants no access without an accepted engine article grant.
+	result := a.localTeamRequest(r, "invite", Row{"email": email, "role": "peer_reviewer", "articleId": article})
 	result["reviewId"] = id
 	// Existing author-review consumers expect the local review ID and status.
 	if r.PathValue("id") != "" {
@@ -82,7 +82,7 @@ func (a *App) inviteCentralPeer(w http.ResponseWriter, r *http.Request, input Ro
 }
 
 // Review access is an explicit delegation, independent of broad content scopes.
-// Both transports resolve the current Central subject and article grants.
+// Both transports resolve the current engine subject and article grants.
 func (a *App) peerReviewPrincipal(r *http.Request) Row {
 	if scopes, oauth := a.requestOAuthScopes(r); oauth && !hasOAuthScope(scopes, "review:assigned") {
 		return nil

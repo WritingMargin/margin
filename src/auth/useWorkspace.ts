@@ -18,9 +18,7 @@ export function useWorkspace() {
     setupRequired: boolean;
     storageConfigured: boolean;
     cloudManaged?: boolean;
-    teamConnected?: boolean;
-    teamPasswordRecoveryUrl?: string;
-    passwordRecoveryUrl?: string;
+    hostedOwnerRecoveryUrl?: string;
     ownerEmail?: OwnerEmailStatus | null;
   } | null>(null);
   const [error, setError] = useState("");

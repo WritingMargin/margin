@@ -1,56 +1,62 @@
 package blog
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 )
 
-func TestTeamPagesForwardBoundedQueriesToCentral(t *testing.T) {
-	a, cookie, member := memberFixture(t, "owner")
-	var sent Row
-	a.Client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Path == "/cloud/api/engine-member" {
-			return fixtureResponse(*member), nil
-		}
-		if r.URL.Path != "/cloud/api/engine-team" {
-			t.Fatalf("unexpected Central route %s", r.URL.Path)
-		}
-		must(json.NewDecoder(r.Body).Decode(&sent))
-		return fixtureResponse(Row{"members": []Row{}, "invitations": []Row{}, "page": 2, "pageSize": 25, "total": 31, "pages": 2}), nil
-	})
-	for _, test := range []struct{ path, action string }{
-		{"/api/team/members", "list_members"},
-		{"/api/team/invitations", "list_invitations"},
-	} {
-		result := responseRow(t, memberRequest(a, cookie, "GET", test.path+"?page=9&pageSize=25&actorSubject=forged&subject=forged", nil), 200)
-		assertTeamPageRequest(t, sent, test.action, 9, 25)
-		if result["page"] != float64(2) || result["total"] != float64(31) {
-			t.Fatal("Central page clamp and count not preserved", result)
-		}
-		expectStatus(t, memberRequest(a, cookie, "GET", test.path, nil), 200)
-		assertTeamPageRequest(t, sent, test.action, 1, 10)
+func TestTeamPagesUseSQLCountsAndBoundedPages(t *testing.T) {
+	a, cookie, _ := memberFixture(t, "owner")
+	checkTeamPagesUseSQLCountsAndBoundedPages(t, a, cookie)
+}
+func TestPostgreSQLTeamPagesUseSQLCountsAndBoundedPages(t *testing.T) {
+	db, _ := postgresTestDatabase(t)
+	a, _, member := memberFixture(t, "owner")
+	a.DB = db
+	a.createOwner(t.Context(), "owner@example.com", "unused", "research")
+	saveMemberFixture(t, a, *member)
+	login := request(t, a, "POST", "/api/login", Row{"email": (*member)["email"], "password": localMemberTestPassword}, false)
+	expectStatus(t, login, 200)
+	checkTeamPagesUseSQLCountsAndBoundedPages(t, a, cloudAuthenticatedCookie(t, login))
+}
+func checkTeamPagesUseSQLCountsAndBoundedPages(t *testing.T, a *App, cookie *http.Cookie) {
+	t.Helper()
+	for i := 0; i < 29; i++ {
+		id := fmt.Sprintf("user-%02d", i)
+		a.DB.Must(t.Context(), "INSERT INTO engine_users(id,email,name,password_hash,auth_version) VALUES($1,$2,$1,'unused','v1')", id, id+"@example.com")
+		a.DB.Must(t.Context(), "INSERT INTO engine_memberships(user_id,role,version) VALUES($1,'writer','m1')", id)
+	}
+	for i := 0; i < 31; i++ {
+		id := fmt.Sprintf("invite-%02d", i)
+		a.DB.Must(t.Context(), "INSERT INTO engine_invitations(id,email,role,token_hash,expires_at) VALUES($1,$2,'writer',$1,'2099-01-01T00:00:00.000Z')", id, id+"@example.com")
+	}
+	// Expired, accepted and revoked rows never inflate the pending count.
+	for _, status := range []string{"accepted", "revoked"} {
+		a.DB.Must(t.Context(), "INSERT INTO engine_invitations(id,email,role,token_hash,expires_at,status) VALUES($1,$1,'writer',$1,'2099-01-01T00:00:00.000Z',$1)", status)
+	}
+	a.DB.Must(t.Context(), "INSERT INTO engine_invitations(id,email,role,token_hash,expires_at) VALUES('expired','expired@example.com','writer','expired','2000-01-01T00:00:00.000Z')")
+	for _, kind := range []string{"members", "invitations"} {
+		path := "/api/team/" + kind
+		result := responseRow(t, memberRequest(a, cookie, "GET", path+"?page=9&pageSize=25&actorSubject=forged", nil), 200)
+		assertLocalTeamPage(t, result, kind, 2, 25, 31, 6)
+		result = responseRow(t, memberRequest(a, cookie, "GET", path, nil), 200)
+		assertLocalTeamPage(t, result, kind, 1, 10, 31, 10)
+	}
+	members := responseRow(t, memberRequest(a, cookie, "GET", "/api/team/members", nil), 200)["members"].([]any)
+	if !object(members[0]).yes("primaryOwner") {
+		t.Fatal("Primary owner must be first", members[0])
 	}
 }
-
-func assertTeamPageRequest(t *testing.T, sent Row, action string, page, size float64) {
+func assertLocalTeamPage(t *testing.T, result Row, kind string, page, size, total, length float64) {
 	t.Helper()
-	if sent.str("action") != action || sent["page"] != page || sent["pageSize"] != size {
-		t.Fatal("page selection not forwarded", sent)
-	}
-	if sent.str("subject") != "central-owner-id" || sent.str("actorSubject") != "teammate-subject" {
-		t.Fatal("publication identity overridden", sent)
+	if result["page"] != page || result["pageSize"] != size || result["total"] != total || float64(len(result[kind].([]any))) != length {
+		t.Fatal("Incorrect bounded SQL page", result)
 	}
 }
 
 func TestTeamPagesRejectInvalidPagination(t *testing.T) {
-	a, cookie, member := memberFixture(t, "owner")
-	a.Client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Path != "/cloud/api/engine-member" {
-			t.Fatal("invalid query reached Central listing", r.URL.Path)
-		}
-		return fixtureResponse(*member), nil
-	})
+	a, cookie, _ := memberFixture(t, "owner")
 	for _, path := range []string{"/api/team/members", "/api/team/invitations"} {
 		for _, query := range []string{"page=", "page=0", "page=-1", "page=1.5", "page=no", "page=2147483648", "page=1&page=2", "pageSize=", "pageSize=0", "pageSize=-1", "pageSize=101", "pageSize=1.5", "pageSize=no", "pageSize=10&pageSize=25"} {
 			expectStatus(t, memberRequest(a, cookie, "GET", path+"?"+query, nil), 400)

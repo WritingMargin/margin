@@ -7,33 +7,24 @@ import (
 // Cloud credentials are checked by their issuing Central service, never copied
 // into the publication database. Self-hosted password authentication is unchanged.
 func (a *App) cloudPasswordLogin(w http.ResponseWriter, r *http.Request, email, password string) bool {
-	binding := a.teamBinding(r.Context())
-	if binding.str("subject") == "" || a.selfHostedOwnerLogin(r, binding, email) {
+	binding := a.cloudOwner(r.Context())
+	if binding.str("subject") == "" || !a.hostedOwnerEmail(r, email) {
 		return false
 	}
 	result, status := a.centralIdentityRequest(r.Context(), "/cloud/api/engine-login", Row{"email": email, "password": password})
 	if status != 200 || !result.yes("authenticated") {
 		fail(401, "Email or password is incorrect.")
 	}
-	// Older Central releases return only the primary owner subject. Preserve
-	// that contract during a rolling upgrade, never for another subject.
-	if result.str("role") == "" {
-		if result.str("subject") != binding.str("subject") {
-			fail(401, "Email or password is incorrect.")
-		}
-		a.startSession(w, r)
-	} else {
-		a.startMemberSession(w, r, result)
+	if result.str("subject") != binding.str("subject") {
+		fail(401, "Email or password is incorrect.")
 	}
+	a.startSession(w, r)
 	send(w, 200, Row{"authenticated": true})
 	return true
 }
 
-// A self-hosted owner's password is checked locally and is never forwarded.
-func (a *App) selfHostedOwnerLogin(r *http.Request, binding Row, email string) bool {
-	if binding.str("publicationId") == "" {
-		return false
-	}
+// Hosting creates the primary owner record; shared sign-in is only for that owner.
+func (a *App) hostedOwnerEmail(r *http.Request, email string) bool {
 	owner := first(a.DB.Must(r.Context(), "SELECT email FROM admins WHERE id=1"))
 	return owner.str("email") == email
 }

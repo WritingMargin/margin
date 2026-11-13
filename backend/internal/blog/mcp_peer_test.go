@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -14,21 +14,18 @@ import (
 )
 
 type mcpPeerState struct {
-	mu      sync.RWMutex
-	member  Row
-	removed bool
+	t      *testing.T
+	app    *App
+	member Row
 }
 
-func (s *mcpPeerState) change(change func(Row)) { s.mu.Lock(); defer s.mu.Unlock(); change(s.member) }
-func (s *mcpPeerState) response(r *http.Request) (*http.Response, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if s.removed {
-		res := fixtureResponse(Row{"error": "Membership removed"})
-		res.StatusCode = 403
-		return res, nil
+func (s *mcpPeerState) change(change func(Row)) {
+	previous := s.member.str("subject")
+	change(s.member)
+	if previous != s.member.str("subject") {
+		s.app.DB.Must(s.t.Context(), "DELETE FROM engine_users WHERE id=$1", previous)
 	}
-	return fixtureResponse(s.member), nil
+	saveMemberFixture(s.t, s.app, s.member)
 }
 
 type mcpPeerFixtureState struct {
@@ -42,15 +39,19 @@ type mcpPeerFixtureState struct {
 func newMCPPeerFixture(t *testing.T, scope, role string) mcpPeerFixtureState {
 	t.Helper()
 	a := cloudOwnerFixture(t)
-	expectStatus(t, cloudMachineCall(a, "/api/cloud/bootstrap", cloudOwnerInput()), 201)
+	a.createOwner(t.Context(), "owner@example.com", "unused", "research")
 	t.Setenv("PUBLIC_URL", "https://blog.test")
 	input := draftInput("mcp-peer-assigned")
 	input["content"] = "The sample included ten people."
 	post := responseRow(t, request(t, a, "POST", "/api/posts", input, true), 201)
 	other := responseRow(t, request(t, a, "POST", "/api/posts", draftInput("mcp-peer-other"), true), 201)
 	member := Row{"subject": "reviewer-identity", "email": "reviewer@example.com", "name": "Reviewer", "role": role, "authVersion": "test-version", "membershipVersion": "membership-1", "articleIds": []string{post.str("id")}, "articleGrantVersions": Row{post.str("id"): "grant-1"}}
-	state := &mcpPeerState{member: member}
-	a.Client.Transport = testTransport(state.response)
+	state := &mcpPeerState{t: t, app: a, member: member}
+	saveMemberFixture(t, a, member)
+	a.Client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
+		t.Errorf("MCP local authorization called %s", r.URL.Path)
+		return nil, fmt.Errorf("remote unavailable")
+	})
 	a.DB.Must(t.Context(), "INSERT INTO sessions(token_hash,expires_at) VALUES($1,$2)", hash("browser"), time.Now().Add(time.Hour).UTC().Format(time.RFC3339Nano))
 	a.DB.Must(t.Context(), "INSERT INTO session_principals(token_hash,subject,auth_version) VALUES($1,$2,$3)", hash("browser"), member["subject"], member["authVersion"])
 	invite, otherInvite := token(), token()
@@ -159,7 +160,7 @@ func TestMCPPeerOAuthIdentityAndRoleChangesFailClosed(t *testing.T) {
 			fixture.state.change(func(member Row) {
 				switch change {
 				case "subject":
-					member["subject"] = "another-central-subject"
+					member["subject"] = "another-engine-user"
 				case "role":
 					member["role"] = "writer"
 					member["membershipVersion"] = "membership-2"

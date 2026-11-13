@@ -30,7 +30,7 @@ export default function Workspace() {
   };
   if (recovery) return recovery;
   if (!session) return <WorkspaceLoading error={state.error} />;
-  if (!session.authenticated) return <Login key={session.setupRequired ? "setup" : "login"} setup={session.setupRequired} cloudManaged={session.cloudManaged} teamConnected={session.teamConnected} teamPasswordRecoveryUrl={session.teamPasswordRecoveryUrl} passwordRecoveryUrl={session.passwordRecoveryUrl} onLogin={refreshSession} />;
+  if (!session.authenticated) return <Login key={session.setupRequired ? "setup" : "login"} setup={session.setupRequired} cloudManaged={session.cloudManaged} onLogin={refreshSession} />;
   return <SignedInWorkspace session={session} state={state} logout={logout} />;
 }
 
@@ -69,8 +69,8 @@ function useOfflineWriter(session: WorkspaceState["session"], offline: boolean) 
 }
 function recoveryPage(session: WorkspaceState["session"]) {
   const path = unmountPath(location.pathname).replace(/\/+$/, "");
-  if (path === "/admin/invite") return <AcceptInvitation centralOrigin={session?.centralOrigin} />;
+  if (path === "/admin/invite") return <AcceptInvitation />;
   if (path === "/admin/verify-email") return <VerifyOwnerEmail />;
-  if (["/admin/forgot-password", "/admin/reset-password"].includes(path)) return <PasswordRecovery recoveryUrl={session?.passwordRecoveryUrl} teamRecoveryUrl={session?.teamPasswordRecoveryUrl} />;
+  if (["/admin/forgot-password", "/admin/reset-password"].includes(path)) return <PasswordRecovery hostedOwnerRecoveryUrl={session?.hostedOwnerRecoveryUrl} />;
   return null;
 }

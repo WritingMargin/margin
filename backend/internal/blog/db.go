@@ -231,7 +231,7 @@ func decodeColumn(key string, value any) any {
 		return t.UTC().Format("2006-01-02T15:04:05.000Z")
 	}
 	switch key {
-	case "closed", "approved", "featured", "email_required", "approval_required", "pinned":
+	case "enabled", "closed", "approved", "featured", "email_required", "approval_required", "pinned":
 		if n, ok := value.(int64); ok {
 			return n != 0
 		}

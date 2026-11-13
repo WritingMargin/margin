@@ -64,23 +64,17 @@ function usePasswordRecovery() {
 }
 type RecoveryState = ReturnType<typeof usePasswordRecovery>;
 export default function PasswordRecovery({
-  recoveryUrl,
-  teamRecoveryUrl,
+  hostedOwnerRecoveryUrl,
 }: {
-  recoveryUrl?: string;
-  teamRecoveryUrl?: string;
+  hostedOwnerRecoveryUrl?: string;
 }) {
   const state = usePasswordRecovery();
   return (
     <main className="owner-email-page password-recovery-page">
       <section className="login-card" aria-labelledby="password-recovery-title">
         <h1 id="password-recovery-title">{recoveryTitle(state)}</h1>
-        {recoveryUrl ? (
-          <CentralRecovery url={recoveryUrl} />
-        ) : (
-          <LocalRecovery state={state} />
-        )}
-        {!state.reset && !recoveryUrl && teamRecoveryUrl && <p>Invited teammate? <a href={teamRecoveryUrl}>Reset your Margin account password</a>.</p>}
+        <LocalRecovery state={state} />
+        {!state.reset && hostedOwnerRecoveryUrl && <p>Hosted publication owner? <a href={hostedOwnerRecoveryUrl}>Recover your hosting account</a>.</p>}
         <a className="password-recovery-back" href={sitePath("/admin")}>
           Back to sign in
         </a>
@@ -92,18 +86,6 @@ function recoveryTitle({ message, reset }: RecoveryState) {
   if (message && reset) return "Password updated";
   return reset ? "Choose a new password" : "Forgot your password?";
 }
-function CentralRecovery({ url }: { url: string }) {
-  return (
-    <>
-      <p>
-        Reset your Margin account password, then return to your blog to sign in.
-      </p>
-      <a className="button primary" href={url}>
-        Recover your Margin account
-      </a>
-    </>
-  );
-}
 function LocalRecovery({ state }: { state: RecoveryState }) {
   const { reset, valid, message, error } = state;
   if (message) return <p role="status">{message}</p>;
@@ -112,7 +94,7 @@ function LocalRecovery({ state }: { state: RecoveryState }) {
       <p>
         {reset
           ? "Use at least 12 characters for your new password."
-          : "Enter your owner email address. We’ll send a reset link if the address is verified and email delivery is configured."}
+          : "Enter your account email address. We’ll send a reset link if it belongs to an eligible account on this publication."}
       </p>
       {!valid && (
         <p role="alert">

@@ -86,16 +86,7 @@ func (a *App) oauthBrowserPrincipal(r *http.Request) Row {
 	if principal.str("subject") == "" {
 		return principal
 	}
-	// A legacy owner cookie still creates a member-bound grant on a connected
-	// engine. OAuth does not inherit the old cookie's membership bypass.
-	if principal.str("authVersion") == "" {
-		current, status := a.centralIdentityRequest(r.Context(), "/cloud/api/engine-member", Row{"memberSubject": principal["subject"]})
-		requireCentralSuccess(current, status)
-		if current.str("subject") != principal.str("subject") {
-			fail(503, "Your publication membership could not be verified.")
-		}
-		principal = current
-	}
+
 	if principal.str("authVersion") == "" || principal.str("membershipVersion") == "" || !validMemberRole(principal.str("role")) {
 		fail(503, "Your publication membership could not be verified for this connection.")
 	}
@@ -141,12 +132,10 @@ func validCurrentOAuthMember(current Row, subject string) bool {
 	return current.str("subject") == subject && validMemberRole(current.str("role")) && current.str("authVersion") != "" && current.str("membershipVersion") != ""
 }
 func (a *App) currentOAuthMember(ctx context.Context, binding oauthMemberBinding) (Row, bool) {
-	current, status := a.centralIdentityRequest(ctx, "/cloud/api/engine-member", Row{"memberSubject": binding.Subject})
-	removed := map[int]bool{401: true, 403: true, 404: true}[status]
-	if removed {
-		return current, true
+	current := a.localMemberPrincipal(ctx, binding.Subject)
+	if current == nil {
+		return nil, true
 	}
-	requireCentralSuccess(current, status)
 	// Malformed successful replies fail closed without permanently erasing grants.
 	if !validCurrentOAuthMember(current, binding.Subject) {
 		fail(503, "Your publication membership could not be verified.")

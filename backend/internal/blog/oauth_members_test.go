@@ -1,8 +1,8 @@
 package blog
 
 import (
+	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,8 +15,6 @@ func oauthMemberFixture(t *testing.T, role string) (*App, *Row) {
 	t.Helper()
 	a, _, member := memberFixture(t, role)
 	t.Setenv("PUBLIC_URL", "https://blog.test")
-	(*member)["membershipVersion"] = "membership-1"
-	(*member)["articleGrantVersions"] = map[string]any{}
 	a.DB.Must(t.Context(), "INSERT INTO sessions(token_hash,expires_at) VALUES($1,$2)", hash("browser"), time.Now().Add(time.Hour).UTC().Format(time.RFC3339))
 	a.DB.Must(t.Context(), "INSERT INTO session_principals(token_hash,subject,auth_version) VALUES($1,$2,$3)", hash("browser"), (*member)["subject"], (*member)["authVersion"])
 	return a, member
@@ -38,6 +36,7 @@ func TestOAuthMemberScopeCeilingsAndExchangeDowngrade(t *testing.T) {
 	expectStatus(t, w, 303)
 	target, _ := url.Parse(w.Header().Get("Location"))
 	(*member)["role"] = "writer"
+	saveMemberFixture(t, a, *member)
 	tokens := responseRow(t, oauthHTTPRequest(a, "POST", "/oauth/token", oauthExchangeForm(client.str("client_id"), target.Query().Get("code")), false), 200)
 	if tokens.str("scope") != "content:read content:draft" {
 		t.Fatal("exchange ignored current role", tokens["scope"])
@@ -52,6 +51,7 @@ func TestOAuthMemberCurrentRoleCapsAccessAndRefresh(t *testing.T) {
 	a, member := oauthMemberFixture(t, "publisher")
 	client, tokens := oauthTokenTest(t, a, "publisher", "https://blog.test/api")
 	(*member)["role"] = "writer"
+	saveMemberFixture(t, a, *member)
 	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "POST", "/api/posts", Row{"title": "Live", "slug": "role-live", "content": "text", "status": "published"}), 403)
 	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 200)
 	next := oauthRefresh(t, a, client, tokens, 200)
@@ -59,14 +59,10 @@ func TestOAuthMemberCurrentRoleCapsAccessAndRefresh(t *testing.T) {
 		t.Fatal("refresh restored lost publish scope")
 	}
 }
-func TestOAuthMemberOutageDoesNotRevoke(t *testing.T) {
+func TestOAuthMemberAccessAndRefreshUseLocalMembership(t *testing.T) {
 	a, _ := oauthMemberFixture(t, "writer")
 	client, tokens := oauthTokenTest(t, a, "writer", "https://blog.test/api")
-	healthy := a.Client
-	a.Client = &http.Client{Transport: testTransport(func(*http.Request) (*http.Response, error) { return nil, errors.New("Central unavailable") })}
-	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 503)
-	oauthRefresh(t, a, client, tokens, 503)
-	a.Client = healthy
+	// The fixture's remote transport fails the test on any attempted identity call.
 	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 200)
 	oauthRefresh(t, a, client, tokens, 200)
 }
@@ -80,12 +76,14 @@ func TestOAuthMemberRemovalAndCredentialChangesPersist(t *testing.T) {
 				before[k] = v
 			}
 			if change == "removed" {
-				*member = nil
+				removeMemberFixture(t, a, (*member).str("subject"))
 			} else {
 				(*member)[change] = "changed"
+				saveMemberFixture(t, a, *member)
 			}
 			expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 401)
 			*member = before
+			saveMemberFixture(t, a, *member)
 			expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 401)
 			oauthRefresh(t, a, client, tokens, 400)
 		})
@@ -95,6 +93,7 @@ func TestOAuthOldIncarnationCannotRevokeRejoinedMember(t *testing.T) {
 	a, member := oauthMemberFixture(t, "writer")
 	client, old := oauthTokenTest(t, a, "writer", "https://blog.test/api")
 	(*member)["membershipVersion"] = "rejoined"
+	saveMemberFixture(t, a, *member)
 	code := oauthCodeTest(t, a, client.str("client_id"), "writer", "https://blog.test/api")
 	fresh := responseRow(t, oauthHTTPRequest(a, "POST", "/oauth/token", oauthExchangeForm(client.str("client_id"), code), false), 200)
 	expectStatus(t, tokenRequest(a, old.str("access_token"), "GET", "/api/posts", nil), 401)
@@ -107,19 +106,23 @@ func TestOAuthCodeRejectsChangedMembership(t *testing.T) {
 	client := oauthRegisterTest(t, a, "writer")
 	code := oauthCodeTest(t, a, client.str("client_id"), "writer", "https://blog.test/api")
 	(*member)["membershipVersion"] = "rejoined"
+	saveMemberFixture(t, a, *member)
 	expectStatus(t, oauthHTTPRequest(a, "POST", "/oauth/token", oauthExchangeForm(client.str("client_id"), code), false), 400)
 	(*member)["membershipVersion"] = "membership-1"
+	saveMemberFixture(t, a, *member)
 	expectStatus(t, oauthHTTPRequest(a, "POST", "/oauth/token", oauthExchangeForm(client.str("client_id"), code), false), 400)
 }
 func TestOAuthReviewerConsentPinsArticleGrantVersions(t *testing.T) {
 	a, member := oauthMemberFixture(t, "peer_reviewer")
 	(*member)["articleIds"] = []any{"article-a"}
 	(*member)["articleGrantVersions"] = map[string]any{"article-a": "grant-a"}
+	saveMemberFixture(t, a, *member)
 	_, tokens := oauthTokenTest(t, a, "review:assigned", "https://blog.test/api")
 	access := tokens.str("access_token")
 	expectStatus(t, tokenRequest(a, access, "GET", "/api/posts", nil), 403)
 	(*member)["articleIds"] = []any{"article-a", "article-b"}
 	(*member)["articleGrantVersions"] = map[string]any{"article-a": "grant-a", "article-b": "grant-b"}
+	saveMemberFixture(t, a, *member)
 	r := httptest.NewRequest("GET", "https://blog.test/api/public/team/reviews", nil)
 	principal := a.oauthPrincipal(r, access)
 	ids := principal["articleIds"].([]string)
@@ -127,20 +130,15 @@ func TestOAuthReviewerConsentPinsArticleGrantVersions(t *testing.T) {
 		t.Fatal("later invitation expanded consent", ids)
 	}
 	(*member)["articleGrantVersions"] = map[string]any{"article-a": "grant-a-reinvited", "article-b": "grant-b"}
+	saveMemberFixture(t, a, *member)
 	if a.oauthPrincipal(r, access) != nil {
 		t.Fatal("recreated article grant restored old consent")
 	}
 }
 func TestOAuthSameClientIndependentMemberConsents(t *testing.T) {
-	a, member := oauthMemberFixture(t, "writer")
-	firstMember := *member
+	a, _ := oauthMemberFixture(t, "writer")
 	second := Row{"subject": "second-member", "email": "second@example.test", "role": "publisher", "authVersion": "second-auth", "membershipVersion": "second-membership", "articleGrantVersions": map[string]any{}}
-	identities := map[string]Row{firstMember.str("subject"): firstMember, second.str("subject"): second}
-	a.Client = &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) {
-		var input Row
-		must(json.NewDecoder(r.Body).Decode(&input))
-		return fixtureResponse(identities[input.str("memberSubject")]), nil
-	})}
+	saveMemberFixture(t, a, second)
 	client := oauthRegisterTest(t, a, "publisher")
 	firstCode := oauthCodeTest(t, a, client.str("client_id"), "writer", "https://blog.test/api")
 	firstTokens := responseRow(t, oauthHTTPRequest(a, "POST", "/oauth/token", oauthExchangeForm(client.str("client_id"), firstCode), false), 200)
@@ -171,15 +169,17 @@ func TestOAuthMemberConsentCancelAndRequestSnapshot(t *testing.T) {
 		t.Fatal(target)
 	}
 	_, tokens := oauthTokenTest(t, a, "writer", "https://blog.test/api")
-	previous := a.Client.Transport
-	calls := 0
-	a.Client = &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) { calls++; return previous.RoundTrip(r) })}
-	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 200)
-	if calls != 1 {
-		t.Fatalf("one API request did %d Central lookups", calls)
+	r := httptest.NewRequest("GET", "https://blog.test/api/posts", nil)
+	r = r.WithContext(context.WithValue(r.Context(), browserPrincipalKey{}, &browserPrincipalCache{}))
+	if a.oauthPrincipal(r, tokens.str("access_token")) == nil {
+		t.Fatal("local membership was not loaded")
 	}
-	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 200)
-	if calls != 2 {
+	removeMemberFixture(t, a, "teammate-subject")
+	if a.oauthPrincipal(r, tokens.str("access_token")) == nil {
+		t.Fatal("membership snapshot changed within a request")
+	}
+	fresh := httptest.NewRequest("GET", "https://blog.test/api/posts", nil)
+	if a.oauthPrincipal(fresh, tokens.str("access_token")) != nil {
 		t.Fatal("membership snapshot escaped request lifetime")
 	}
 }
@@ -190,20 +190,21 @@ func TestOAuthInvitedOwnerCannotDelegatePrimaryAccount(t *testing.T) {
 		expectStatus(t, tokenRequest(a, tokens.str("access_token"), "POST", path, Row{"consent": true}), 403)
 	}
 }
-func TestOAuthPrimaryOwnerCanDisconnectLegacyGrant(t *testing.T) {
+func TestOAuthHostedPrimaryOwnerCanDisconnectOwnGrant(t *testing.T) {
 	a := oauthFixture(t)
 	_, tokens := oauthTokenTest(t, a, "reader", "https://blog.test/api")
 	t.Setenv("SETUP_TOKEN", strings.Repeat("s", 32))
 	a.DB.Must(t.Context(), "INSERT INTO site_settings(name,configuration) VALUES('cloud_owner',$1)", encode(Row{"subject": "primary-central", "centralOrigin": "https://central.example.test"}))
 	a.Client = &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) {
-		return fixtureResponse(Row{"subject": "primary-central", "role": "owner", "primaryOwner": true, "authVersion": "primary-auth", "membershipVersion": "primary-membership", "articleGrantVersions": map[string]any{}}), nil
+		t.Errorf("primary owner unexpectedly called remote identity: %s", r.URL.Path)
+		return fixtureResponse(Row{}), nil
 	})}
 	listing := oauthHTTPRequest(a, "GET", "/api/oauth/connections", nil, true)
 	expectStatus(t, listing, 200)
 	var apps []Row
 	must(json.Unmarshal(listing.Body.Bytes(), &apps))
 	if len(apps) != 1 {
-		t.Fatal("legacy connection hidden from current primary owner", apps)
+		t.Fatal("connection hidden from primary owner", apps)
 	}
 	expectStatus(t, oauthHTTPRequest(a, "DELETE", "/api/oauth/connections/"+apps[0].str("id"), nil, true), 200)
 	expectStatus(t, tokenRequest(a, tokens.str("access_token"), "GET", "/api/posts", nil), 401)
@@ -212,10 +213,9 @@ func TestOAuthPrimaryOwnerCanDisconnectLegacyGrant(t *testing.T) {
 func TestPostgreSQLOAuthMemberSubject(t *testing.T) {
 	db, _ := postgresTestDatabase(t)
 	a, member := oauthMemberFixture(t, "writer")
-	binding := a.cloudOwner(t.Context())
 	a.DB = db
+	saveMemberFixture(t, a, *member)
 	db.Must(t.Context(), "INSERT INTO admins(id,email,password_hash) VALUES(1,'owner@example.test','unused')")
-	db.Must(t.Context(), "INSERT INTO site_settings(name,configuration) VALUES('cloud_owner',$1)", encode(binding))
 	db.Must(t.Context(), "INSERT INTO sessions(token_hash,expires_at) VALUES($1,$2)", hash("browser"), time.Now().Add(time.Hour).UTC().Format(time.RFC3339))
 	db.Must(t.Context(), "INSERT INTO session_principals(token_hash,subject,auth_version) VALUES($1,$2,$3)", hash("browser"), (*member)["subject"], (*member)["authVersion"])
 	client, tokens := oauthTokenTest(t, a, "writer", "https://blog.test/api")

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
-	"strings"
 )
 
 func (a *App) peerRoutes() {
@@ -29,23 +28,15 @@ func (a *App) peerPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) activePeer(r *http.Request, id string) (Row, Row) {
-	if a.teamOwnerSubject(r.Context()) != "" {
-		member := a.peerReviewPrincipal(r)
-		if member == nil {
-			fail(401, "Sign in with your Margin account to review this article.")
-		}
-		review := a.memberPeerReview(r, member, id)
-		if review == nil {
-			fail(404, "No active article invitation for this Margin account.")
-		}
-		return review, member
+	member := a.peerReviewPrincipal(r)
+	if member == nil {
+		coded(401, "Sign in to this publication to review this article.", "REVIEW_ACCOUNT_REQUIRED")
 	}
-	reader := a.requireCommentReader(r)
-	review := first(a.DB.Must(r.Context(), "SELECT * FROM peer_reviews WHERE id=$1 AND email=$2 AND closed=FALSE", id, strings.ToLower(reader.str("email"))))
+	review := a.memberPeerReview(r, member, id)
 	if review == nil {
-		fail(404, "No active invitation for this email address.")
+		coded(404, "No active article invitation for this account.", "REVIEW_ACCOUNT_REQUIRED")
 	}
-	return review, reader
+	return review, member
 }
 
 func (a *App) reviewDraft(r *http.Request, id string) Row {
@@ -233,18 +224,7 @@ func (a *App) reviewerBadges(ctx context.Context, row Row) []string {
 }
 
 func (a *App) peerMediaGrant(r *http.Request, value string) (Row, Row) {
-	if a.teamOwnerSubject(r.Context()) != "" {
-		review := a.memberPeerReview(r, a.peerReviewPrincipal(r), value)
-		if review == nil {
-			return nil, nil
-		}
-		return a.previewDraft(r, review.str("post_id"))
-	}
-	reader := a.commentReader(r)
-	if reader.str("provider") != "google" {
-		return nil, nil
-	}
-	review := first(a.DB.Must(r.Context(), "SELECT post_id FROM peer_reviews WHERE id=$1 AND email=$2 AND closed=FALSE", value, strings.ToLower(reader.str("email"))))
+	review := a.memberPeerReview(r, a.peerReviewPrincipal(r), value)
 	if review == nil {
 		return nil, nil
 	}

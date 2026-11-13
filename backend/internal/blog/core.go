@@ -48,14 +48,9 @@ func (a *App) session(w http.ResponseWriter, r *http.Request) {
 	binding := a.cloudOwner(r.Context())
 	result["cloudManaged"] = binding.str("subject") != ""
 	if result.yes("cloudManaged") {
-		result["passwordRecoveryUrl"] = cloudCentralOrigin(binding.str("centralOrigin")) + "/forgot-password"
+		result["hostedOwnerRecoveryUrl"] = cloudCentralOrigin(binding.str("centralOrigin")) + "/forgot-password"
 	}
-	teamBinding := a.teamBinding(r.Context())
-	result["teamConnected"] = teamBinding.str("subject") != ""
-	a.addSessionIdentity(r, result, teamBinding)
-	if teamBinding.str("publicationId") != "" {
-		result["teamPasswordRecoveryUrl"] = cloudCentralOrigin(teamBinding.str("centralOrigin")) + "/forgot-password"
-	}
+	a.addSessionIdentity(r, result)
 	scopes, oauth := a.requestOAuthScopes(r)
 	if a.requestRole(r) == "owner" && (!oauth || hasOAuthScope(scopes, "administration:manage")) && (r.Header.Get("Authorization") != "" || a.primaryOwnerSession(r)) {
 		result["ownerEmail"] = a.ownerEmail(r.Context())
@@ -103,7 +98,7 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	input := body(w, r)
 	email := emailField(input, "email", false)
 	providedPassword := stringField(input, "password", 1, 128, false)
-	if a.cloudPasswordLogin(w, r, email, providedPassword) {
+	if a.localUserPasswordLogin(w, r, email, providedPassword) || a.cloudPasswordLogin(w, r, email, providedPassword) {
 		return
 	}
 	password := []byte(providedPassword)

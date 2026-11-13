@@ -44,9 +44,13 @@ func (a *App) sendPasswordRecovery(parent context.Context, email string) {
 			cleanup, stop := context.WithTimeout(context.Background(), 5*time.Second)
 			defer stop()
 			_, _ = a.DB.Query(cleanup, "DELETE FROM owner_password_resets WHERE token_hash=$1", hash(value))
-			log.Print("Owner password recovery email could not be delivered; check email configuration.")
+			_, _ = a.DB.Query(cleanup, "DELETE FROM engine_password_resets WHERE token_hash=$1", hash(value))
+			log.Print("Account password recovery email could not be delivered; check email configuration.")
 		}
 	}()
+	if a.sendMemberPasswordRecovery(ctx, email, value) {
+		return
+	}
 	if a.cloudOwner(ctx).str("subject") != "" {
 		return
 	}
@@ -84,12 +88,14 @@ func (a *App) resetPassword(w http.ResponseWriter, r *http.Request) {
 	if len([]byte(password)) > 72 {
 		fail(400, "Password must be at most 72 UTF-8 bytes.")
 	}
-	if a.cloudOwner(r.Context()).str("subject") != "" {
-		fail(400, "Reset your password through your Margin account.")
-	}
 	digest, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	must(err)
-	a.consumePasswordRecovery(r.Context(), value, string(digest))
+	if !a.consumeMemberPasswordRecovery(r.Context(), value, string(digest)) {
+		if a.cloudOwner(r.Context()).str("subject") != "" {
+			fail(400, "This password reset link is invalid or expired.")
+		}
+		a.consumePasswordRecovery(r.Context(), value, string(digest))
+	}
 	send(w, 200, Row{"message": "Password updated. Sign in with your new password."})
 }
 
@@ -110,7 +116,7 @@ func (a *App) consumePasswordRecovery(ctx context.Context, value, digest string)
 	query, args = a.DB.adapt("UPDATE admins SET password_hash=$1 WHERE id=$2", []any{digest, id})
 	_, err = tx.ExecContext(ctx, query, args...)
 	must(err)
-	_, err = tx.ExecContext(ctx, "DELETE FROM sessions")
+	_, err = tx.ExecContext(ctx, "DELETE FROM sessions WHERE NOT EXISTS (SELECT 1 FROM session_principals p WHERE p.token_hash=sessions.token_hash)")
 	must(err)
 	must(tx.Commit())
 }

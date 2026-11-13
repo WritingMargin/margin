@@ -44,14 +44,14 @@ func (a *App) loadBrowserPrincipal(r *http.Request) Row {
 		return nil
 	}
 	if row.str("subject") == "" {
-		return a.legacyOwnerPrincipal(r.Context())
+		return a.primaryOwnerPrincipal(r.Context())
 	}
-	result, status := a.centralIdentityRequest(r.Context(), "/cloud/api/engine-member", Row{"memberSubject": row["subject"]})
-	if status == 401 || status == 403 || status == 404 {
+	result := a.localMemberPrincipal(r.Context(), row.str("subject"))
+	if result == nil {
 		a.DB.Must(r.Context(), "DELETE FROM sessions WHERE token_hash=$1", row["token_hash"])
 		return nil
 	}
-	requireCentralSuccess(result, status)
+
 	if a.expireChangedMemberSession(r.Context(), row, result) {
 		return nil
 	}
@@ -60,49 +60,33 @@ func (a *App) loadBrowserPrincipal(r *http.Request) Row {
 	}
 	return result
 }
-func (a *App) legacyOwnerPrincipal(ctx context.Context) Row {
+func (a *App) primaryOwnerPrincipal(ctx context.Context) Row {
 	owner := first(a.DB.Must(ctx, "SELECT email FROM admins WHERE id=1"))
-	// Old installations and test fixtures may already have a session without an
-	// owner row; preserve authentication but never use it to grant OAuth consent.
-	return Row{"subject": a.teamOwnerSubject(ctx), "email": owner.str("email"), "name": owner.str("email"), "role": "owner", "articleIds": []string{}}
+	// The primary owner uses the existing engine owner session.
+	return Row{"subject": "", "email": owner.str("email"), "name": owner.str("email"), "role": "owner", "articleIds": []string{}}
 }
 func validMemberRole(role string) bool {
 	return role == "owner" || role == "writer" || role == "publisher" || role == "peer_reviewer"
 }
 func (a *App) primaryOwnerSession(r *http.Request) bool {
 	principal := a.browserPrincipal(r)
-	return principal != nil && principal.str("role") == "owner" && principal.str("subject") == a.teamOwnerSubject(r.Context())
+	return principal != nil && principal.str("role") == "owner" && principal.str("subject") == ""
 }
 func (a *App) centralIdentityRequest(ctx context.Context, path string, input Row) (Row, int) {
-	binding := a.teamBinding(ctx)
+	binding := a.cloudOwner(ctx)
 	if binding.str("subject") == "" {
-		coded(503, "Connect this publication to your Margin account to manage its team.", "CENTRAL_REQUIRED")
+		fail(503, "The hosted owner account is unavailable.")
 	}
 	secret := os.Getenv("SETUP_TOKEN")
-	if binding.str("publicationId") != "" {
-		secret = a.teamAccountCredential(ctx, binding)
-	}
 	if len(secret) < 32 {
 		fail(503, "Your Margin account connection is unavailable.")
 	}
 	input["subject"] = binding["subject"]
-	if binding.str("publicationId") != "" {
-		input["subject"] = binding["publicationId"]
-	}
 	result, status, err := a.fetchJSON(ctx, "POST", cloudCentralOrigin(binding.str("centralOrigin"))+path, input, map[string]string{"Authorization": "Bearer " + secret, "Content-Type": "application/json"}, 20*time.Second)
 	if err != nil || status >= 500 || status < 200 || (status >= 300 && status < 400) {
 		fail(503, "Your Margin account could not be reached. Please try again shortly.")
 	}
 	return result, status
-}
-func requireCentralSuccess(result Row, status int) {
-	if status >= 400 {
-		message := result.str("error")
-		if message == "" {
-			message = "Your Margin account could not complete this request."
-		}
-		coded(status, message, result.str("code"))
-	}
 }
 func (a *App) startMemberSession(w http.ResponseWriter, r *http.Request, principal Row) {
 	if !validMemberRole(principal.str("role")) || principal.str("subject") == "" || principal.str("authVersion") == "" {
@@ -118,16 +102,13 @@ func (a *App) startMemberSession(w http.ResponseWriter, r *http.Request, princip
 	must(tx.Commit())
 	setSessionCookie(w, "margin_session", value, 7*24*60*60, expires)
 }
-func (a *App) addSessionIdentity(r *http.Request, result, binding Row) {
-	if binding.str("subject") != "" {
-		result["centralOrigin"] = cloudCentralOrigin(binding.str("centralOrigin"))
-	}
+func (a *App) addSessionIdentity(r *http.Request, result Row) {
 	principal := a.browserPrincipal(r)
 	if principal == nil {
 		return
 	}
 	result["role"], result["articleIds"] = principal["role"], principal["articleIds"]
-	if principal.str("subject") != "" && (principal.str("authVersion") != "" || a.cloudOwner(r.Context()).str("subject") != "") {
+	if principal.str("subject") != "" {
 		result["user"] = Row{"id": principal["subject"], "email": principal["email"], "name": principal["name"]}
 	}
 	result["primaryOwner"] = a.primaryOwnerSession(r)
@@ -184,7 +165,7 @@ func primaryOwnerRoute(path, pattern string) bool {
 		return true
 	}
 	switch pattern {
-	case "POST /api/team/connection", "POST /api/team/connection/complete", "POST /api/account", "POST /api/account/connection", "GET /api/account/email-verification", "POST /api/account/email-verification",
+	case "POST /api/account", "POST /api/account/connection", "GET /api/account/email-verification", "POST /api/account/email-verification",
 		"POST /api/ai/checkout", "POST /api/ai/topups", "POST /api/ai/billing/portal", "POST /api/ai/billing/stop", "POST /api/ai/billing/auto-topup":
 		return true
 	}
@@ -192,7 +173,7 @@ func primaryOwnerRoute(path, pattern string) bool {
 }
 
 // Credential changes revoke every engine session at its next authorization
-// check, without copying passwords or password hashes out of Central.
+// check using the engine account credential version.
 func (a *App) expireChangedMemberSession(ctx context.Context, session, principal Row) bool {
 	if principal.str("authVersion") != "" && principal.str("authVersion") == session.str("auth_version") {
 		return false

@@ -9,18 +9,17 @@ import ConfirmDialog from "../admin/ConfirmDialog";
 import { useConfirmation } from "../admin/useConfirmation";
 import { useTeamPage, type TeamPageController } from "./useTeamPage";
 import { TeamPageToolbar, TeamPageNavigation } from "./TeamPagination";
-import TeamConnection from "./TeamConnection";
 import "./team.css";
 
 type Member = TeamUser & { role: TeamRole; articleIds: string[]; primaryOwner?: boolean };
 type Invitation = { id: string; email: string; role: TeamRole; articleId?: string; expiresAt: string };
 type Mutation = (path: string, method: string, input: object, message: string) => Promise<boolean>;
 
-export default function TeamSettings({ cloudManaged }: { cloudManaged: boolean }) {
-  return <div className="team-settings">{cloudManaged ? <ConnectedTeamSettings /> : <TeamConnection><ConnectedTeamSettings /></TeamConnection>}</div>;
+export default function TeamSettings() {
+  return <div className="team-settings"><TeamManagement /></div>;
 }
 
-function ConnectedTeamSettings() {
+function TeamManagement() {
   const confirmation = useConfirmation();
   const [version, setVersion] = useState(0);
   const members = useTeamPage<Member>("members", true, version);
@@ -51,7 +50,7 @@ function ConnectedTeamSettings() {
   async function removeMember(member: Member) {
     if (!(await confirmation.ask({
       title: "Remove this teammate?",
-      description: `${member.email} will lose access to this publication. Their Margin account and access to other publications will stay available.`,
+      description: `${member.email} will lose access to this publication. They can no longer sign in to this publication unless invited again. Accounts on other publications are unaffected.`,
       confirmLabel: "Remove teammate", cancelLabel: "Keep teammate",
     }))) return;
     await mutate(`/team/members/${encodeURIComponent(member.id)}`, "DELETE", {}, "Member removed.");
@@ -93,12 +92,12 @@ function InvitationForm({ posts, busy, loaded, mutate }: { posts: Post[]; busy: 
   const [articleId, setArticleId] = useState("");
   async function invite(event: FormEvent) {
     event.preventDefault();
-    if (await mutate("/team/invitations", "POST", { email, role, ...(role === "peer_reviewer" ? { articleId } : {}) }, "Invitation sent. They can accept with their existing Margin account.")) setEmail("");
+    if (await mutate("/team/invitations", "POST", { email, role, ...(role === "peer_reviewer" ? { articleId } : {}) }, "Invitation sent. They can create an account here or sign in to accept.")) setEmail("");
   }
   return <form className="settings-card" onSubmit={event => void invite(event)}>
     <div className="settings-icon"><UserPlus /></div>
     <h2>Invite a teammate</h2>
-    <p>Each person uses one Margin account across publications. Their role here only applies to this publication.</p>
+    <p>Teammates create an account on this publication or sign in to an existing one. Their role and article access apply only here.</p>
     <fieldset className="team-invite" disabled={busy}>
       <label>Email address<input type="email" required autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} /></label>
       <label>Role<RoleSelect label="Invitation role" value={role} onChange={setRole} disabled={busy} describedBy="team-invite-role-help" /></label>

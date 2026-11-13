@@ -473,3 +473,32 @@ CREATE TABLE IF NOT EXISTS guide_step_flags (
  flag_id TEXT PRIMARY KEY REFERENCES section_flags(id) ON DELETE CASCADE,
  section TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS engine_users (
+ id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL,
+ password_hash TEXT NOT NULL, auth_version TEXT NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS engine_memberships (
+ user_id TEXT PRIMARY KEY REFERENCES engine_users(id) ON DELETE CASCADE,
+ role TEXT NOT NULL CHECK(role IN ('owner','writer','publisher','peer_reviewer')), version TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS engine_article_grants (
+ user_id TEXT NOT NULL REFERENCES engine_users(id) ON DELETE CASCADE,
+ post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE, version TEXT NOT NULL,
+ PRIMARY KEY(user_id,post_id)
+);
+CREATE TABLE IF NOT EXISTS engine_invitations (
+ id TEXT PRIMARY KEY, email TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('owner','writer','publisher','peer_reviewer')),
+ article_id TEXT REFERENCES posts(id) ON DELETE CASCADE, token_hash TEXT UNIQUE NOT NULL,
+ expires_at TIMESTAMPTZ NOT NULL, status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','revoked')),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS engine_invitations_pending ON engine_invitations(status,expires_at,created_at,id);
+CREATE UNIQUE INDEX IF NOT EXISTS engine_invitations_email_role_article ON engine_invitations(email,role,COALESCE(article_id,'')) WHERE status='pending';
+
+CREATE TABLE IF NOT EXISTS engine_password_resets (
+ user_id TEXT PRIMARY KEY REFERENCES engine_users(id) ON DELETE CASCADE,
+ email TEXT NOT NULL, password_hash TEXT NOT NULL, token_hash TEXT UNIQUE NOT NULL,
+ expires_at TIMESTAMPTZ NOT NULL, sent_at TIMESTAMPTZ NOT NULL
+);

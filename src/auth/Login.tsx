@@ -8,9 +8,6 @@ import { useLogin } from "./useLogin";
 export default function Login(
   props: Parameters<typeof useLogin>[0] & {
     cloudManaged?: boolean;
-    teamConnected?: boolean;
-    teamPasswordRecoveryUrl?: string;
-    passwordRecoveryUrl?: string;
   },
 ) {
   const state = useLogin(props);
@@ -32,11 +29,7 @@ export default function Login(
         <p>
           {setup
             ? "Create the owner account for your publication."
-            : props.cloudManaged
-              ? "Sign in with the same email and password you used to create your Margin account."
-              : props.teamConnected
-                ? "Teammates sign in with their Margin account. The publication owner uses their existing local login."
-                : "Sign in to your writing workspace."}
+            : "Sign in to your account on this publication."}
         </p>
         <label>
           Email address
@@ -79,11 +72,7 @@ export default function Login(
             </>
           )}
         </button>
-        <PasswordRecoveryLink
-          setup={setup}
-          cloudManaged={props.cloudManaged}
-          url={props.passwordRecoveryUrl}
-        />
+        <PasswordRecoveryLink setup={setup} />
         <div className="login-foot">
           <ShieldCheck size={14} /> Private workspace. Your content stays yours.
         </div>
@@ -92,20 +81,12 @@ export default function Login(
   );
 }
 
-function PasswordRecoveryLink({
-  setup,
-  cloudManaged,
-  url,
-}: {
-  setup: boolean;
-  cloudManaged?: boolean;
-  url?: string;
-}) {
+function PasswordRecoveryLink({ setup }: { setup: boolean }) {
   if (setup) return null;
   return (
     <a
       className="login-recovery-link"
-      href={cloudManaged ? url : sitePath("/admin/forgot-password")}
+      href={sitePath("/admin/forgot-password")}
     >
       Forgot password?
     </a>

@@ -2,33 +2,24 @@ package blog
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
 func TestPeerReviewCycle(t *testing.T) {
 	a, _ := coreFixture(t)
 	t.Setenv("PUBLIC_URL", "https://blog.test")
-	var mail Row
-	a.Client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Path != "/v1/newsletter/peer-review" {
-			return fixtureResponse(paidAccount()), nil
-		}
-		must(json.NewDecoder(r.Body).Decode(&mail))
-		return fixtureResponse(Row{"accepted": true}), nil
-	})
 	input := draftInput("peer-review")
 	input["content"] = "The sample included ten people."
 	post := responseRow(t, request(t, a, "POST", "/api/posts", input, true), 201)
 	author := "/api/posts/" + post.str("id")
 	email := "reviewer@example.test"
-	invitation := responseRow(t, request(t, a, "POST", author+"/reviews", Row{"email": email}, true), 201)
-	if mail.str("invite") != invitation.str("id") || mail.str("to") != email {
-		t.Fatal(mail)
-	}
+	// Every reviewer needs a local account and an explicit article grant.
+	invitation := Row{"id": token()}
+	a.DB.Must(t.Context(), "INSERT INTO peer_reviews(id,email,post_id) VALUES($1,$2,$3)", invitation["id"], email, post["id"])
 	path := "/api/public/reviews/" + invitation.str("id")
-	reviewer := commentCookie(t, a, "google:peer", "google", email)
+	reviewer := engineReviewerCookie(t, a, email, post.str("id"))
 	checkPeerAccess(t, a, path, author, email, reviewer)
 	call := func(action string, input Row, status int) Row {
 		t.Helper()
@@ -78,7 +69,7 @@ func TestPeerApprovalAndDiscardScope(t *testing.T) {
 	id := token()
 	email := "peer@example.test"
 	a.DB.Must(context.Background(), "INSERT INTO peer_reviews(id,email,post_id) VALUES($1,$2,$3)", id, email, live["id"])
-	reviewer := commentCookie(t, a, "google:peer", "google", email)
+	reviewer := engineReviewerCookie(t, a, email, live.str("id"))
 	path := "/api/public/reviews/" + id
 	approve := func(row Row) {
 		expectStatus(t, commentAuthRequest(a, "POST", path+"/approve", Row{"revision": row["revision"], "badge": false}, reviewer, "http://blog.test"), 200)
@@ -108,7 +99,7 @@ func TestReviewPDFRequiresCitedDocumentAndInvitedAccount(t *testing.T) {
 	id := token()
 	email := "peer@example.test"
 	a.DB.Must(ctx, "INSERT INTO peer_reviews(id,email,post_id) VALUES($1,$2,$3)", id, email, draft["id"])
-	reviewer := commentCookie(t, a, "google:peer", "google", email)
+	reviewer := engineReviewerCookie(t, a, email, draft.str("id"))
 	for _, route := range []string{"/api/public/documents/", "/sources/"} {
 		path := route + doc + "?review=" + id
 		expectStatus(t, commentAuthRequest(a, "GET", path, nil, nil, ""), 404)
@@ -130,7 +121,7 @@ func TestReviewPassageTracksARepeatedQuoteAfterInsertion(t *testing.T) {
 
 func checkPeerAccess(t *testing.T, a *App, path, author, email string, reviewer *http.Cookie) {
 	t.Helper()
-	wrong := commentCookie(t, a, "google:other", "google", "other@example.test")
+	wrong := engineReviewerCookie(t, a, "other@example.test", "")
 	emailReader := commentCookie(t, a, "email:"+email, "email", email)
 	for _, tc := range []struct {
 		cookie *http.Cookie
@@ -140,8 +131,8 @@ func checkPeerAccess(t *testing.T, a *App, path, author, email string, reviewer 
 		expectStatus(t, w, tc.status)
 		excludesHTML(t, w.Body.String(), "ten people")
 	}
-	expectStatus(t, commentAuthRequest(a, "POST", path+"/open", Row{}, emailReader, "http://blog.test"), 200)
-	expectStatus(t, commentAuthRequest(a, "GET", author+"/draft", nil, reviewer, ""), 401)
+	expectStatus(t, commentAuthRequest(a, "POST", path+"/open", Row{}, emailReader, "http://blog.test"), 401)
+	expectStatus(t, commentAuthRequest(a, "GET", author+"/draft", nil, reviewer, ""), 403)
 }
 
 func checkReturningReview(t *testing.T, a *App, path, id string, reviewer *http.Cookie, post, newDraft Row) {
@@ -157,4 +148,17 @@ func checkReturningReview(t *testing.T, a *App, path, id string, reviewer *http.
 	if object(fix["addressed_revision"]).str("revision") != newDraft.str("revision") {
 		t.Fatal(fix)
 	}
+}
+
+func engineReviewerCookie(t *testing.T, a *App, email, article string) *http.Cookie {
+	t.Helper()
+	member := Row{"subject": uuid(), "email": email, "name": "Reviewer", "role": "peer_reviewer", "authVersion": uuid(), "membershipVersion": uuid(), "articleGrantVersions": Row{}}
+	if article != "" {
+		member["articleGrantVersions"] = Row{article: uuid()}
+	}
+	saveMemberFixture(t, a, member)
+	w := httptest.NewRecorder()
+	a.startMemberSession(w, httptest.NewRequest("POST", "http://blog.test/api/login", nil), a.localMemberPrincipal(t.Context(), member.str("subject")))
+	cookies := w.Result().Cookies()
+	return cookies[len(cookies)-1]
 }

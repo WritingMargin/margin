@@ -85,3 +85,13 @@ func TestCloudBootstrapRequiresVerifiedEmail(t *testing.T) {
 	input["emailVerified"] = false
 	expectStatus(t, cloudMachineCall(a, "/api/cloud/bootstrap", input), 403)
 }
+
+func TestHostedEngineNeverForwardsTeammatePasswords(t *testing.T) {
+	a := cloudOwnerFixture(t)
+	expectStatus(t, cloudMachineCall(a, "/api/cloud/bootstrap", cloudOwnerInput()), 201)
+	a.Client = &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) {
+		t.Errorf("teammate password sent outside engine to %s", r.URL.Path)
+		return nil, errors.New("must not call account service")
+	})}
+	expectStatus(t, request(t, a, "POST", "/api/login", Row{"email": "teammate@example.com", "password": "private-local-password"}, false), 401)
+}

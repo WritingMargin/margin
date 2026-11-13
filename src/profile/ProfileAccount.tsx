@@ -8,7 +8,7 @@ import { useOwnerEmailVerification } from "../auth/useOwnerEmailVerification";
 
 export default function ProfileAccount() {
   const { user, primaryOwner } = useTeamIdentity();
-  if (user) return <CentralProfileAccount email={user.email} primaryOwner={primaryOwner} />;
+  if (user) return <MemberProfileAccount email={user.email} primaryOwner={primaryOwner} />;
   return <LocalProfileAccount />;
 }
 
@@ -47,9 +47,9 @@ function LocalProfileAccount() {
   </div>;
 }
 
-function CentralProfileAccount({ email, primaryOwner }: { email: string; primaryOwner: boolean }) {
+function MemberProfileAccount({ email, primaryOwner }: { email: string; primaryOwner: boolean }) {
  return <div className="profile-account">
-  <section className="settings-card"><div className="profile-section-heading"><Mail size={20} /><h2>Your Margin account</h2><span className="profile-private">Private</span></div><strong>{email}</strong><p>You use this account across publications. Your role and article invitations are managed separately in each publication.</p></section>
-  <section className="settings-card"><div className="profile-section-heading"><ShieldCheck size={20} /><h2>Account security</h2></div><p>Reset your Margin account password. The new password applies to your Margin account across all publications.</p><a className="button" href={sitePath("/admin/forgot-password")}>Reset password</a>{primaryOwner && <p><a href={sitePath("/admin/settings?tab=integrations")}>Manage publication API credentials</a></p>}</section>
+  <section className="settings-card"><div className="profile-section-heading"><Mail size={20} /><h2>Your publication account</h2><span className="profile-private">Private</span></div><strong>{email}</strong><p>This account belongs to this publication. Your role and article invitations determine what you can access here.</p></section>
+  <section className="settings-card"><div className="profile-section-heading"><ShieldCheck size={20} /><h2>Account security</h2></div><p>Reset your password for this publication. Accounts on other publications are unaffected.</p><a className="button" href={sitePath("/admin/forgot-password")}>Reset password</a>{primaryOwner && <p><a href={sitePath("/admin/settings?tab=integrations")}>Manage publication API credentials</a></p>}</section>
  </div>;
 }
