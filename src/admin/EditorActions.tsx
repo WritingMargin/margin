@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { contentTypeLabel } from "../../shared/content-types";
 import { useEffect, useId, useRef, useState } from "react";
 import { History, Lightbulb, MoreHorizontal, SlidersHorizontal, Sparkles } from "lucide-react";
@@ -8,6 +9,7 @@ import "./editor-actions.css";
 type State = Pick<AdminController, "post" | "theme" | "setModal" | "openAI" | "writing">;
 export default function EditorActions({ state }: { state: State }) {
   const { post, setModal, openAI, writing } = state;
+  const { role } = useTeamIdentity();
   const label = contentTypeLabel(post.contentType, state.theme.publicationType);
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -41,8 +43,8 @@ export default function EditorActions({ state }: { state: State }) {
       <span id={`${id}-tip`} role="tooltip" className="editor-actions-tooltip">{label} options</span>
       {open && <div id={id} className="editor-actions-panel" role="group" aria-label={`${label} options`}>
         <button onClick={() => select(() => setModal("details"))}><SlidersHorizontal size={16} aria-hidden="true" />{label} details</button>
-        <button aria-expanded={writing.open} aria-controls="writing-companion" onClick={() => select(() => writing.setOpen(!writing.open))}><Lightbulb size={16} aria-hidden="true" />{writing.open ? "Close writing assistant" : "Writing assistant"}</button>
-        {post.status === "published" && <button onClick={() => select(() => openAI("social"))}><Sparkles size={16} aria-hidden="true" />Social summaries</button>}
+        {role === "owner" && <button aria-expanded={writing.open} aria-controls="writing-companion" onClick={() => select(() => writing.setOpen(!writing.open))}><Lightbulb size={16} aria-hidden="true" />{writing.open ? "Close writing assistant" : "Writing assistant"}</button>}
+        {role === "owner" && post.status === "published" && <button onClick={() => select(() => openAI("social"))}><Sparkles size={16} aria-hidden="true" />Social summaries</button>}
         {post.id && <button onClick={() => select(() => setModal("history"))}><History size={16} aria-hidden="true" />Revision history</button>}
         {post.id && <p>Updated {date(post.updatedAt)}</p>}
       </div>}

@@ -12,6 +12,7 @@ export type RecommendationSettings = {
 export type ContentType = "article" | "guide";
 
 export interface Post {
+  baseRevision?: string;
   simplifiedAvailable?: boolean;
   simplified?: boolean;
   simplifiedReviewed?: boolean;

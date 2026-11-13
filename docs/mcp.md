@@ -4,7 +4,7 @@ Margin serves a native Model Context Protocol endpoint at **`/mcp`**, in the sam
 
 ## Connect
 
-Open **Settings → Integrations → MCP, CLI & API tokens → MCP** to copy this blog’s MCP URL. In an OAuth-capable client, add the URL, follow its sign-in prompt, and approve the requested access as the publication owner. Manage or revoke access under **Settings → Integrations → OAuth connections**. See [OAuth client setup](oauth.md) for server requirements and REST client authorization.
+Open **Connected apps → Connect an AI client** to copy this publication’s MCP URL. Reviewers find Connected apps in their review workspace. In an OAuth-capable client, add the URL, follow its sign-in prompt, and approve permissions within your publication role. Manage or revoke your own access under **OAuth connections**. The primary owner’s existing Settings integration and manual tokens remain available. See [OAuth client setup](oauth.md) for server requirements and REST client authorization.
 
 For clients using manual API tokens, create one in the **API tokens** tab and configure:
 
@@ -12,7 +12,29 @@ For clients using manual API tokens, create one in the **API tokens** tab and co
 - URL: your publication's full base URL followed by `/mcp`, for example `https://example.com/blog/mcp`.
 - HTTP header: `Authorization: Bearer YOUR_MARGIN_TOKEN`.
 
-Use HTTPS for remote connections. Local development can use `http://127.0.0.1:3187/mcp`. OAuth-capable clients can discover authorization automatically when `PUBLIC_URL` is configured. Approve the connection in your owner browser session; see [OAuth client setup](oauth.md). Clients that support custom headers can continue using an existing Margin API token. Browser session cookies are insufficient. It does not expose the older HTTP+SSE `/sse` transport.
+Use HTTPS for remote connections. Local development can use `http://127.0.0.1:3187/mcp`. OAuth-capable clients can discover authorization automatically when `PUBLIC_URL` is configured. Approve the connection in your signed-in publication session; see [OAuth client setup](oauth.md). Clients that support custom headers can continue using an existing Margin API token. Browser session cookies are insufficient. It does not expose the older HTTP+SSE `/sse` transport.
+
+## Peer-review tools
+
+Request OAuth scope `review:assigned` for reviewers. This exposes only the tools
+below, using the same identity, current article grants and reference checks as
+the browser review flow. General post, search, media-library and preview-link
+tools are unavailable. Another publication's or an unassigned article's content
+remains inaccessible even when its ID or review link is known.
+
+| Tool | Purpose |
+| --- | --- |
+| `list_peer_reviews` | List active article invitations approved for this account and connection. |
+| `open_peer_review` | Open a listed invitation’s draft, prior reviewed version, notes and approval state. |
+| `add_peer_review_note` | Add a passage note using the reviewed revision, exact quote and optional idempotent submission ID. |
+| `get_peer_review_note_fix` | Compare only revisions referenced by an addressed note. |
+| `approve_peer_review` | Approve the reviewed revision; does not publish or edit the article. |
+| `get_peer_review_attachment` | Read a referenced attachment in bounded base64 chunks using its kind and ID; no arbitrary URLs. |
+
+Use the invitation `id` returned by `list_peer_reviews` as `invite`, rather than
+the article ID. Removing article access takes effect on the next call. Newly
+assigned or regranted articles require fresh consent. MCP tokens remain scoped
+to `/mcp`; use the attachment tool rather than sending the token to a file URL.
 
 Reader tokens can discover resources and read posts, revisions, and media libraries. Writers can additionally create/edit drafts and upload media. Publishers can also change live content and publish, unpublish or archive posts. Owner tokens can additionally read and replace publication-wide SEO and customise the blog design. Token revocation and role changes apply on the next request. The tool list reflects the token's current role.
 

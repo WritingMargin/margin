@@ -200,6 +200,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r = r.WithContext(context.WithValue(r.Context(), responseWriterKey{}, w))
+	r = r.WithContext(context.WithValue(r.Context(), browserPrincipalKey{}, &browserPrincipalCache{}))
 	if r.URL.Path == "/api/public/analytics" {
 		r.Body = http.MaxBytesReader(w, r.Body, 64<<10)
 	}
@@ -303,7 +304,7 @@ func (a *App) checkOrigin(r *http.Request) {
 	}
 }
 func protectedPath(p string) bool {
-	for _, prefix := range []string{"posts", "settings", "comments", "readers", "tokens", "storage", "media", "ai", "newsletter", "account", "recommendations", "analytics", "oauth"} {
+	for _, prefix := range []string{"team", "posts", "settings", "comments", "readers", "tokens", "storage", "media", "ai", "newsletter", "account", "recommendations", "analytics", "oauth"} {
 		if p == "/api/"+prefix || strings.HasPrefix(p, "/api/"+prefix+"/") {
 			return true
 		}
@@ -379,15 +380,11 @@ func (a *App) authenticated(r *http.Request) bool {
 	authorization := r.Header.Get("Authorization")
 	if strings.HasPrefix(authorization, "Bearer ") {
 		if strings.HasPrefix(strings.TrimPrefix(authorization, "Bearer "), "moat_") {
-			return validTokenRole(a.oauthPrincipal(r, strings.TrimPrefix(authorization, "Bearer ")).str("role"))
+			return a.oauthPrincipal(r, strings.TrimPrefix(authorization, "Bearer ")) != nil
 		}
 		return len(a.DB.Must(r.Context(), "SELECT token_hash FROM api_tokens WHERE token_hash=$1", hash(strings.TrimPrefix(authorization, "Bearer ")))) > 0
 	}
-	c, err := r.Cookie(sessionCookieName("margin_session"))
-	if err != nil {
-		return false
-	}
-	return len(a.DB.Must(r.Context(), "SELECT token_hash FROM sessions WHERE token_hash=$1 AND expires_at>NOW()", hash(c.Value))) > 0
+	return a.browserPrincipal(r) != nil
 }
 func (a *App) static(w http.ResponseWriter, r *http.Request) {
 	if isAPI(r.URL.Path) {

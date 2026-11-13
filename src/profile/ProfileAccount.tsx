@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { useEffect, useState } from "react";
 import { CheckCircle2, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import type { OwnerEmailStatus } from "../../shared/owner-email";
@@ -6,6 +7,12 @@ import { sitePath } from "../base-path";
 import { useOwnerEmailVerification } from "../auth/useOwnerEmailVerification";
 
 export default function ProfileAccount() {
+  const { user, primaryOwner } = useTeamIdentity();
+  if (user) return <CentralProfileAccount email={user.email} primaryOwner={primaryOwner} />;
+  return <LocalProfileAccount />;
+}
+
+function LocalProfileAccount() {
   const [owner, setOwner] = useState<OwnerEmailStatus | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -38,4 +45,11 @@ export default function ProfileAccount() {
       <div className="profile-account-row"><div><strong>Connected tools</strong><p>Review API tokens and apps that can access your publication.</p></div><a className="button" href={sitePath("/admin/settings?tab=integrations")}><KeyRound size={15} />Manage access</a></div>
     </section>
   </div>;
+}
+
+function CentralProfileAccount({ email, primaryOwner }: { email: string; primaryOwner: boolean }) {
+ return <div className="profile-account">
+  <section className="settings-card"><div className="profile-section-heading"><Mail size={20} /><h2>Your Margin account</h2><span className="profile-private">Private</span></div><strong>{email}</strong><p>You use this account across publications. Your role and article invitations are managed separately in each publication.</p></section>
+  <section className="settings-card"><div className="profile-section-heading"><ShieldCheck size={20} /><h2>Account security</h2></div><p>Reset your password through Margin Central. The new password applies to your Margin account across all publications.</p><a className="button" href={sitePath("/admin/forgot-password")}>Reset password</a>{primaryOwner && <p><a href={sitePath("/admin/settings?tab=integrations")}>Manage publication API credentials</a></p>}</section>
+ </div>;
 }

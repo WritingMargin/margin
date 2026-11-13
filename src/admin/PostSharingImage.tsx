@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { coverImage } from "../../shared/audio";
 import type { Post } from "../../shared/types";
 import ImagePicker from "../media/ImagePicker";
@@ -12,6 +13,7 @@ export default function PostSharingImage({
   generate: () => void;
 }) {
   const cover = coverImage(post.cover);
+  const { role } = useTeamIdentity();
   return (
     <ImagePicker
       label="Sharing image"
@@ -22,7 +24,7 @@ export default function PostSharingImage({
       removeLabel={cover ? "Use cover again" : "Use publication default"}
       initialSource=""
       onChange={image => change({ seo: { ...post.seo, image } })}
-      onGenerate={post.id ? generate : undefined}
+      onGenerate={post.id && role === "owner" ? generate : undefined}
     />
   );
 }

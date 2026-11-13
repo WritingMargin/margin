@@ -8,6 +8,7 @@ import (
 )
 
 func (a *App) peerRoutes() {
+	a.mux.HandleFunc("GET /api/public/team/reviews", a.memberPeerReviews)
 	a.mux.HandleFunc("GET /review/{invite}", a.publicPageHandler(a.peerPage))
 	a.mux.HandleFunc("POST /api/public/reviews/{invite}/open", a.openPeerReview)
 	a.mux.HandleFunc("POST /api/public/reviews/{invite}/notes", a.addPeerNote)
@@ -28,6 +29,17 @@ func (a *App) peerPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) activePeer(r *http.Request, id string) (Row, Row) {
+	if a.cloudOwner(r.Context()).str("subject") != "" {
+		member := a.peerReviewPrincipal(r)
+		if member == nil {
+			fail(401, "Sign in with your Margin account to review this article.")
+		}
+		review := a.memberPeerReview(r, member, id)
+		if review == nil {
+			fail(404, "No active article invitation for this Margin account.")
+		}
+		return review, member
+	}
 	reader := a.requireCommentReader(r)
 	review := first(a.DB.Must(r.Context(), "SELECT * FROM peer_reviews WHERE id=$1 AND email=$2 AND closed=FALSE", id, strings.ToLower(reader.str("email"))))
 	if review == nil {
@@ -221,6 +233,13 @@ func (a *App) reviewerBadges(ctx context.Context, row Row) []string {
 }
 
 func (a *App) peerMediaGrant(r *http.Request, value string) (Row, Row) {
+	if a.cloudOwner(r.Context()).str("subject") != "" {
+		review := a.memberPeerReview(r, a.peerReviewPrincipal(r), value)
+		if review == nil {
+			return nil, nil
+		}
+		return a.previewDraft(r, review.str("post_id"))
+	}
 	reader := a.commentReader(r)
 	if reader.str("provider") != "google" {
 		return nil, nil

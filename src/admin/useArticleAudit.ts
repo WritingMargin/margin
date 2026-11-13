@@ -62,7 +62,7 @@ export function useArticleAudit() {
     return report;
   }
   async function beforeSave(post: Post, publish: boolean) {
-    if (!publish && post.status !== "published") return;
+    if (!publish) return;
     const report = await run(post, "draft");
     const blocking = report.findings.find(
       (finding) => finding.severity === "error",

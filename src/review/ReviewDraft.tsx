@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { CheckCheck, RefreshCw } from "lucide-react";
+import { CheckCheck, RefreshCw, StickyNote } from "lucide-react";
 import type { PublicTheme } from "../../shared/frontend";
 import { themeForContentType } from "../../shared/content-types";
 import ArticleOpening from "../blog/ArticleOpening";
 import { blogThemeStyle } from "../blog/theme";
 import PostDiff from "../editor/PostDiff";
-import NoteRevision from "./NoteRevision";
+import Accordion from "../Accordion";
+import ReviewNoteContent from "./ReviewNoteContent";
 import ReviewPassages from "./ReviewPassages";
+import Empty from "../components/Empty";
 import type { ReviewVisit } from "./types";
 
 type Props = {
@@ -51,10 +53,9 @@ export default function ReviewDraft({
       <p className="article-meta">Private peer review · {visit.status}</p>
       <ArticleOpening theme={design} post={visit.post} />
       {visit.previous && (
-        <details className="peer-changes" open>
-          <summary>Changes since your last visit</summary>
+        <Accordion title="Changes since your last visit" className="peer-changes" open>
           <PostDiff before={visit.previous} after={visit.post} />
-        </details>
+        </Accordion>
       )}
       <p className="peer-instruction">
         Select a passage to leave a private note for the author.
@@ -63,6 +64,7 @@ export default function ReviewDraft({
         post={visit.post}
         notes={visit.notes}
         saveNote={saveNote}
+        reviewPath={path}
       />
       <section className="peer-notes" aria-labelledby="peer-notes-title">
         <div className="peer-section-heading">
@@ -76,8 +78,9 @@ export default function ReviewDraft({
             Refresh review
           </button>
         </div>
-        <p role="status">{loading ? "Checking for changes…" : notice}</p>
-        {failure && <p role="alert">{failure.message}</p>}
+        {loading && <p role="status">Checking for changes…</p>}
+        {notice && <p className="notice" role="status">{notice}</p>}
+        {failure && <p className="error-box" role="alert">{failure.message}</p>}
         {visit.notes.map((n) => (
           <article
             className="review-note"
@@ -85,19 +88,10 @@ export default function ReviewDraft({
             id={"review-note-" + n.id}
             tabIndex={-1}
           >
-            <blockquote>{n.quote}</blockquote>
-            {n.anchorStatus === "earlier" && (
-              <small>On an earlier revision</small>
-            )}
-            <p>{n.body}</p>
-            {n.addressed_revision ? (
-              <NoteRevision note={n} reviewPath={path} />
-            ) : (
-              <small>Open</small>
-            )}
+            <ReviewNoteContent note={n} reviewPath={path} />
           </article>
         ))}
-        {!visit.notes.length && <p>No review notes yet.</p>}
+        {!visit.notes.length && <Empty icon={<StickyNote size={25} />} title="No review notes yet." text="Select a passage in the article to leave a private note for the author." />}
       </section>
       <ReviewApproval
         visit={visit}
@@ -121,6 +115,7 @@ function ReviewApproval({
   const [notice, setNotice] = useState("");
   const unresolved = !visit.canApprove;
   async function submit() {
+    if (busy || unresolved) return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -149,6 +144,7 @@ function ReviewApproval({
         <input
           type="checkbox"
           checked={badge}
+          disabled={busy}
           onChange={(e) => setBadge(e.target.checked)}
         />
         Show “Reviewed by” on the published post
@@ -159,6 +155,7 @@ function ReviewApproval({
           <input
             required
             maxLength={100}
+            disabled={busy}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -172,8 +169,8 @@ function ReviewApproval({
             ? "Update approval"
             : "Approve this revision"}
       </button>
-      {error && <p role="alert">{error}</p>}
-      {notice && <p role="status">{notice}</p>}
+      {error && <p className="error-box" role="alert">{error}</p>}
+      {notice && <p className="notice" role="status">{notice}</p>}
     </form>
   );
 }

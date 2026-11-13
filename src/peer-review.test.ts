@@ -15,7 +15,7 @@ test("peer review shows private changes, approval eligibility and consent separa
     const outfile = path.join(dir, "ui.mjs");
     await build({
       stdin: {
-        contents: `export {default as ReviewDraft} from "./src/review/ReviewDraft"; export {default as AuthorReviews} from "./src/review/AuthorReviews"; export {default as ReviewerPage} from "./src/review/ReviewerPage";`,
+        contents: `export {default as ReviewDraft} from "./src/review/ReviewDraft"; export {default as AuthorReviews} from "./src/review/AuthorReviews"; export {default as ReviewerPage} from "./src/review/ReviewerPage"; export {default as AddressReviewNote} from "./src/review/AddressReviewNote"; export {ReviewNoteComposer} from "./src/review/ReviewPassages"; export {default as ReaderDialog} from "./src/blog/ReaderDialog";`,
         resolveDir: process.cwd(),
         loader: "ts",
       },
@@ -27,7 +27,7 @@ test("peer review shows private changes, approval eligibility and consent separa
       jsx: "automatic",
       loader: { ".css": "empty" },
     });
-    const { ReviewDraft, AuthorReviews, ReviewerPage } = await import(
+    const { ReviewDraft, AuthorReviews, ReviewerPage, AddressReviewNote, ReviewNoteComposer, ReaderDialog } = await import(
       pathToFileURL(outfile).href
     );
     const post: Post = {
@@ -76,6 +76,7 @@ test("peer review shows private changes, approval eligibility and consent separa
       );
     const review = render(visit);
     assert.match(review, /Changes since your last visit/);
+    assert.match(review, /class="margin-accordion peer-changes"/);
     assert.match(review, /Double-check the estimate/);
     assert.match(
       review,
@@ -91,6 +92,7 @@ test("peer review shows private changes, approval eligibility and consent separa
       notes: [{ ...visit.notes[0], addressed_revision: "after" }],
     });
     assert.match(approved, /Addressed · View revision after/);
+    assert.match(approved, /<details class="margin-accordion"><summary><span>Addressed/);
     assert.match(approved, /Update approval/);
     assert.match(approved, /<input type="checkbox"[^>]*checked/);
     assert.doesNotMatch(
@@ -110,6 +112,17 @@ test("peer review shows private changes, approval eligibility and consent separa
     );
     assert.match(unsaved, /Save a draft to invite a reviewer/);
     assert.doesNotMatch(unsaved, /type="email"/);
+    assert.match(unsaved, /class="empty"/);
+    const empty = render({ ...visit, notes: [] });
+    assert.match(empty, /class="empty"[^]*No review notes yet/);
+    const picker = renderToStaticMarkup(createElement(AddressReviewNote, { path: "/notes/n", busy: false, address: async () => {} }));
+    assert.match(picker, /class="margin-accordion"><summary><span>Choose fixing revision/);
+    const composer = renderToStaticMarkup(createElement(ReviewNoteComposer, { anchor: { quote: "Selected passage", occurrence: 0, top: 0, left: 0 }, close: () => {}, saveNote: async () => {} }));
+    assert.match(composer, /class="passage-dialog passage-modal-sheet"/);
+    assert.match(composer, /Selected passage/);
+    assert.match(composer, /Save review note/);
+    const saving = renderToStaticMarkup(createElement(ReaderDialog, { open: true, title: "Review note", dismissDisabled: true, onClose: () => {}, children: "Saving…" }));
+    assert.match(saving, /aria-label="Close" disabled=""/);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

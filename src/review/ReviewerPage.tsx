@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
+import { sitePath } from "../base-path";
 import { RefreshCw } from "lucide-react";
 import type { PublicTheme } from "../../shared/frontend";
-import { APIError } from "../api";
+import { api, APIError } from "../api";
 import { ReviewInviteContext } from "../citations/review-context";
 import ReaderAuth from "../blog/ReaderAuth";
 import { useCommentAuth, type CommentAuth } from "../blog/useCommentAuth";
@@ -18,6 +20,10 @@ export default function ReviewerPage({
   const path = "/public/reviews/" + encodeURIComponent(invite);
   const state = useReviewVisit(path);
   const auth = useCommentAuth();
+  const [cloud, setCloud] = useState<boolean | null>(null);
+  useEffect(() => {
+    api<{ cloudManaged?: boolean }>("/session").then(session => setCloud(Boolean(session.cloudManaged))).catch(() => setCloud(null));
+  }, []);
   if (state.visit)
     return (
       <ReviewInviteContext.Provider value={invite}>
@@ -39,6 +45,8 @@ export default function ReviewerPage({
       failure={state.failure}
       refresh={state.refresh}
       auth={auth}
+      cloud={cloud}
+      invite={invite}
     />
   );
 }
@@ -48,19 +56,24 @@ function ReviewAccess({
   failure,
   refresh,
   auth,
+  cloud,
+  invite,
 }: {
   loading: boolean;
   failure: Error | null;
   refresh: () => Promise<void>;
   auth: CommentAuth;
+  cloud: boolean | null;
+  invite: string;
 }) {
-  const status = failure instanceof APIError ? failure.status : 0;
+  const status = failure instanceof APIError ? (failure.status ?? 0) : 0;
   const canSignIn = [401, 403, 404].includes(status ?? 0);
   return (
     <main className="peer-page peer-access">
       <h1>Peer review</h1>
-      <p role="status">{accessMessage(loading, status, failure)}</p>
-      {canSignIn && <ReaderAuth auth={auth} prompt="Sign in with the email address that received the invitation.">
+      <ReviewAccessMessage loading={loading} status={status} failure={failure} />
+      {canSignIn && cloud && <p><a className="button" href={sitePath("/admin") + "?next=" + encodeURIComponent(sitePath(`/review/${invite}`))}>Sign in with Margin</a> using the invited email address. If you have not accepted yet, open the invitation email first.</p>}
+      {canSignIn && cloud === false && <ReaderAuth auth={auth} prompt="Sign in with the email address that received the invitation.">
         <p className="small-text">If this isn’t the invited account, sign out and use the invited email address.</p>
       </ReaderAuth>}
       {failure && !canSignIn && (
@@ -75,6 +88,11 @@ function ReviewAccess({
       )}
     </main>
   );
+}
+
+function ReviewAccessMessage({ loading, status, failure }: { loading: boolean; status: number | undefined; failure: Error | null }) {
+  const failed = !loading && Boolean(failure);
+  return <p className={failed ? "error-box" : undefined} role={failed ? "alert" : "status"}>{accessMessage(loading, status, failure)}</p>;
 }
 
 function accessMessage(

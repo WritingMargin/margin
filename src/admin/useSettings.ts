@@ -1,7 +1,9 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { useEffect, useState } from "react";
 import { api, json } from "../api";
 
 export function useSettings({ notify }: { notify: (s: string) => void }) {
+  const { primaryOwner } = useTeamIdentity();
   const [storage, setStorage] = useState<any>(null);
   const [tokens, setTokens] = useState<any[]>([]);
   const [token, setToken] = useState("");
@@ -13,7 +15,7 @@ export function useSettings({ notify }: { notify: (s: string) => void }) {
     api("/storage")
       .then(setStorage)
       .catch((e) => notify(e.message));
-    void refresh().catch((e) => notify(e.message));
+    if (primaryOwner) void refresh().catch((e) => notify(e.message));
   }, []);
   const createToken = async () => {
     setBusy(true);

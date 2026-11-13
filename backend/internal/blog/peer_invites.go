@@ -8,6 +8,13 @@ import (
 )
 
 func (a *App) invitePeer(w http.ResponseWriter, r *http.Request) {
+	if a.cloudOwner(r.Context()).str("subject") != "" {
+		input := body(w, r)
+		input["articleId"] = r.PathValue("id")
+		input["role"] = "peer_reviewer"
+		a.inviteCentralPeer(w, r, input)
+		return
+	}
 	a.limit(r, "peer-invite", 30, time.Hour, true)
 	ctx := r.Context()
 	email := emailField(body(w, r), "email", true)

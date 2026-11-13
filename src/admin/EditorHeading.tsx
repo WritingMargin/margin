@@ -20,7 +20,7 @@ export default function EditorHeading({ state }: Props) {
               post.status === "published" ? "published-dot" : "draft-dot"
             }
           />
-          {post.status} {contentTypeLabel(post.contentType, state.theme.publicationType)}
+          {post.baseRevision && post.status === "draft" ? "Draft changes to published" : post.status} {contentTypeLabel(post.contentType, state.theme.publicationType)}
         </span>
       </div>
       <div className="editor-title-row">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export type Confirmation = { title: string; description: string };
+export type Confirmation = { title: string; description: string; confirmLabel?: string; cancelLabel?: string };
 
 export function useConfirmation() {
   const [prompt, setPrompt] = useState<Confirmation | null>(null);

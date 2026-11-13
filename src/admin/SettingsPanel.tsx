@@ -1,3 +1,4 @@
+import TeamSettings from "../team/TeamSettings";
 import PWASettings from "../settings/PWASettings";
 import PublicationTypeSettings from "../settings/PublicationTypeSettings";
 import type { PublicationType } from "../../shared/publication";
@@ -19,6 +20,7 @@ const tabs: { id: SettingsTab; label: string }[] = [
   { id: "seo", label: "Blog SEO" },
   { id: "pwa", label: "PWA" },
   { id: "integrations", label: "Integrations" },
+  { id: "team", label: "Team" },
 ];
 type Props = {
   cloudManaged: boolean;
@@ -84,23 +86,18 @@ export default function SettingsPanel({
         aria-labelledby={`settings-tab-${tab}`}
         tabIndex={0}
       >
-        {tab === "integrations" ? (
+        <SettingsContent state={state} tab={tab} cloudManaged={cloudManaged} notify={notify} theme={theme} setTab={setTab} />
+      </div>
+    </section>
+  );
+}
+
+function SettingsContent({ state, tab, cloudManaged, notify, theme, setTab }: Pick<Props, "tab" | "cloudManaged" | "notify" | "theme" | "setTab"> & { state: ReturnType<typeof usePublicationSettings> }) {
+ return <> {tab === "team" ? <TeamSettings cloudManaged={cloudManaged} /> : tab === "integrations" ? (
           <IntegrationsSettings notify={notify} />
         ) : (
           <>
-            {state.error && (
-              <div className="error-box" role="alert">
-                {state.error}
-                {!state.saved && (
-                  <button className="button" onClick={state.retry}>
-                    Try again
-                  </button>
-                )}
-              </div>
-            )}
-            {!state.saved && !state.error && (
-              <p role="status">Loading settings…</p>
-            )}
+            <SettingsLoadState state={state} />
             {state.saved &&
               (tab === "seo" ? (
                 <SEOSettings state={state} theme={theme} />
@@ -116,8 +113,23 @@ export default function SettingsPanel({
                 </div>
               ))}
           </>
-        )}
-      </div>
-    </section>
-  );
+        )} </>;
+}
+
+function SettingsLoadState({ state }: { state: ReturnType<typeof usePublicationSettings> }) {
+ return <>
+            {state.error && (
+              <div className="error-box" role="alert">
+                {state.error}
+                {!state.saved && (
+                  <button className="button" onClick={state.retry}>
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+            {!state.saved && !state.error && (
+              <p role="status">Loading settings…</p>
+            )}
+ </>;
 }

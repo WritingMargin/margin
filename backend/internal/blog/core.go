@@ -19,6 +19,7 @@ func (a *App) coreRoutes() {
 	a.ownerEmailRoutes()
 	a.passwordRecoveryRoutes()
 	a.cloudOwnerRoutes()
+	a.teamRoutes()
 	a.commentVerificationRoutes()
 	a.commentAuthRoutes()
 	routes := map[string]http.HandlerFunc{
@@ -49,8 +50,9 @@ func (a *App) session(w http.ResponseWriter, r *http.Request) {
 	if result.yes("cloudManaged") {
 		result["passwordRecoveryUrl"] = cloudCentralOrigin(binding.str("centralOrigin")) + "/forgot-password"
 	}
+	a.addSessionIdentity(r, result, binding)
 	scopes, oauth := a.requestOAuthScopes(r)
-	if a.requestRole(r) == "owner" && (!oauth || hasOAuthScope(scopes, "administration:manage")) {
+	if a.requestRole(r) == "owner" && (!oauth || hasOAuthScope(scopes, "administration:manage")) && (r.Header.Get("Authorization") != "" || a.primaryOwnerSession(r)) {
 		result["ownerEmail"] = a.ownerEmail(r.Context())
 	}
 	send(w, 200, result)

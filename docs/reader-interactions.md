@@ -22,7 +22,9 @@ The **Poll** editor block accepts a multiple-choice poll or an agree/disagree po
 
 ## Private notes for signed-in readers
 
-Notes, comments, passage questions, reactions, and peer review use the same reader sign-in. Readers can choose Google when connected or request a one-use email link. Notes are private to the verified email address, so a reader can return through either sign-in method with the same address. Newsletter subscription is separate. Existing confirmed subscriber sessions continue to work.
+Notes, comments, passage questions and reactions use reader sign-in. Readers can choose Google when connected or request a one-use email link. Notes are private to the verified email address, so a reader can return through either sign-in method with the same address. Newsletter subscription is separate. Existing confirmed subscriber sessions continue to work.
+
+Peer review on Central-managed publications uses the invited person's Margin account and an article-specific team grant. A reader login alone does not grant draft access. Publications without a Central ownership connection retain reader-based peer review. See [publication teams](writing.md#publication-teams).
 
 Private notes are scoped to a verified reader email and are absent from public and author moderation APIs. Readers can save a note about the whole article or attach it to a selected passage; passage notes retain their original quote when the article changes. They can review, edit, and delete their notes from **Notes**. A newsletter subscription is not required. Reader sessions expire after 30 days and can be signed out from the notes panel.
 

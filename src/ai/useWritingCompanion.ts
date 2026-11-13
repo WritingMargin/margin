@@ -18,11 +18,11 @@ import {
   type WritingChatStore,
 } from "./writing-sessions";
 
-export function useWritingCompanion(postId: string, contentType: ContentType) {
+export function useWritingCompanion(postId: string, contentType: ContentType, enabled = true, workspace = sitePath("/admin")) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [draftKeys, setDraftKeys] = useState(() =>
-    initialDraftKeys(contentType),
+    initialDraftKeys(contentType, workspace),
   );
   const [sessions, setSessions] = useState<WritingChatStore>({});
   const [loaded, setLoaded] = useState<Record<string, boolean>>({});
@@ -33,7 +33,7 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
   const key = postId || draftKeys[contentType];
   const currentChats = sessions[key];
   useEffect(() => {
-    if (loaded[key]) return;
+    if (!enabled || loaded[key]) return;
     let cancelled = false;
     void api<{ chats: WritingChats | null }>(`/ai/writing/sessions/${key}`)
       .then((result) => {
@@ -54,9 +54,9 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
     return () => {
       cancelled = true;
     };
-  }, [key, loaded]);
+  }, [key, loaded, enabled]);
   useEffect(() => {
-    if (!loaded[key] || !currentChats) return;
+    if (!enabled || !loaded[key] || !currentChats) return;
     const timer = window.setTimeout(() => {
       const chats = restorableWritingChats(currentChats);
       const queue = saveQueue.current;
@@ -84,7 +84,7 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
         );
     }, 800);
     return () => window.clearTimeout(timer);
-  }, [key, loaded, currentChats, postId]);
+  }, [key, loaded, currentChats, postId, enabled]);
   const chats = writingChats(sessions, key);
   const active = activeWritingChat(chats);
   const change = (patch: Partial<WritingSession>) => {
@@ -99,7 +99,7 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
     previousDraft.current[id] = key;
     setSessions((current) => migrateWritingChats(current, key, id));
     const next = crypto.randomUUID();
-    rememberDraftKey(contentType, next);
+    rememberDraftKey(contentType, next, workspace);
     setDraftKeys((current) => ({ ...current, [contentType]: next }));
   };
   return {
@@ -139,7 +139,7 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
     },
     newDraft: (type: ContentType) => {
       const next = crypto.randomUUID();
-      rememberDraftKey(type, next);
+      rememberDraftKey(type, next, workspace);
       setDraftKeys((current) => ({ ...current, [type]: next }));
     },
   };
@@ -147,15 +147,16 @@ export function useWritingCompanion(postId: string, contentType: ContentType) {
 
 function initialDraftKeys(
   currentType: ContentType,
+  workspace: string,
 ): Record<ContentType, string> {
   return {
-    article: initialDraftKey("article", currentType === "article"),
-    guide: initialDraftKey("guide", currentType === "guide"),
+    article: initialDraftKey("article", currentType === "article", workspace),
+    guide: initialDraftKey("guide", currentType === "guide", workspace),
   };
 }
 
-function initialDraftKey(type: ContentType, useLegacy: boolean): string {
-  const name = draftKeyName(type);
+function initialDraftKey(type: ContentType, useLegacy: boolean, workspace: string): string {
+  const name = draftKeyName(type, workspace);
   try {
     const existing = localStorage.getItem(name);
     if (validDraftKey(existing)) return existing!;
@@ -165,16 +166,16 @@ function initialDraftKey(type: ContentType, useLegacy: boolean): string {
   try {
     const existing =
       sessionStorage.getItem(name) ||
-      (useLegacy ? sessionStorage.getItem("margin-writing-draft-key") : null);
+      (useLegacy && workspace === sitePath("/admin") ? sessionStorage.getItem("margin-writing-draft-key") : null);
     if (validDraftKey(existing)) {
-      rememberDraftKey(type, existing!);
+      rememberDraftKey(type, existing!, workspace);
       return existing!;
     }
   } catch {
     // The active chat can still use an in-memory key.
   }
   const next = crypto.randomUUID();
-  rememberDraftKey(type, next);
+  rememberDraftKey(type, next, workspace);
   return next;
 }
 
@@ -187,12 +188,12 @@ function validDraftKey(value: string | null): boolean {
   );
 }
 
-function draftKeyName(type: ContentType): string {
-  return `margin:writing-draft:${encodeURIComponent(sitePath("/admin"))}:${type}`;
+function draftKeyName(type: ContentType, workspace: string): string {
+  return `margin:writing-draft:${encodeURIComponent(workspace)}:${type}`;
 }
 
-function rememberDraftKey(type: ContentType, key: string) {
-  const name = draftKeyName(type);
+function rememberDraftKey(type: ContentType, key: string, workspace: string) {
+  const name = draftKeyName(type, workspace);
   try {
     localStorage.setItem(name, key);
   } catch {

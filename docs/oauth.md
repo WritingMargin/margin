@@ -1,9 +1,14 @@
 # OAuth for MCP and REST clients
 
 Margin embeds `github.com/Usefused/fused-open-core/oauthserver` for OAuth client
-authorization. An owner signs in to Margin, reviews the client, resource, and
+authorization. A publication member signs in to Margin, reviews the client, resource, and
 requested permissions, selects which ones to grant, and approves or cancels. This is separate from reader sign-in.
 Existing manually issued API tokens continue to work.
+
+OAuth uses the same Central account and publication membership as the browser.
+The same email can authorize different roles on different publications; tokens
+remain bound to the publication and resource that issued them. Each person owns
+their own consent and connections, including when several people use the same client.
 
 Set `PUBLIC_URL` to the canonical HTTPS publication URL, including any mount
 path (`https://example.com/blog`). HTTP is accepted only for loopback development.
@@ -35,6 +40,7 @@ Use space-separated permissions; the default is `content:read`:
 
 | Permission | Access |
 | --- | --- |
+| `review:assigned` | Review only articles assigned when consent is approved, including their review notes and referenced attachments. No general content, library, editing or publishing access. |
 | `content:read` | Published and private content, revisions, writing notes, and media library listings. |
 | `content:draft` | Create and edit drafts; stage or discard unpublished changes to live posts. No publication or deletion of posts. |
 | `content:publish` | Publish, unpublish, change live/archived posts, archive, restore, and delete. Draft editing remains separate. |
@@ -42,11 +48,34 @@ Use space-separated permissions; the default is `content:read`:
 | `settings:manage` | Read and change publication design, branding, templates, and SEO. |
 | `administration:manage` | Reader/subscriber data, moderation, email/account settings, analytics, and paid AI services. Does not include the other capabilities above or credential management. |
 
-Request only what the client needs. Owners can uncheck any requested permission;
+Request only what the client needs. Members can uncheck any requested permission;
 selecting nothing grants no access. Unrequested permissions cannot be added by
 modifying the consent form. The token response's `scope` is the actual approved
 selection, which may be smaller than the request. Clients must honor that result.
 MCP tool discovery and REST authorization both use the approved permissions.
+
+The consent page uses the shared Margin workspace UI. It loads role-filtered
+permissions and signed form fields from the same authorization endpoint with
+`Accept: application/json`; these responses are authenticated and never cached.
+Approval and cancellation still use the signed native POST to `/oauth/consent`.
+
+The consent screen offers only requested permissions allowed by the current role:
+
+| Publication role | OAuth permission ceiling |
+| --- | --- |
+| Writer | `content:read`, `content:draft`, `media:write` |
+| Publisher | Writer permissions plus `content:publish` |
+| Owner | Content, media, design and administration permissions; primary-owner billing and credential restrictions still apply |
+| Peer reviewer | `review:assigned` only |
+
+Any role with an article invitation can explicitly approve `review:assigned`.
+Clients supporting reviewers must request that scope; `content:read` does not
+grant review access. Reviewer consent captures the assigned articles at approval.
+Newly assigned or regranted articles require new consent. Every request intersects
+approved permissions and article grants with current Central access. Downgrades
+apply immediately; removal, reinvitation and password changes invalidate old
+member credentials. A temporary Central outage fails closed without revoking
+otherwise valid consent.
 
 The legacy role names `reader`, `writer`, `publisher`, and `owner` remain accepted
 as registration/request aliases and expand to their equivalent capability sets.
@@ -61,7 +90,7 @@ A confidential client's secret is returned only on registration.
 Authorization uses `response_type=code`, S256 PKCE, and the registered redirect
 URI. Include a fresh `state` and the exact `resource`:
 `https://example.com/blog/mcp` or `https://example.com/blog/api`. Clients must
-validate their returned state. Owner approval requires a browser session and a
+validate their returned state. Member approval requires a browser session and a
 session-bound consent form; an API bearer token cannot approve a client.
 
 POST form-encoded token requests with `grant_type=authorization_code`,
@@ -80,14 +109,20 @@ MCP resource binding. They cannot be used directly against REST endpoints.
 
 OAuth tokens cannot manage API tokens or OAuth connections. This prevents
 exchanging an expiring delegated grant for a permanent credential. A new consent
-with a different permission selection invalidates the client's previous grants.
-Every request checks live database state; there is no authorization cache.
+with a different permission selection invalidates that member's previous grants
+for the client. Every request checks live grant and membership state; authorization
+is not cached between requests. Code exchange and refresh also revalidate
+membership and never expand the approved permissions.
 
 ## Revoke access
 
-Owners can revoke access in **Settings → Integrations → OAuth connections**.
+Members can revoke their own access in **Connected apps → OAuth connections**;
+reviewers use the **Connected apps** accordion in their review workspace. The
+primary owner can also use **Settings → Integrations → OAuth connections**.
 Revocation invalidates outstanding codes and all tokens for that connection.
-Removing a registered client also invalidates its registration. Clients can
+Only the primary owner can remove a registered client, which invalidates its
+registration and all grants for that client. Revoking a personal connection
+leaves other people's connections intact. Clients can
 POST `token` and their client credentials to `/oauth/revoke`; either an access
 or refresh token revokes the associated family. Unknown tokens return success.
 

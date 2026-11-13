@@ -22,6 +22,9 @@ func (a *App) callMCPAPI(ctx context.Context, operation mcpOperation, input map[
 			result = mcpAPIResult(err.Status, Row{"error": err.Message, "code": err.Code})
 		}
 	}()
+	if operation.tool.Name == "get_peer_review_attachment" {
+		return a.callMCPPeerAttachment(ctx, input)
+	}
 	original, ok := ctx.Value(mcpRequestKey{}).(*http.Request)
 	if !ok {
 		return mcpAPIResult(401, Row{"error": "Missing request authorization."})

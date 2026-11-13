@@ -26,6 +26,7 @@ type Props = {
     | "notify"
     | "change"
     | "save"
+    | "setVisibility"
     | "insert"
   >;
 };

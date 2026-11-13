@@ -9,6 +9,7 @@ Margin is a self-hosted publishing system for articles, research notes, and guid
 ## Features
 
 - **Writing and publishing.** Articles and guides, live preview, drafts, local recovery, revision history, conflict review, and configurable tables of contents.
+- **Publication teams.** Central-managed publications can invite Owners, Writers, Publishers and article-scoped Peer reviewers. One Margin account works across publications, with separate roles and access for each. Manage invitations and members in **Settings → Team**. See [publication teams](docs/writing.md#publication-teams).
 - **Research and citations.** Website references, PDF uploads, quoted passages, and links to highlighted evidence.
 - **Technical content.** Syntax-highlighted code, interactive charts, Mermaid diagrams, illustrations, 3D scenes, tabs, and callouts.
 - **Media.** Drag-and-drop images, image, video and audio libraries, voice blogs, Spotify and SoundCloud players, link preview cards, video embeds, optional Cloudinary integration, and social post cards.

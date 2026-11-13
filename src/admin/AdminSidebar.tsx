@@ -38,6 +38,9 @@ type Props = {
     | "theme"
     | "newPost"
     | "nav"
+    | "role"
+    | "user"
+    | "primaryOwner"
   >;
 };
 export default function AdminSidebar({ state }: Props) {
@@ -176,47 +179,7 @@ export default function AdminSidebar({ state }: Props) {
         </div>
         <SidebarPostStatus feed={postFeed} />
       </div>
-      <div className="sidebar-bottom">
-        <button
-          className={`nav-item ${view === "pricing" ? "active" : ""}`}
-          onClick={() => {
-            setView("pricing");
-            setMobile(false);
-          }}
-        >
-          <CreditCard size={16} />
-          Plans & credits
-        </button>
-        <button
-          className={`nav-item ${view === "settings" ? "active" : ""}`}
-          onClick={() => setView("settings")}
-        >
-          <Settings size={16} />
-          Settings & integrations
-        </button>
-        <div className="profile">
-          <SidebarProfileIdentity active={view === "profile"} onOpen={() => {
-            setView("profile");
-            setMobile(false);
-          }} />
-          <button
-            className="profile-signout"
-            title="Sign out"
-            onClick={() => {
-              if (
-                dirty &&
-                !confirm(
-                  "Sign out? Your local draft will stay on this browser.",
-                )
-              )
-                return;
-              void logout().catch((e) => notify(e.message));
-            }}
-          >
-            <LogOut size={15} />
-          </button>
-        </div>
-      </div>
+      <SidebarBottom state={state} />
     </aside>
   );
 }
@@ -244,5 +207,52 @@ function SidebarProfileIdentity({ active, onOpen }: { active: boolean; onOpen: (
         <small>Personal workspace</small>
       </span>
     </button>
+  );
+}
+
+function SidebarBottom({ state }: Props) {
+  const { view, setView, setMobile, dirty, logout, notify } = state;
+  return (
+      <div className="sidebar-bottom">
+        {state.primaryOwner && <button
+          className={`nav-item ${view === "pricing" ? "active" : ""}`}
+          onClick={() => {
+            setView("pricing");
+            setMobile(false);
+          }}
+        >
+          <CreditCard size={16} />
+          Plans & credits
+        </button>}
+        {state.role === "owner" && <button
+          className={`nav-item ${view === "settings" ? "active" : ""}`}
+          onClick={() => setView("settings")}
+        >
+          <Settings size={16} />
+          Settings & integrations
+        </button>}
+        <div className="profile">
+          {state.role === "owner" ? <SidebarProfileIdentity active={view === "profile"} onOpen={() => {
+            setView("profile");
+            setMobile(false);
+          }} /> : <span className="profile-copy"><strong>{state.user?.name || state.user?.email}</strong><small>{state.role === "writer" ? "Writer" : "Publisher"}</small></span>}
+          <button
+            className="profile-signout"
+            title="Sign out"
+            onClick={() => {
+              if (
+                dirty &&
+                !confirm(
+                  "Sign out? Your local draft will stay on this browser.",
+                )
+              )
+                return;
+              void logout().catch((e) => notify(e.message));
+            }}
+          >
+            <LogOut size={15} />
+          </button>
+        </div>
+      </div>
   );
 }

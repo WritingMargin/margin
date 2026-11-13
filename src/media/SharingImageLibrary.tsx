@@ -1,4 +1,3 @@
-import AccountGate from "../auth/AccountGate";
 import { mediaPath } from "../base-path";
 import { useEffect, useState } from "react";
 import { api } from "../api";
@@ -150,9 +149,9 @@ export default function SharingImageLibrary(props: Props) {
         </p>
       )}
       {source === "cloudinary" ? (
-        <AccountGate feature="Cloudinary integration">
+        <>
           <ImageLibrary {...props} source={source} />
-        </AccountGate>
+        </>
       ) : (
         <ImageLibrary {...props} source={source} />
       )}

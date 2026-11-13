@@ -12,6 +12,7 @@ export function useLocalDraft(
   dirty: boolean,
   baseline: RefObject<Post | null>,
   notify: (message: string) => void,
+  workspace = sitePath("/admin"),
 ) {
   const [status, setStatus] = useState<"idle" | "pending" | "saved" | "error">(
     "idle",
@@ -21,7 +22,6 @@ export function useLocalDraft(
   const blocked = useRef<Post | null>(null);
   const pendingSync = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const workspace = sitePath("/admin");
   function cancel() {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;

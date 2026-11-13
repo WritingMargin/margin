@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { contentTypeLabel, themeForContentType } from "../../shared/content-types";
 import CodeBlockPicker from "../editor/CodeBlockPicker";
 import {
@@ -49,6 +50,7 @@ type Props = {
 };
 export default function EditorCard({ state, templateAction }: Props) {
   const media = useMediaDefaults();
+  const { role } = useTeamIdentity();
   const label = contentTypeLabel(state.post.contentType, state.theme.publicationType).toLowerCase();
   const contentTheme = themeForContentType(state.theme, state.post.contentType);
   const {
@@ -156,13 +158,13 @@ export default function EditorCard({ state, templateAction }: Props) {
               onMedia={() => setModal("media")}
               onGenerate={() => openAI("images")}
             />
-            <button disabled={state.writing.session.busy} title={`Review selected passage, or the full ${label}`} aria-label={`Review selection or ${label}`} onClick={() => {
+            {role === "owner" && <button disabled={state.writing.session.busy} title={`Review selected passage, or the full ${label}`} aria-label={`Review selection or ${label}`} onClick={() => {
               const input = editor.current;
               const passage = input?.value.slice(input.selectionStart, input.selectionEnd) || "";
               state.writing.review(passage);
             }}>
               <ScanText size={16} aria-hidden="true" /> Review
-            </button>
+            </button>}
             <button
               title="Insert tabs"
               aria-label="Insert tabs"
@@ -197,9 +199,9 @@ export default function EditorCard({ state, templateAction }: Props) {
         <div className="preview-pane">
           <div className="preview-label editor-button-surface">
             <span className="editor-live-status"><span className="live-dot" aria-hidden="true" />Live preview</span>
-            <button onClick={() => setView("designer")} title="Customize your blog theme">
+            {role === "owner" && <button onClick={() => setView("designer")} title="Customize your blog theme">
               <Paintbrush size={13} aria-hidden="true" /> Customize
-            </button>
+            </button>}
           </div>
           <div className="preview-content publication-content" style={blogThemeStyle(contentTheme)}>
             <div className="preview-article">

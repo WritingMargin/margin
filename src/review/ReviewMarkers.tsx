@@ -2,17 +2,22 @@ import { useEffect, useState, type RefObject } from "react";
 import { StickyNote } from "lucide-react";
 import { passageRange } from "../blog/passage-anchors";
 import type { ReviewNote } from "./types";
+import PassagePopover from "../blog/PassagePopover";
+import ReviewNoteContent from "./ReviewNoteContent";
 
 type Rect = { top: number; left: number; width: number; height: number };
 type Mark = { ids: string[]; top: number; rects: Rect[]; quote: string };
 export default function ReviewMarkers({
   content,
   notes,
+  reviewPath,
 }: {
   content: RefObject<HTMLDivElement | null>;
   notes: ReviewNote[];
+  reviewPath: string;
 }) {
   const [marks, setMarks] = useState<Mark[]>([]);
+  const [opened, setOpened] = useState<{ ids: string[]; anchor: HTMLButtonElement } | null>(null);
   useEffect(() => {
     const node = content.current;
     if (!node) return;
@@ -54,14 +59,22 @@ export default function ReviewMarkers({
           style={{ top: mark.top }}
           key={mark.ids[0]}
           aria-label={`Read ${mark.ids.length} review ${mark.ids.length === 1 ? "note" : "notes"} on this passage: ${mark.quote}`}
-          onClick={() =>
-            document.getElementById("review-note-" + mark.ids[0])?.focus()
-          }
+          aria-haspopup="dialog"
+          aria-expanded={opened?.ids[0] === mark.ids[0]}
+          onClick={event => setOpened({ ids: mark.ids, anchor: event.currentTarget })}
         >
           <StickyNote size={13} />
           {mark.ids.length}
         </button>
       ))}
+      {opened && <PassagePopover anchor={opened.anchor} heading="Review notes" wide onClose={() => {
+        opened.anchor.focus({ preventScroll: true });
+        setOpened(null);
+      }}>
+        {notes.filter(note => opened.ids.includes(note.id)).map(note => <article className="review-note" key={note.id}>
+          <ReviewNoteContent note={note} reviewPath={reviewPath} />
+        </article>)}
+      </PassagePopover>}
     </>
   );
 }

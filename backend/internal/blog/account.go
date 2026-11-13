@@ -84,6 +84,7 @@ func (a *App) serviceHeaders(ctx context.Context) map[string]string {
 func (a *App) accountRoutes() {
 	a.mux.HandleFunc("GET /api/account", a.accountStatus)
 	a.mux.HandleFunc("POST /api/account", a.createAccount)
+	a.mux.HandleFunc("POST /api/account/connection", a.completeAccountConnection)
 }
 func (a *App) accountStatus(w http.ResponseWriter, r *http.Request) {
 	row := a.connection(r.Context())
@@ -97,10 +98,14 @@ func (a *App) accountStatus(w http.ResponseWriter, r *http.Request) {
 		registration := object(row["registration"])
 		email, blogURL = registration.str("email"), registration.str("blogUrl")
 	}
-	send(w, 200, Row{"connected": connected, "pending": row != nil && !connected,
+	response := Row{"connected": connected, "pending": row != nil && !connected,
 		"connectionState": state, "serverTokenConfigured": os.Getenv("AI_SERVICE_TOKEN") != "",
 		"registrationAvailable": state == "disconnected" && serviceErr == nil && keyErr == nil && owner != nil && a.newsletterOrigin(r.Context()) != "",
-		"email":                 email, "blogUrl": blogURL})
+		"email":                 email, "blogUrl": blogURL}
+	if state == "disconnected" && row != nil && row.str("account_id") == "" {
+		response["authentication"] = object(object(row["registration"])["authentication"])
+	}
+	send(w, 200, response)
 }
 func (a *App) prepareAccount(r *http.Request) Row {
 	ctx := r.Context()
@@ -136,14 +141,11 @@ func (a *App) createAccount(w http.ResponseWriter, r *http.Request) {
 	base := accountURL()
 	saved := a.prepareAccount(r)
 	headers := map[string]string{"Authorization": "Bearer " + decryptAccount(saved), "Content-Type": "application/json"}
-	result, status, err := a.fetchJSON(r.Context(), "POST", base.ResolveReference(&url.URL{Path: "/v1/accounts"}).String(), saved["registration"], headers, 20*time.Second)
+	result, status, err := a.fetchJSON(r.Context(), "POST", base.ResolveReference(&url.URL{Path: "/v1/accounts"}).String(), accountRegistration(saved), headers, 20*time.Second)
 	if err != nil {
 		coded(503, "Account creation could not finish. Your blog still works; try again to complete the same registration.", "ACCOUNT_UNAVAILABLE")
 	}
 	result = serviceResult(result, status, nil)
-	if !uuidRE.MatchString(result.str("id")) {
-		coded(502, "Margin Central returned an invalid account. Please try again.", "ACCOUNT_UNAVAILABLE")
-	}
-	a.DB.Must(r.Context(), "UPDATE central_connection SET account_id=$1 WHERE id=1", result["id"])
+	a.saveAccountConnection(r.Context(), saved, result)
 	a.accountStatus(w, r)
 }

@@ -27,6 +27,7 @@ const postSchema = z.object({
     })
     .optional(),
   revision: z.string().optional(),
+  baseRevision: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

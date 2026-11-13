@@ -65,7 +65,8 @@ type APIRevision struct {
 	PreviousRevision *string `json:"previousRevision" extensions:"x-nullable"`
 }
 type APIAuthor struct {
-	Kind string `json:"kind" enums:"api_token,owner,unknown"`
+	Kind string `json:"kind" enums:"api_token,owner,member,unknown"`
+	ID   string `json:"id,omitempty"`
 	Name string `json:"name"`
 }
 type APISEO struct {

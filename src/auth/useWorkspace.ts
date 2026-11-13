@@ -1,14 +1,20 @@
+import type { TeamRole, TeamUser } from "../../shared/team";
 import { sitePath, unmountPath } from "../base-path";
 import { useEffect, useState } from "react";
 import { isAuthEntry } from "../../shared/auth-routes";
 import { adminEntryDestination } from "../admin-route";
 import { api } from "../api";
 import type { OwnerEmailStatus } from "../../shared/owner-email";
-import { offlineSessionAfterNetworkError, rememberOfflineSession } from "./offline-session";
+import { offlineSessionAfterNetworkError, rememberOfflineSession, forgetOfflineSession as clearOfflineSession } from "./offline-session";
 export function useWorkspace() {
   const offlineKey = `margin:offline-session:${sitePath("/admin")}`;
   const [session, setSession] = useState<{
     authenticated: boolean;
+    user?: TeamUser;
+    role?: TeamRole;
+    primaryOwner?: boolean;
+    articleIds?: string[];
+    centralOrigin?: string;
     setupRequired: boolean;
     storageConfigured: boolean;
     cloudManaged?: boolean;
@@ -37,7 +43,10 @@ export function useWorkspace() {
   useEffect(() => {
     const path = unmountPath(location.pathname).replace(/\/+$/, "");
     if (isAuthEntry(path) || (path === "/admin" && new URLSearchParams(location.search).has("next")))
-      history.replaceState(null, "", adminEntryDestination(location.search));
+      {
+        const destination = adminEntryDestination(location.search);
+        if (!unmountPath(destination).startsWith("/review/")) history.replaceState(null, "", destination);
+      }
     refreshSession().catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
@@ -63,7 +72,7 @@ export function useWorkspace() {
   }, []);
 
   function forgetOfflineSession() {
-    try { localStorage.removeItem(offlineKey); } catch { /* Browser storage is optional. */ }
+    try { clearOfflineSession(localStorage, offlineKey); } catch { /* Browser storage is optional. */ }
   }
   return { session, setSession, error, setError, refreshSession, offline, forgetOfflineSession };
 }

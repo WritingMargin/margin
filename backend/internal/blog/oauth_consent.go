@@ -4,9 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
-	_ "embed"
 	"encoding/hex"
-	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -38,6 +36,7 @@ func oauthAuthorizeInput(values url.Values) (oauthserver.AuthorizeRequest, error
 }
 func (a *App) oauthAuthorize(w http.ResponseWriter, r *http.Request) {
 	oauthHeaders(w)
+	w.Header().Add("Vary", "Accept")
 	requireOAuthIssuer()
 	a.limit(r, "oauth-authorize", 60, time.Minute, false)
 	input, err := oauthAuthorizeInput(r.URL.Query())
@@ -52,9 +51,27 @@ func (a *App) oauthAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 	actor := a.oauthActor(r)
 	if !actor.IsBrowserSession {
-		http.Redirect(w, r, sitePath("/admin")+"?oauthAuthorize="+url.QueryEscape(r.URL.RawQuery), http.StatusSeeOther)
+		loginURL := sitePath("/admin") + "?oauthAuthorize=" + url.QueryEscape(r.URL.RawQuery)
+		if oauthConsentJSON(r) {
+			send(w, http.StatusUnauthorized, Row{"error": "Sign in to review this connection.", "loginUrl": loginURL})
+		} else {
+			http.Redirect(w, r, loginURL, http.StatusSeeOther)
+		}
 		return
 	}
+	// Show only permissions this member can delegate, while retaining the original
+	// request in the signed form. Consent revalidates each selected permission.
+	allowed := []string{}
+	for _, scope := range input.Scope {
+		if ok, _ := actor.CanGrant(ctx, scope); ok {
+			allowed = append(allowed, scope)
+		}
+	}
+	if len(allowed) == 0 {
+		oauthError(w, oauthserver.ErrAccessDenied)
+		return
+	}
+	input.Scope = allowed
 	// Always show what is being delegated, even for a previously connected app.
 	ctx = context.WithValue(ctx, oauthConsentScreenKey{}, true)
 	result, err := a.oauthService().Authorize(ctx, actor, input)
@@ -62,25 +79,34 @@ func (a *App) oauthAuthorize(w http.ResponseWriter, r *http.Request) {
 		oauthError(w, err)
 		return
 	}
+	a.renderOAuthConsent(w, r, result.Client.Name, result.Scope, input.RedirectURI)
+}
+func oauthConsentJSON(r *http.Request) bool {
+	return strings.Contains(r.Header.Get("Accept"), "application/json")
+}
+func (a *App) renderOAuthConsent(w http.ResponseWriter, r *http.Request, name string, scopes []string, redirectURI string) {
+	w.Header().Set("X-Frame-Options", "DENY")
+	// Preserve a same-origin Origin on native POST, without forwarding the
+	// authorization URL to an external callback. Only bundled scripts execute.
+	w.Header().Set("Referrer-Policy", "same-origin")
+	redirect, _ := url.Parse(redirectURI)
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; manifest-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'self' "+redirect.Scheme+"://"+redirect.Host+"; frame-ancestors 'none'; base-uri 'none'")
+	if !oauthConsentJSON(r) {
+		a.workspaceHTML(w, r)
+		return
+	}
 	expires := strconv.FormatInt(time.Now().Add(10*time.Minute).Unix(), 10)
 	values := r.URL.Query()
 	cookie, _ := r.Cookie(sessionCookieName("margin_session"))
-	csrf := oauthConsentMAC(cookie.Value, values.Encode(), expires)
 	fields := Row{}
-	for name, items := range values {
-		fields[name] = items[0]
+	for key, items := range values {
+		fields[key] = items[0]
 	}
-	fields["csrf"], fields["expires"] = csrf, expires
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("X-Frame-Options", "DENY")
-	// A no-referrer document policy makes browsers send Origin: null on native
-	// POST forms. Preserve the same-origin Origin for consent CSRF checks,
-	// without disclosing the authorization URL to the external redirect URI.
-	w.Header().Set("Referrer-Policy", "same-origin")
-	redirect, _ := url.Parse(input.RedirectURI)
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; form-action 'self' "+redirect.Scheme+"://"+redirect.Host+"; frame-ancestors 'none'; base-uri 'none'")
-	must(oauthConsentTemplate.Execute(w, Row{"Name": result.Client.Name, "Permissions": requestedOAuthPermissions(result.Scope), "Redirect": input.RedirectURI, "Resource": values.Get("resource"), "Fields": fields, "Action": sitePath("/oauth/consent")}))
+	fields["csrf"], fields["expires"] = oauthConsentMAC(cookie.Value, values.Encode(), expires), expires
+	member := a.oauthBrowserPrincipal(r)
+	send(w, 200, Row{"client": Row{"name": name}, "member": Row{"email": member.str("email"), "role": member.str("role")}, "permissions": requestedOAuthPermissions(scopes), "redirectUri": redirectURI, "resource": values.Get("resource"), "fields": fields, "action": sitePath("/oauth/consent")})
 }
+
 func oauthConsentMAC(session, query, expires string) string {
 	mac := hmac.New(sha256.New, []byte(session))
 	_, _ = mac.Write([]byte(query + "\n" + expires))
@@ -106,7 +132,7 @@ func (a *App) oauthConsent(w http.ResponseWriter, r *http.Request) {
 	oauthHeaders(w)
 	requireOAuthIssuer()
 	a.checkOrigin(r)
-	actor := a.requireOAuthOwner(r)
+	actor := a.requireOAuthMember(r)
 	a.limit(r, "oauth-consent", 30, time.Minute, false)
 	values, err := oauthForm(w, r)
 	if err != nil {
@@ -142,6 +168,7 @@ func (a *App) oauthConsent(w http.ResponseWriter, r *http.Request) {
 		fail(400, "Select at least one requested permission, or cancel this connection.")
 	}
 	input.Scope = selected
+	ctx = context.WithValue(ctx, oauthMemberBindingKey{}, oauthBinding(a.oauthBrowserPrincipal(r)))
 	target, err := a.oauthService().Consent(ctx, actor, oauthserver.ConsentRequest{ClientID: input.ClientID, RedirectURI: input.RedirectURI, Scope: input.Scope, State: input.State, CodeChallenge: input.CodeChallenge, CodeChallengeMethod: input.CodeChallengeMethod})
 	if err != nil {
 		oauthError(w, err)
@@ -150,6 +177,17 @@ func (a *App) oauthConsent(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, target, http.StatusSeeOther)
 }
 func (a *App) oauthDeny(w http.ResponseWriter, r *http.Request, ctx context.Context, actor oauthserver.Actor[int], input oauthserver.AuthorizeRequest) {
+	allowed := []string{}
+	for _, scope := range input.Scope {
+		if ok, _ := actor.CanGrant(ctx, scope); ok {
+			allowed = append(allowed, scope)
+		}
+	}
+	if len(allowed) == 0 {
+		oauthError(w, oauthserver.ErrAccessDenied)
+		return
+	}
+	input.Scope = allowed
 	_, err := a.oauthService().Authorize(context.WithValue(ctx, oauthConsentScreenKey{}, true), actor, input)
 	if err != nil {
 		oauthError(w, err)
@@ -164,10 +202,6 @@ func (a *App) oauthDeny(w http.ResponseWriter, r *http.Request, ctx context.Cont
 	target.RawQuery = query.Encode()
 	http.Redirect(w, r, target.String(), http.StatusSeeOther)
 }
-
-//go:embed oauth_consent.html
-var oauthConsentHTML string
-var oauthConsentTemplate = template.Must(template.New("oauth-consent").Parse(oauthConsentHTML))
 
 func requestedOAuthPermissions(scopes []string) []oauthPermission {
 	result := []oauthPermission{}

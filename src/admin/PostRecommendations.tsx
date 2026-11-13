@@ -1,7 +1,7 @@
 import Select from "../components/Select";
 import { useRecommendationPosts } from "./useRecommendationPosts";
 import PostPageNavigation from "./PostPageNavigation";
-import { sitePath } from "../base-path";
+import BillingLink from "../auth/BillingLink";
 import { api } from "../api";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
@@ -68,7 +68,7 @@ export default function PostRecommendations({ post, change }: Props) {
       {config && !config.available && (
         <p className="small-text">
           AI recommendations need an active Margin plan and availability.{" "}
-          <a href={sitePath("/admin/pricing")}>Plans & credits</a>
+          <BillingLink />
         </p>
       )}
       {settings.mode !== "manual" ? (

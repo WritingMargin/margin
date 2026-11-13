@@ -2453,7 +2453,7 @@
             "BearerAuth": []
           }
         ],
-        "description": "Streams revision events (id, revision, deleted), including the current state on every connection. Changes are pushed after saves and deletes commit, using local notifications for SQLite and PostgreSQL LISTEN/NOTIFY across server instances. No content polling. Clients reconnect after disconnection. No article content is streamed.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "description": "Streams revision events (id, revision, deleted), including the current state on every connection. revision is always the live/current post revision. Optional draftRevision identifies staged changes; changes to either revision emit an event. Changes are pushed after saves and deletes commit, using local notifications for SQLite and PostgreSQL LISTEN/NOTIFY across server instances. No content polling. Clients reconnect after disconnection. No article content is streamed.\n\nAllowed token roles: reader, writer, publisher, owner.",
         "tags": [
           "Posts"
         ],
@@ -4656,11 +4656,15 @@
       "blog.APIAuthor": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "kind": {
             "type": "string",
             "enum": [
               "api_token",
               "owner",
+              "member",
               "unknown"
             ]
           },

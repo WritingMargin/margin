@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS admins (
     token_hash TEXT UNIQUE, expires_at TIMESTAMPTZ, last_requested_at TIMESTAMPTZ
   ); CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY, expires_at TIMESTAMPTZ NOT NULL
+  ); CREATE TABLE IF NOT EXISTS session_principals (
+    token_hash TEXT PRIMARY KEY REFERENCES sessions(token_hash) ON DELETE CASCADE, subject TEXT NOT NULL, auth_version TEXT NOT NULL
   ); CREATE TABLE IF NOT EXISTS api_tokens (
     token_hash TEXT PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'owner' CHECK (role IN ('reader','writer','publisher','owner')), created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   ); CREATE TABLE IF NOT EXISTS cli_logins (
@@ -227,18 +229,23 @@ INSERT INTO oauth_lock(id) VALUES(1) ON CONFLICT(id) DO NOTHING;
 CREATE TABLE IF NOT EXISTS oauth_clients (
  id TEXT PRIMARY KEY, public_id TEXT UNIQUE NOT NULL, secret_hash TEXT NOT NULL, data TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS oauth_subjects (
+ id INTEGER PRIMARY KEY, subject TEXT UNIQUE NOT NULL
+);
 CREATE TABLE IF NOT EXISTS oauth_consents (
- client_id TEXT PRIMARY KEY REFERENCES oauth_clients(id) ON DELETE CASCADE,
- subject_id INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE, data TEXT NOT NULL
+ client_id TEXT NOT NULL REFERENCES oauth_clients(id) ON DELETE CASCADE,
+ subject_id INTEGER NOT NULL, legacy_admin_id INTEGER REFERENCES admins(id) ON DELETE CASCADE, data TEXT NOT NULL, PRIMARY KEY(client_id,subject_id)
 );
 CREATE TABLE IF NOT EXISTS oauth_codes (
- code_hash TEXT PRIMARY KEY, client_id TEXT NOT NULL REFERENCES oauth_consents(client_id) ON DELETE CASCADE,
- expires_at BIGINT NOT NULL, data TEXT NOT NULL
+ code_hash TEXT PRIMARY KEY, client_id TEXT NOT NULL, subject_id INTEGER NOT NULL,
+ expires_at BIGINT NOT NULL, data TEXT NOT NULL,
+ FOREIGN KEY(client_id,subject_id) REFERENCES oauth_consents(client_id,subject_id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS oauth_tokens (
  access_hash TEXT PRIMARY KEY, refresh_hash TEXT UNIQUE NOT NULL,
- client_id TEXT NOT NULL REFERENCES oauth_consents(client_id) ON DELETE CASCADE, family_id TEXT NOT NULL,
- expires_at BIGINT NOT NULL, rotated INTEGER NOT NULL DEFAULT 0, revoked INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL
+ client_id TEXT NOT NULL, subject_id INTEGER NOT NULL, family_id TEXT NOT NULL,
+ expires_at BIGINT NOT NULL, rotated INTEGER NOT NULL DEFAULT 0, revoked INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL,
+ FOREIGN KEY(client_id,subject_id) REFERENCES oauth_consents(client_id,subject_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS oauth_tokens_family_idx ON oauth_tokens(family_id);
 CREATE INDEX IF NOT EXISTS oauth_tokens_client_idx ON oauth_tokens(client_id);

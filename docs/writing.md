@@ -2,6 +2,27 @@
 
 Write Markdown with live preview, save a draft, and publish when ready. Choose Blog, Articles, or Research papers during setup or in Settings to match the language used across your publication.
 
+## Publication teams
+
+For a publication managed by Margin Central, open **Settings → Team** to invite someone by email. They accept with their Margin account; new users create an account and verify their email first. The same email and password work across publications, while each publication grants its own access. Being an Owner on one publication does not grant access to another.
+
+Members and Pending invitations have separate page controls and page-size selectors. Central counts and selects each requested page in SQL; the browser loads only that page. Removing the last item on a page returns that list to its last available page.
+
+| Role | Publication access |
+| --- | --- |
+| Owner | Content, team management and publication settings. The primary owner retains account ownership and credential delegation. |
+| Writer | Create and edit drafts, upload media, and save proposed changes to published articles. Cannot publish, archive or delete content. |
+| Publisher | Writer access plus publishing, archiving and deleting content. |
+| Peer reviewer | Read and annotate only assigned articles, compare addressed notes and approve a review. Cannot edit article content or browse the workspace. |
+
+Invitations expire and can be resent or revoked. Resending replaces the old link. Owners can change a member's role or remove access; Central checks the current membership on subsequent requests. Removing someone from one publication leaves their Margin account and other publication memberships intact. Central must be reachable to validate team sessions.
+
+Peer-review access is granted per article. Invite from the article's review panel or choose **Peer reviewer** and an article in Team. A person can review several assigned articles. Inviting an existing Writer, Publisher or Owner to review an article adds that review assignment without replacing their publication role. Reviewer access to private media and source documents is restricted to the assigned draft.
+
+Existing reader-based review invitations on a Central-managed publication must be sent again through the review panel to grant Central access; this reuses their review history. Self-hosted publications without a Central ownership connection retain the existing owner and reader sign-in flows.
+
+Team edits identify the member in revision history. Public bylines remain the publication's shared author profile. Concurrent editing uses revision checks and conflict review; it does not merge keystrokes live.
+
 ## Articles and guides
 
 Choose **New** in the workspace or content list, then select your publication’s **Post**, **Article**, or **Paper** option or **Guide**. All formats use the Markdown editor, media tools, draft/publish controls, and revision history. Guides provide user-guide and playbook outlines. The workspace lists the content type beside each title. The keyboard shortcut **⌘/Ctrl+N** starts an article.
@@ -105,12 +126,14 @@ Record the assumption behind the result.
 
 ## Drafts and revisions
 
-To unpublish a live post, open **Post options (⋯) → Post details**, change **Visibility** to **Draft — only you**, and click **Unpublish post**. This saves the change and keeps the content as a private draft. The post remains live until that action succeeds. If you close the details dialog first, the editor footer shows the same **Unpublish post** action. Archiving and restoring drafts also use explicit action labels.
+Editing a published article opens its working draft. **Save draft** saves proposed changes while leaving the live article unchanged. A Publisher or Owner uses **Publish changes** to make the reviewed draft public. Writers can save the draft but cannot publish it.
+
+To unpublish a live post, a Publisher or Owner opens **Post options (⋯) → Post details** and chooses **Unpublish**. This removes public access and keeps the working content as a private draft for the publication team. The post remains live until that action succeeds. Archiving and restoring drafts also use explicit action labels.
 
 Manage newsletter signups, article comments, passage questions, and private reader notes in **Readers → Settings**. **Comments & questions** controls both with one Open, Closed, or Hidden mode. Closed and hidden conversations are omitted from public articles; opening them also requires configured spam protection. **Readers → Conversations** is the shared moderation inbox; **Readers → Subscribers** shows subscription status. Email delivery and spam protection now live under Readers. Blog designer keeps the visual controls for comments.
 
 - Edits are backed up to this browser after an 800 ms pause. Local recovery does not sync between devices or create server revisions.
-- **Save draft / Save changes** creates a server revision and clears the local backup.
+- **Save draft** creates a server revision and clears the local backup; publishing is a separate action.
 - **Revision history** shows previous versions, authors, additions and removals. Load an older version into the editor, review it, then save.
 - Concurrent saves open a conflict review without discarding your edits. This is revision-based protection, not live co-editing.
 - Saved changes from the CLI, API, or another editor update the open article through SSE as soon as the save commits. SQLite uses server notifications; PostgreSQL uses LISTEN/NOTIFY across server instances. No content polling is used. If you have unsaved edits, a **Review changes** notice keeps your draft intact and opens the existing conflict comparison. Updates wait while a dialog or save is in progress. Reconnecting catches up with the latest revision; deletion leaves your editor content available to copy. These updates follow saved revisions.

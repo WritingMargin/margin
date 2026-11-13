@@ -86,7 +86,7 @@ func (a *App) oauthRegister(w http.ResponseWriter, r *http.Request) {
 		oauthError(w, err)
 		return
 	}
-	_, err = (oauthStore{a.DB}).ExpireOAuthArtifacts(r.Context(), time.Now(), 500)
+	_, err = (oauthStore{db: a.DB, app: a}).ExpireOAuthArtifacts(r.Context(), time.Now(), 500)
 	must(err)
 	result, err := a.oauthService().CreateClient(r.Context(), oauthserver.Actor[int]{}, oauthserver.CreateClientInput{Name: name, ClientType: clientType, RedirectURIs: redirects, AllowedScopes: scopes})
 	if err != nil {

@@ -1,3 +1,7 @@
+import ConnectedApps from "./ConnectedApps";
+import PageHeading from "../components/PageHeading";
+import ReviewerWorkspace from "../team/ReviewerWorkspace";
+import { canOpenWorkspaceView } from "../../shared/team";
 import ProfilePage from "../profile/ProfilePage";
 import PricingPage from "../Pricing";
 import ReadersPage from "../readers/ReadersPage";
@@ -22,6 +26,9 @@ const pages: Partial<Record<AdminController["view"], import("react").ComponentTy
 };
 
 export default function AdminPage({ state }: { state: AdminController }) {
+  if (!canOpenWorkspaceView(state.role, state.view) || (state.view === "pricing" && !state.primaryOwner)) return <section className="page-content"><h1>Access restricted</h1><p>Your role does not have access to this page.</p><button className="button" onClick={() => state.setView("posts")}>All content</button></section>;
+  if (state.view === "connections") return <section className="page-content"><PageHeading label="YOUR WORKSPACE" title="Connected apps" description="Manage apps connected to your account in this publication." /><ConnectedApps primaryOwner={state.primaryOwner} /></section>;
+  if (state.view === "reviews") return <ReviewerWorkspace user={state.user} logout={state.logout} />;
   const Page = pages[state.view];
   if (Page) return <Page state={state} />;
   return <section className="page-content">

@@ -29,6 +29,10 @@
     sans-serif;
   color: var(--blog-muted, #62625c);
 }
+.peer-author .notice,
+.peer-page .notice {
+  margin-inline: 0;
+}
 .peer-changes {
   margin-bottom: 1.4rem;
 }

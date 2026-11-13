@@ -7,12 +7,15 @@ import (
 
 func (a *App) draftHTML(w http.ResponseWriter, r *http.Request) {
 	setDraftPreviewHeaders(w)
-	// Preview links grant no access. Require an actual owner browser session,
+	// Preview links grant no access. Require an actual content-author browser session,
 	// independently of any API/OAuth token supplied with the request.
 	browser := r.Clone(r.Context())
 	browser.Header.Del("Authorization")
 	if !a.authenticated(browser) {
 		fail(401, "Sign in as admin to preview this draft.")
+	}
+	if !tokenRouteAllowed(a.requestRole(browser), "GET /api/posts/{id}/draft") {
+		fail(403, "Open this article through your peer-review invitation.")
 	}
 	slug := r.PathValue("slug")
 	draft := first(a.DB.Must(r.Context(), "SELECT * FROM post_drafts WHERE slug=$1", slug))

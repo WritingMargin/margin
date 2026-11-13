@@ -1,5 +1,5 @@
 import type { AIConfig } from "../../shared/ai";
-import { sitePath } from "../base-path";
+import BillingLink from "../auth/BillingLink";
 
 export function WritingAvailability({
   config,
@@ -29,7 +29,7 @@ export function WritingAvailability({
     return (
       <p className="notice">
         The writing assistant needs a configured text provider and an active AI
-        plan. <a href={sitePath("/admin/pricing")}>Plans & credits</a>
+        plan. <BillingLink />
       </p>
     );
   return (

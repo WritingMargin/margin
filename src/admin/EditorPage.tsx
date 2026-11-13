@@ -22,6 +22,7 @@ export default function EditorPage({ state }: { state: AdminController }) {
         )}
       </section>
     );
+  if (state.role === "writer" && post.status === "archived") return <section className="page-content"><h1>{post.title}</h1><p>This article is archived. Ask a publisher or owner to restore it before editing.</p><button className="button" onClick={() => setView("posts")}>All content</button></section>;
   return <EditorWorkspace key={state.writing.key} state={state} />;
 }
 

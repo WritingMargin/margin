@@ -6,6 +6,7 @@ import AddressReviewNote from "./AddressReviewNote";
 import type { Post } from "../../shared/types";
 import type { PeerReview } from "./types";
 import "./review.css";
+import Empty from "../components/Empty";
 
 export default function AuthorReviews({ post }: { post: Post }) {
   const path = "/posts/" + post.id + "/reviews";
@@ -50,7 +51,7 @@ export default function AuthorReviews({ post }: { post: Post }) {
       setBusy(false);
     }
   }
-  if (!post.id) return <p>Save a draft to invite a reviewer.</p>;
+  if (!post.id) return <Empty icon={<Mail size={25} />} title="Save a draft to invite a reviewer." text="Save your article, then invite someone to review it privately." />;
   return (
     <div className="peer-author">
       <h3>Invite a reviewer</h3>
@@ -65,7 +66,7 @@ export default function AuthorReviews({ post }: { post: Post }) {
         }}
       >
         <label>
-          Reviewer’s Google email
+          Reviewer’s email address
           <input
             type="email"
             required
@@ -76,13 +77,7 @@ export default function AuthorReviews({ post }: { post: Post }) {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <button
-          className="button primary"
-          disabled={busy || post.status === "archived"}
-        >
-          <Mail size={14} />
-          Send invitation
-        </button>
+        <ReviewInviteButton busy={busy} archived={post.status === "archived"} />
       </form>
       <div className="peer-section-heading">
         <h3>Reviews</h3>
@@ -95,10 +90,10 @@ export default function AuthorReviews({ post }: { post: Post }) {
           Refresh
         </button>
       </div>
-      {notice && <p role="status">{notice}</p>}
-      {error && <p role="alert">{error}</p>}
+      {notice && <p className="notice" role="status">{notice}</p>}
+      {error && <p className="error-box" role="alert">{error}</p>}
       {loading && <p role="status">Loading reviews…</p>}
-      {!loading && !error && !reviews.length && <p>No invitations yet.</p>}
+      {!loading && !error && !reviews.length && <Empty icon={<Mail size={25} />} title="No invitations yet." text="Invite a reviewer above to get feedback on this draft." />}
       {reviews.map((review) => (
         <article className="review-entry" key={review.id}>
           <strong>{review.reviewer_name || review.email}</strong>
@@ -130,4 +125,10 @@ export default function AuthorReviews({ post }: { post: Post }) {
       ))}
     </div>
   );
+}
+
+function ReviewInviteButton({ busy, archived }: { busy: boolean; archived: boolean }) {
+  return <button className="button primary" disabled={busy || archived}>
+    <Mail size={14} />{busy ? "Working…" : "Send invitation"}
+  </button>;
 }

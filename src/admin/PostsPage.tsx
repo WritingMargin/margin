@@ -7,7 +7,7 @@ import ReadPostLink from "./ReadPostLink";
 import NewContentMenu from "./NewContentMenu";
 import { contentTypeLabel } from "../../shared/content-types";
 import { listPendingDrafts } from "../../shared/local-drafts";
-import { sitePath } from "../base-path";
+import { canPublish } from "../../shared/team";
 import type { AdminController } from "./useAdminController";
 import PostsPagination, { PostsPageSize } from "./PostsPagination";
 import { usePostsPagination } from "./usePostsPagination";
@@ -30,6 +30,8 @@ type Props = {
     | "words"
     | "search"
     | "dirty"
+    | "role"
+    | "workspaceKey"
   >;
 };
 export default function PostsPage({ state }: Props) {
@@ -73,7 +75,7 @@ export default function PostsPage({ state }: Props) {
           </span>
         </div>
       )}
-      <PendingDraftList onOpen={load} />
+      <PendingDraftList onOpen={load} workspace={state.workspaceKey} />
       {searchState.loading && <p role="status">Loading posts…</p>}
       {searchState.error && <div className="error-box" role="alert">{searchState.error} <button className="button" onClick={searchState.retry}>Try again</button></div>}
       <PostsPageSize state={pagination} query={query} onSearch={search.filter} />
@@ -105,7 +107,7 @@ export default function PostsPage({ state }: Props) {
             <span className="muted">{date(p.updatedAt)}</span>
             <div className="post-row-actions">
             <ReadPostLink post={p} />
-            <button
+            {canPublish(state.role) && <button
               className="icon-button"
               title="Delete post"
               onClick={async () => {
@@ -126,7 +128,7 @@ export default function PostsPage({ state }: Props) {
               }}
             >
               <Trash2 size={15} />
-            </button>
+            </button>}
             </div>
           </div>
         ))}
@@ -154,9 +156,9 @@ export default function PostsPage({ state }: Props) {
   );
 }
 
-function PendingDraftList({ onOpen }: { onOpen: (post: import("../../shared/types").Post) => void }) {
+function PendingDraftList({ onOpen, workspace }: { onOpen: (post: import("../../shared/types").Post) => void; workspace: string }) {
   let drafts: ReturnType<typeof listPendingDrafts> = [];
-  try { drafts = listPendingDrafts(localStorage, sitePath("/admin")); }
+  try { drafts = listPendingDrafts(localStorage, workspace); }
   catch { /* Browser storage may be disabled. */ }
   if (!drafts.length) return null;
   return <section className="notice" aria-label="Drafts saved on this device">

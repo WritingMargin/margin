@@ -115,17 +115,17 @@ func TestOAuthConsentExplainsPrivateAccessAndSelection(t *testing.T) {
 	a := oauthFixture(t)
 	client := oauthRegisterTest(t, a, "content:read content:draft")
 	query := oauthQuery(client.str("client_id"), "content:read content:draft", "https://blog.test/mcp")
-	response := oauthHTTPRequest(a, "GET", "/oauth/authorize?"+query.Encode(), nil, true)
+	response := oauthConsentDataRequest(a, query, true)
 	expectStatus(t, response, 200)
 	if response.Header().Get("Referrer-Policy") != "same-origin" {
 		t.Fatal("native consent forms need a same-origin referrer policy")
 	}
-	for _, text := range []string{"Choose permissions", "private drafts", `name="permission" value="content:read"`, `name="permission" value="content:draft"`, "Allow selected permissions", `type="submit"`, "cannot create API tokens"} {
+	for _, text := range []string{"private drafts", `"scope":"content:read"`, `"scope":"content:draft"`, `"csrf":`, `"action":"/oauth/consent"`} {
 		if !strings.Contains(response.Body.String(), text) {
 			t.Fatal("missing consent detail", text)
 		}
 	}
-	if strings.Contains(response.Body.String(), `name="permission" value="content:publish"`) {
+	if strings.Contains(response.Body.String(), `"scope":"content:publish"`) {
 		t.Fatal("offered unrequested permission")
 	}
 }

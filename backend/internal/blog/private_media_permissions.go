@@ -15,5 +15,9 @@ func (a *App) privateMediaAllowed(r *http.Request, permission string) bool {
 	if scopes, oauth := a.requestOAuthScopes(r); oauth {
 		return hasOAuthScope(scopes, permission)
 	}
-	return true
+	role := a.requestRole(r)
+	if permission == "settings:manage" {
+		return role == "owner"
+	}
+	return validTokenRole(role)
 }

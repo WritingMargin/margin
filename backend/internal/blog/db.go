@@ -91,6 +91,9 @@ func (d *Database) initialize() error {
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+	if err := d.migrateOAuthMembers(); err != nil {
+		return err
+	}
 	if err := d.migrateAnalyticsVisitorIPs(); err != nil {
 		return err
 	}

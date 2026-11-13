@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "./TeamContext";
 import {
   useCallback,
   useEffect,
@@ -6,9 +7,10 @@ import {
   type ReactNode,
 } from "react";
 import AccountRecovery from "./AccountRecovery";
+import AccountAuthentication from "./AccountAuthentication";
 import { api, json } from "../api";
 
-type AccountStatus = {
+export type AccountStatus = {
   connected: boolean;
   connectionState?: "disconnected" | "connected" | "rejected" | "unavailable";
   serverTokenConfigured?: boolean;
@@ -16,6 +18,7 @@ type AccountStatus = {
   registrationAvailable: boolean;
   email: string;
   blogUrl: string;
+  authentication?: { url?: string; expiresAt?: string };
 };
 
 export default function AccountGate({
@@ -31,11 +34,18 @@ export default function AccountGate({
   embedded?: boolean;
   offlineTools?: ReactNode;
 }) {
+  const { primaryOwner } = useTeamIdentity();
   const [status, setStatus] = useState<AccountStatus | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const inFlight = useRef(false);
+  const acceptConnection = useCallback((account: AccountStatus) => {
+    setStatus(account);
+    if (!account.connected) return;
+    window.dispatchEvent(new Event("margin:account-connected"));
+    onConnected?.();
+  }, [onConnected]);
   const refresh = useCallback(() => {
     void api<AccountStatus>("/account")
       .then((value) => {
@@ -60,10 +70,7 @@ export default function AccountGate({
         "/account",
         json("POST", { consent: true }),
       );
-      setStatus(account);
-      if (!account.connected) return;
-      window.dispatchEvent(new Event("margin:account-connected"));
-      onConnected?.();
+      acceptConnection(account);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -72,6 +79,8 @@ export default function AccountGate({
     }
   }
   if (accountConnected(status)) return children;
+  if (!primaryOwner) return <><p>The publication’s primary owner needs to connect Margin services before you can use {feature.toLowerCase()}.</p>{offlineTools}</>;
+  if (status?.authentication?.url) return <><AccountAuthentication status={status} onConnected={acceptConnection} restart={connect} busy={busy} error={error} />{offlineTools}</>;
   const problem = connectionProblem(status);
   if (problem) return <><AccountRecovery feature={feature} {...problem} refresh={refresh} embedded={embedded} />{offlineTools}</>;
   return <><AccountGatePanel feature={feature} embedded={embedded} status={status} error={error} busy={busy} dismissed={dismissed} refresh={refresh} connect={connect} resume={() => setDismissed(false)} dismiss={() => setDismissed(true)} />{offlineTools}</>;
@@ -131,10 +140,11 @@ function AccountGatePanel({ feature, embedded, status, error, busy, dismissed, r
 
 function AccountConnection({ feature, embedded, status, error, busy, connect, dismiss }: Pick<GatePanelProps, "feature" | "embedded" | "error" | "busy" | "connect" | "dismiss"> & { status: AccountStatus }) {
   return <>
-    {embedded ? <p>Connect a Margin account to use {feature.toLowerCase()}. We’ll use <strong>{status.email}</strong>{status.blogUrl && <> and <strong>{status.blogUrl}</strong></>} to create it. Your password and posts stay here.</p> : <>
-      <p>{feature} requires a Margin account. If you continue, we’ll create one for you using <strong>{status.email}</strong>{status.blogUrl && <> and <strong>{status.blogUrl}</strong></>}.</p>
+    {embedded ? <p>Connect a Margin account to use {feature.toLowerCase()}. We’ll use <strong>{status.email}</strong>{status.blogUrl && <> and <strong>{status.blogUrl}</strong></>} to connect it. Your password and posts stay here.</p> : <>
+      <p>{feature} requires a Margin account. If you continue, we’ll use <strong>{status.email}</strong>{status.blogUrl && <> and <strong>{status.blogUrl}</strong></>} to connect it.</p>
       <p>Your password and posts aren’t sent when we create your account. Creating the account is free; paid features require a separate subscription you choose.</p>
     </>}
+    <p>If your email already has a Margin Studio account, we’ll ask you to sign in and approve this publication. Otherwise, we’ll create your account automatically.</p>
     {!status.registrationAvailable && <p className="notice">Account services aren’t configured for this installation yet. Contact your server administrator. You can keep writing and publishing.</p>}
     {error && <p className="error-box" role="alert">{error}</p>}
     <div className="account-actions">
