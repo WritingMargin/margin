@@ -1,0 +1,10 @@
+.storage-quota { min-width:0; margin:20px 0; }
+.storage-quota-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.storage-quota-heading h3 { margin:0; font-size:12px; font-weight:500; color:var(--accent); }
+.storage-quota-refresh { min-height:30px; padding:6px 10px; font-size:11px; }
+.storage-quota .config-row { gap:16px; flex-wrap:wrap; }
+.storage-quota .config-row strong { color:var(--accent); font-weight:500; }
+.storage-quota progress { display:block; appearance:none; width:100%; height:5px; margin:12px 0; overflow:hidden; border:0; border-radius:var(--radius); background:var(--line); accent-color:var(--accent); }
+.storage-quota progress::-webkit-progress-bar { background:var(--line); border-radius:var(--radius); }
+.storage-quota progress::-webkit-progress-value { background:var(--accent); border-radius:var(--radius); }
+.storage-quota progress::-moz-progress-bar { background:var(--accent); border-radius:var(--radius); }
