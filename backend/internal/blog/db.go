@@ -25,10 +25,11 @@ func (r Row) str(k string) string { s, _ := r[k].(string); return s }
 func (r Row) yes(k string) bool   { b, _ := r[k].(bool); return b }
 
 type Database struct {
-	SQL         *sql.DB
-	Kind        string
-	dsn         string
-	postChanges postChangeHub
+	SQL          *sql.DB
+	Kind         string
+	dsn          string
+	postChanges  postChangeHub
+	postListener postgresPostListener
 }
 
 func databaseLocation(url, filename string) (string, string, error) {
@@ -67,6 +68,9 @@ func OpenDatabase(url, filename string) (*Database, error) {
 		return nil, err
 	}
 	result := &Database{SQL: db, Kind: driver, dsn: dsn}
+	if err = result.configurePool(); err != nil {
+		return nil, errors.Join(err, db.Close())
+	}
 	if err = result.initialize(); err != nil {
 		return nil, errors.Join(err, db.Close())
 	}

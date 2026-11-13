@@ -3,13 +3,11 @@ package blog
 import (
 	"context"
 	"database/sql"
-	"github.com/lib/pq"
 	"sync"
-	"time"
 )
 
-// SQLite runs in a single server process. The hub coalesces committed changes
-// without blocking writers; subscribers read the latest metadata after waking.
+// The hub coalesces committed changes without blocking writers. PostgreSQL
+// notifications are relayed here from one shared connection per engine process.
 type postChangeHub struct {
 	mu          sync.Mutex
 	subscribers map[string]map[chan struct{}]bool
@@ -52,7 +50,7 @@ func (d *Database) notifyPostTransaction(ctx context.Context, tx *sql.Tx, id str
 	if d.Kind != "postgres" {
 		return
 	}
-	_, err := tx.ExecContext(ctx, "SELECT pg_notify('margin_post_' || md5(current_schema() || ':' || $1), '')", id)
+	_, err := tx.ExecContext(ctx, "SELECT pg_notify('margin_posts_' || md5(current_schema()), $1)", id)
 	must(err)
 }
 func (d *Database) postCommitted(id string) {
@@ -65,34 +63,18 @@ func (d *Database) subscribePost(ctx context.Context, id string) (<-chan struct{
 		changed, close := d.postChanges.subscribe(id)
 		return changed, close, nil
 	}
-	rows, err := d.Query(ctx, "SELECT 'margin_post_' || md5(current_schema() || ':' || $1) AS channel", id)
+	rows, err := d.Query(ctx, "SELECT 'margin_posts_' || md5(current_schema()) AS channel")
 	if err != nil {
 		return nil, nil, err
 	}
-	listener := pq.NewListener(d.dsn, time.Second, 15*time.Second, nil)
-	stopCancellation := context.AfterFunc(ctx, func() { _ = listener.Close() })
-	if err = listener.Listen(first(rows).str("channel")); err != nil {
-		stopCancellation()
-		_ = listener.Close()
-		return nil, nil, err
-	}
-	changed := make(chan struct{}, 1)
-	done := make(chan struct{})
-	go relayPostNotifications(listener, changed, done)
-	var once sync.Once
-	closeListener := func() { once.Do(func() { close(done); stopCancellation(); _ = listener.Close() }) }
-	return changed, closeListener, nil
+	return d.postListener.subscribe(ctx, d, first(rows).str("channel"), id)
 }
-func relayPostNotifications(listener *pq.Listener, changed chan<- struct{}, done <-chan struct{}) {
-	for {
-		select {
-		case <-done:
-			return
-		case _, ok := <-listener.Notify:
-			if !ok {
-				return
-			}
-			// A nil notification means the listener reconnected; catch up with the DB.
+
+func (h *postChangeHub) notifyAll() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for _, subscribers := range h.subscribers {
+		for changed := range subscribers {
 			select {
 			case changed <- struct{}{}:
 			default:
