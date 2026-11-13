@@ -13,12 +13,31 @@ export default function DeploymentSettings({
     <SettingsDisclosure
       className="deployment-settings"
       title="Configure your web server"
-      description="Generate a reverse-proxy configuration for your blog’s address."
+      description="Generate, copy, and install Nginx or Apache configuration for your domain or /blog path."
       icon={<Server />}
       status={
         state.current?.error ? "Configuration needs attention" : undefined
       }
     >
+      <p>
+        Use this when you manage the server running Margin. If your hosting
+        provider manages the server, ask them to add your custom domain and
+        enable HTTPS.
+      </p>
+      <ol className="deployment-steps">
+        <li>
+          Point your domain’s DNS to the web server using the DNS guide above.
+          For a blog on an existing website, keep that website’s DNS.
+        </li>
+        <li>
+          Arrange an HTTPS certificate for the domain. The generated HTTPS site
+          config expects the certificate files to already exist.
+        </li>
+        <li>
+          Choose your web server and enter the engine address it can reach, then
+          generate the config.
+        </li>
+      </ol>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -95,13 +114,38 @@ export default function DeploymentSettings({
             Review the comments for placement, engine settings, and validation.
             HTTPS site configs reference existing Let’s Encrypt certificates.
           </p>
+          <InstallationSteps server={state.server} />
         </div>
       )}
       <p className="deployment-note">
-        Apply the config on your server, validate it, then reload your proxy.
+        Set the engine’s PUBLIC_URL and proxy settings as shown in the generated
+        comments, then restart the engine. Open your new HTTPS address and its
+        /admin page to check they work before saving the public address above.
         Generating a template does not save your blog address or change DNS,
         certificates, or server configuration.
       </p>
     </SettingsDisclosure>
+  );
+}
+
+function InstallationSteps({ server }: { server: string }) {
+  return (
+    <p className="small-text">
+      {server === "nginx" ? (
+        <>
+          For a complete site, install the config inside Nginx’s http context,
+          for example in <code>/etc/nginx/conf.d/margin.conf</code>. Validate
+          with <code>nginx -t</code>.
+        </>
+      ) : (
+        <>
+          For a complete site, include the config from Apache’s sites directory
+          and enable the modules listed in its comments. Validate with{" "}
+          <code>apachectl configtest</code>.
+        </>
+      )}{" "}
+      For a /blog snippet, follow its placement comments inside your existing
+      site configuration. Reload the web server only after validation succeeds.
+    </p>
   );
 }

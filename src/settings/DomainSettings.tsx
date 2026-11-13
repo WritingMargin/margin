@@ -1,4 +1,5 @@
 import DeploymentSettings from "./DeploymentSettings";
+import DomainDNSSettings from "./DomainDNSSettings";
 import { Globe2 } from "lucide-react";
 import type { PublicationSettingsController } from "./usePublicationSettings";
 
@@ -26,7 +27,8 @@ export default function DomainSettings({
         <h2>Your blog’s address</h2>
         <p>
           Choose the public address readers and search engines should use for
-          your blog.
+          your blog. Use the DNS and web server guides below to connect your
+          domain before saving the new address.
         </p>
         <fieldset disabled={state.busy}>
           <label htmlFor="blog-domain">Public blog URL</label>
@@ -68,7 +70,10 @@ export default function DomainSettings({
           {!state.saved?.domain.url && <p className="small-text">Using the server’s configured address.</p>}
         </div>
       </form>
-      <DeploymentSettings publicUrl={deploymentAddress(state)} />
+      <div className="settings-general">
+        <DomainDNSSettings publicUrl={deploymentAddress(state)} />
+        <DeploymentSettings publicUrl={deploymentAddress(state)} />
+      </div>
     </div>
   );
 }
