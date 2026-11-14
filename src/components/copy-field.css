@@ -41,7 +41,7 @@
   box-sizing: border-box;
 }
 
-.copy-field-table .copy-field-controls { align-items: flex-start; gap: 4px; }
-.copy-field-table code { flex: 1; min-width: 0; overflow-wrap: anywhere; font: 12px/1.7 ui-monospace, monospace; user-select: all; }
+.copy-field-table .copy-field-controls { align-items: center; flex-wrap: nowrap; gap: 4px; }
+.copy-field-table code { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 12px/1.7 ui-monospace, monospace; user-select: all; }
 .copy-field-table .icon-button { padding: 3px; flex-shrink: 0; display: inline-flex; }
-.copy-field-table [role="status"] { font-size: 10px; }
+.copy-field-table [role="status"] { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
