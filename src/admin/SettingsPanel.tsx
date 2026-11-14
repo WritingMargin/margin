@@ -40,7 +40,7 @@ export default function SettingsPanel({
   onDirtyChange,
   onPublicationChange,
 }: Props) {
-  const state = usePublicationSettings(notify, onDirtyChange, onPublicationChange);
+  const state = usePublicationSettings(notify, onDirtyChange, onPublicationChange, cloudManaged);
   const arrowNavigation = (
     event: KeyboardEvent<HTMLButtonElement>,
     index: number,
@@ -106,7 +106,7 @@ function SettingsContent({ state, tab, cloudManaged, notify, theme, setTab }: Pi
               ) : (
                 <div className="settings-general">
                   <PublicationTypeSettings state={state} />
-                  <DomainSettings state={state} />
+                  <DomainSettings state={state} cloudManaged={cloudManaged} />
                   {cloudManaged && <SoftwareUpdateSettings />}
                   <CountryDatabaseSettings />
                   <BlogSEOShortcut onOpen={() => setTab("seo")} />

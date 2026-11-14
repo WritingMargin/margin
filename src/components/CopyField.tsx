@@ -1,3 +1,4 @@
+import { Copy } from "lucide-react";
 import { useId, useState } from "react";
 import "./copy-field.css";
 
@@ -7,12 +8,14 @@ export default function CopyField({
   onChange,
   placeholder,
   copyValue = value,
+  variant = "field",
 }: {
   label: string;
   value: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   copyValue?: string;
+  variant?: "field" | "table";
 }) {
   const [copied, setCopied] = useState<{ value: string; message: string } | null>(null);
   const id = useId();
@@ -25,10 +28,10 @@ export default function CopyField({
     }
   }
   return (
-    <div className="copy-field">
-      <label htmlFor={id}>{label}</label>
+    <div className={`copy-field copy-field-${variant}`}>
+      {variant === "field" && <label htmlFor={id}>{label}</label>}
       <div className="copy-field-controls">
-        <input
+        {variant === "table" ? <code id={id}>{value || placeholder}</code> : <input
           id={id}
           readOnly={!onChange}
           value={value}
@@ -41,15 +44,15 @@ export default function CopyField({
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-        />
+        />}
         <button
           type="button"
-          className="button"
+          className={variant === "table" ? "icon-button" : "button"}
           aria-label={`Copy ${label.toLowerCase()}`}
           disabled={!copyValue}
           onClick={() => void copy()}
         >
-          Copy
+          {variant === "table" ? <Copy size={14} aria-hidden="true" /> : "Copy"}
         </button>
       </div>
       {copied?.value === copyValue && (
