@@ -45,12 +45,10 @@
   display: grid;
   gap: 0.8rem;
 }
-.peer-author label,
 .peer-approval label {
   display: grid;
   gap: 0.35rem;
 }
-.peer-author .peer-section-heading,
 .peer-notes,
 .peer-approval {
   margin-top: 1.5rem;
@@ -81,6 +79,39 @@
 }
 .peer-author .peer-fix-form {
   margin-bottom: 0.5rem;
+}
+.peer-author {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.peer-author label {
+  margin: 0;
+}
+.peer-author .peer-invite-form {
+  gap: 16px;
+}
+.peer-author .peer-invite-heading h3 {
+  margin: 0 0 6px;
+}
+.peer-author-reviews {
+  border-top: 1px solid var(--line, #dedfd6);
+  padding-top: 16px;
+  min-width: 0;
+}
+.peer-author .peer-invite-form :is(.notice, .error-box) {
+  padding: 10px 12px;
+}
+.peer-author .empty {
+  padding: 24px 12px;
+}
+.peer-author .empty h3 {
+  font-size: 13px;
+  margin: 12px 0 4px;
+}
+.peer-author .empty p {
+  font-size: 12px;
+  margin: 0;
 }
 .review-note {
   border-inline-start: 2px solid var(--theme-border, #dedfd6);

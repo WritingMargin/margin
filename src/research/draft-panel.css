@@ -6,6 +6,7 @@
   font-size: 13px;
   line-height: 1.5;
   overflow-wrap: anywhere;
+  padding-inline-end: 4px;
 }
 .draft-panel-body h3 {
   font-size: 16px;
@@ -36,10 +37,6 @@
 }
 .source-entry a {
   color: inherit;
-}
-.draft-panel summary {
-  cursor: pointer;
-  padding: 0.4rem 0;
 }
 .draft-panel .button {
   justify-self: start;
