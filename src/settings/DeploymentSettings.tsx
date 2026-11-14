@@ -10,26 +10,14 @@ export default function DeploymentSettings({
 }) {
   const state = useDeploymentConfig(publicUrl);
   return (
-    <div className="deployment-settings">
+    <section
+      className="settings-card settings-guide deployment-settings"
+      aria-labelledby="deployment-heading"
+    >
+      <h2 id="deployment-heading">Web server</h2>
       <p>
-        Use this when you manage the server running Margin. If your hosting
-        provider manages the server, ask them to add your custom domain and
-        enable HTTPS.
+        Generate a config for <strong>{publicUrl || "your blog’s address"}</strong>.
       </p>
-      <ol className="deployment-steps">
-        <li>
-          Point your domain’s DNS to the web server using the Custom domain tab.
-          For a blog on an existing website, keep that website’s DNS.
-        </li>
-        <li>
-          Arrange an HTTPS certificate for the domain. The generated HTTPS site
-          config expects the certificate files to already exist.
-        </li>
-        <li>
-          Choose your web server and enter the engine address it can reach, then
-          generate the config.
-        </li>
-      </ol>
       <InnerTabs
         label="Web server"
         tabs={[
@@ -67,17 +55,12 @@ export default function DeploymentSettings({
             />
           </label>
           <p className="small-text" id="deployment-upstream-help">
-            The HTTP address reachable by your proxy. For Docker, use the mapped
-            host port or container service name.
+            The address your web server uses to reach Margin.
           </p>
           <button className="button" disabled={state.busy || !publicUrl.trim()}>
             {state.busy ? "Generating…" : "Generate config"}
           </button>
         </form>
-        <p className="small-text">
-          A root URL generates a site config. A path such as /blog generates a
-          snippet for your existing site.
-        </p>
         {state.current?.error && (
           <p className="error-box" role="alert">
             {state.current.error}
@@ -109,43 +92,16 @@ export default function DeploymentSettings({
               <code>{state.current.data.config}</code>
             </pre>
             <p className="small-text">
-              Review the comments for placement, engine settings, and
-              validation. HTTPS site configs reference existing Let’s Encrypt
-              certificates.
+              Follow the file’s setup comments, then run{" "}
+              <code>{state.server === "nginx" ? "nginx -t" : "apachectl configtest"}</code>{" "}
+              before reloading your web server.
             </p>
-            <InstallationSteps server={state.server} />
           </div>
         )}
         <p className="deployment-note">
-          Set the engine’s PUBLIC_URL and proxy settings as shown in the
-          generated comments, then restart the engine. Open your new HTTPS
-          address and its /admin page to check they work before saving the
-          address in Custom domain. Generating a template does not save your
-          blog address or change DNS, certificates, or server configuration.
+          DNS and HTTPS must be configured separately.
         </p>
       </div>
-    </div>
-  );
-}
-
-function InstallationSteps({ server }: { server: string }) {
-  return (
-    <p className="small-text">
-      {server === "nginx" ? (
-        <>
-          For a complete site, install the config inside Nginx’s http context,
-          for example in <code>/etc/nginx/conf.d/margin.conf</code>. Validate
-          with <code>nginx -t</code>.
-        </>
-      ) : (
-        <>
-          For a complete site, include the config from Apache’s sites directory
-          and enable the modules listed in its comments. Validate with{" "}
-          <code>apachectl configtest</code>.
-        </>
-      )}{" "}
-      For a /blog snippet, follow its placement comments inside your existing
-      site configuration. Reload the web server only after validation succeeds.
-    </p>
+    </section>
   );
 }

@@ -56,10 +56,6 @@ export default function DomainSettings({
         hidden={tab !== "server"}
         tabIndex={0}
       >
-        <p className="small-text">
-          Configuration for <strong>{publicUrl || "your public URL"}</strong>.
-          Set the address in Custom domain before generating.
-        </p>
         <DeploymentSettings publicUrl={publicUrl} />
       </div>
     </SettingsDisclosure>
