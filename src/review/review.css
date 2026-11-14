@@ -82,17 +82,24 @@
 }
 .peer-author {
   display: grid;
-  gap: 24px;
+  gap: 18px;
   min-width: 0;
 }
 .peer-author label {
   margin: 0;
 }
 .peer-author .peer-invite-form {
-  gap: 16px;
+  gap: 13px;
 }
-.peer-author .peer-invite-heading h3 {
-  margin: 0 0 6px;
+.peer-invite-form .button {
+  min-height: 34px;
+  padding: 8px 10px;
+  font-size: 11px;
+}
+.peer-author .peer-section-heading .icon-button {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
 }
 .peer-author-reviews {
   border-top: 1px solid var(--line, #dedfd6);
@@ -102,16 +109,9 @@
 .peer-author .peer-invite-form :is(.notice, .error-box) {
   padding: 10px 12px;
 }
-.peer-author .empty {
-  padding: 24px 12px;
-}
-.peer-author .empty h3 {
-  font-size: 13px;
-  margin: 12px 0 4px;
-}
-.peer-author .empty p {
+.peer-reviews-empty {
   font-size: 12px;
-  margin: 0;
+  margin: 8px 0 0;
 }
 .review-note {
   border-inline-start: 2px solid var(--theme-border, #dedfd6);

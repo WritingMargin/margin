@@ -88,12 +88,14 @@ export default function AuthorReviews({ post }: { post: Post }) {
         <div className="peer-section-heading">
           <h3>Reviews</h3>
           <button
-            className="button"
+            className="icon-button"
+            type="button"
+            aria-label="Refresh reviews"
+            title="Refresh reviews"
             disabled={loading || busy}
             onClick={() => setVersion((v) => v + 1)}
           >
             <RefreshCw size={13} />
-            Refresh
           </button>
         </div>
         {notice && (
@@ -108,11 +110,7 @@ export default function AuthorReviews({ post }: { post: Post }) {
         )}
         {loading && <p role="status">Loading reviews…</p>}
         {!loading && !error && !reviews.length && (
-          <Empty
-            icon={<Mail size={20} />}
-            title="No reviewers yet"
-            text="Invitations and feedback will appear here."
-          />
+          <p className="muted peer-reviews-empty">No invitations yet.</p>
         )}
         {reviews.map((review) => (
           <article className="review-entry" key={review.id}>

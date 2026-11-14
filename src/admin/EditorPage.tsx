@@ -49,7 +49,7 @@ function EditorWorkspace({ state }: { state: AdminController }) {
     <>
       <EditorHeading state={state} />
       <div
-        className={`editor-assistant-layout ${state.writing.open || panel === "Peer review" ? "with-assistant" : ""}`}
+        className={`editor-assistant-layout ${state.writing.open ? "with-assistant" : ""}`}
       >
         {openPanel && (
           <EditorSidePanel

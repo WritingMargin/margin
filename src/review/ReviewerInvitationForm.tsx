@@ -21,19 +21,16 @@ export default function ReviewerInvitationForm({
   const id = useId();
   return (
     <form
-      className="peer-invite-form"
-      aria-labelledby={id}
+      className="peer-invite-form credit-form"
+      aria-label="Invite a reviewer"
       onSubmit={(event) => {
         event.preventDefault();
         invite();
       }}
     >
-      <div className="peer-invite-heading">
-        <h3 id={id}>Invite a reviewer</h3>
-        <p className="muted" id={id + "-help"}>
+        <p className="credit-dialog-description" id={id + "-help"}>
           Share this article privately for feedback.
         </p>
-      </div>
       <label>
         Email address
         <input
