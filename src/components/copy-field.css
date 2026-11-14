@@ -1,0 +1,42 @@
+.copy-field {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  min-width: 0;
+}
+.copy-field label {
+  margin: 0;
+  font-size: 11px;
+}
+.copy-field-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.publication-settings-grid .copy-field-controls input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  height: 44px;
+  margin: 0;
+  font: inherit;
+  font-size: 11px;
+  color: inherit;
+  padding: 0 12px;
+  border: 1px solid var(--line, #dfe2d8);
+  border-radius: 6px;
+  background: #fff;
+  appearance: none;
+  box-sizing: border-box;
+}
+.publication-settings-grid .copy-field-controls input:focus-visible {
+  outline: 2px solid #93a583;
+  outline-offset: 2px;
+}
+.copy-field-controls .button {
+  flex: 0 0 auto;
+  height: 44px;
+  margin: 0;
+  box-sizing: border-box;
+}

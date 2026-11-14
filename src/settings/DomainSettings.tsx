@@ -84,9 +84,7 @@ function DomainAddressForm({
       </div>
       <h2>Your blog’s address</h2>
       <p>
-        Choose the public address readers and search engines should use for your
-        blog. Use the DNS guide and the Server configuration tab to connect your
-        domain before saving the new address.
+        Connect your domain with the DNS record, then save your blog’s address.
       </p>
       <fieldset disabled={state.busy}>
         <label htmlFor="blog-domain">Public blog URL</label>
