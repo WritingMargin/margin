@@ -28,7 +28,6 @@ export function useTabsPicker({
     },
   ]);
   const [editing, setEditing] = useState(0);
-  const [previewTab, setPreviewTab] = useState(1);
   const update = (value: Partial<TabsOptions>) =>
     setOptions((current) => ({ ...current, ...value }));
   const changePanel = (value: Partial<(typeof panels)[number]>) =>
@@ -39,7 +38,6 @@ export function useTabsPicker({
     );
   const selectPanel = (index: number) => {
     setEditing(index);
-    setPreviewTab(index + 1);
   };
   const move = (offset: number) => {
     const target = editing + offset;
@@ -75,8 +73,6 @@ export function useTabsPicker({
     panels,
     setPanels,
     editing,
-    previewTab,
-    setPreviewTab,
     update,
     changePanel,
     selectPanel,

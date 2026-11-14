@@ -15,7 +15,7 @@ import type { TabsOptions } from "../../shared/tabs";
 import ContentTabNavigation from "./ContentTabNavigation";
 import "./tabs.css";
 
-type PanelProps = { className?: string; node?: Element; children?: ReactNode };
+type PanelProps = { "data-tab-title"?: string; className?: string; node?: Element; children?: ReactNode };
 
 export default function ContentTabs({
   children,
@@ -26,9 +26,13 @@ export default function ContentTabs({
   initial = 1,
   accent,
   radius,
+  selectedIndex,
+  onSelect,
 }: Partial<TabsOptions> & {
   children: ReactNode;
   title?: string;
+  selectedIndex?: number;
+  onSelect?: (index: number) => void;
 }) {
   const id = useId();
   const [narrow, setNarrow] = useState(false);
@@ -43,9 +47,11 @@ export default function ContentTabs({
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
   const [selection, setSelection] = useState({ initial, index: initial - 1 });
-  const selected =
-    selection.initial === initial ? selection.index : initial - 1;
-  const setSelected = (index: number) => setSelection({ initial, index });
+  const selected = selectedPanel(selection, initial, selectedIndex);
+  const setSelected = (index: number) => {
+    setSelection({ initial, index });
+    onSelect?.(index);
+  };
   const style = tabStyles(accent, radius);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const nodes = useMemo(() => Children.toArray(children), [children]);
@@ -76,7 +82,7 @@ export default function ContentTabs({
         {panels.map((panel, index) => {
           const props = isValidElement<PanelProps>(panel) ? panel.props : {};
           const label =
-            String(props.node?.properties.dataTabTitle || "").trim() ||
+            String(props["data-tab-title"] ?? props.node?.properties.dataTabTitle ?? "").trim() ||
             `Tab ${index + 1}`;
           return (
             <button
@@ -185,4 +191,8 @@ function tabStyles(accent: string | undefined, radius: number | undefined) {
     ...(radius !== undefined ? { "--tabs-radius": `${radius}px` } : {}),
   } as CSSProperties;
   return style;
+}
+
+function selectedPanel(selection: { initial: number; index: number }, initial: number, controlled?: number) {
+  return controlled ?? (selection.initial === initial ? selection.index : initial - 1);
 }
