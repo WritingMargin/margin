@@ -129,56 +129,37 @@
   margin: 1.4em 0;
 }
 .margin-component-frame {
-  position: relative;
-  border-radius: 8px;
-  outline: 2px solid transparent;
-  outline-offset: 6px;
-  transition: outline-color 120ms ease;
+  cursor: default;
 }
-.margin-component-frame:hover {
-  outline-color: color-mix(in srgb, var(--accent, #40543b) 45%, transparent);
-}
-.margin-component-node.is-selected .margin-component-frame {
-  outline-color: var(--accent, #40543b);
+.margin-component-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 .margin-component-edit {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 9px;
-  border: 1px solid color-mix(in srgb, var(--blog-text, #262725) 16%, transparent);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--blog-background, #fff) 92%, transparent);
-  color: var(--blog-text, #262725);
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #46513b;
   font: 500 11px/1.4 var(--font-sans, sans-serif);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-.margin-component-frame:hover .margin-component-edit,
-.margin-component-node.is-selected .margin-component-edit {
-  opacity: 1;
-}
-.margin-component-edit:focus-visible {
-  opacity: 1;
-  outline: 2px solid var(--accent, #40543b);
-  outline-offset: 2px;
-}
-.margin-component-frame {
-  cursor: default;
 }
 /* Components stay interactive in the writer: tabs, galleries, polls and
    players work in place. Use the edit button for their compact settings. */
 .margin-component-preview {
+  display: flow-root;
   pointer-events: auto;
   user-select: auto;
 }
-@media (hover: none) {
-  .margin-component-edit { opacity: 1; }
+.margin-component-preview > .markdown-body > :first-child {
+  margin-top: 0;
+}
+.margin-component-preview > .markdown-body > :last-child {
+  margin-bottom: 0;
 }
 
 /* Component settings stay compact: these are configs, not documents. */

@@ -35,19 +35,21 @@ export default function MarginComponentView({ node, getPos, selected, editor }: 
       data-component-kind={kind || undefined}
     >
       <div className="margin-component-frame">
+        <div className="margin-component-actions editor-button-surface" contentEditable={false}>
+          <button
+            type="button"
+            className="margin-component-edit"
+            title={`Edit ${label} settings`}
+            aria-label={`Edit ${label} settings`}
+            onClick={openSettings}
+          >
+            <Settings2 size={14} aria-hidden="true" />
+            <span>Edit {label}</span>
+          </button>
+        </div>
         <div className="margin-component-preview">
           <MarginPreview src={src} />
         </div>
-        <button
-          type="button"
-          className="margin-component-edit"
-          title={`Edit ${label} settings`}
-          aria-label={`Edit ${label} settings`}
-          onClick={openSettings}
-        >
-          <Settings2 size={14} aria-hidden="true" />
-          <span>{label}</span>
-        </button>
       </div>
     </NodeViewWrapper>
   );
