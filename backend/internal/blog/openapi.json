@@ -643,6 +643,82 @@
         ]
       }
     },
+    "/api/media/images/{id}": {
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permanently removes an uploaded or AI-generated image from the media library and object storage. Images still used by an article (including private and archived articles), saved draft or publication setting are refused. Select the image by its public_id from listImages.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Media"
+        ],
+        "summary": "Delete a library image",
+        "operationId": "deleteImage",
+        "parameters": [
+          {
+            "description": "Image public_id",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted image public_id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Image is still used by an article or setting",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Storage could not verify or remove the image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
     "/api/media/models": {
       "post": {
         "security": [

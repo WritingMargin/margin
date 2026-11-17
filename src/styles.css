@@ -1300,6 +1300,75 @@ textarea::placeholder {
   justify-content: space-between;
   overflow: hidden;
 }
+.asset-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.asset-card-open {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.asset-card-open:hover {
+  border-color: #c9cdbf;
+}
+.asset-card-options {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #dfe1d8;
+  border-radius: 50%;
+  background: #fff;
+  color: #4b5245;
+  box-shadow: 0 2px 8px #1c261b1f;
+  transition: background .12s;
+}
+.asset-card-options:hover {
+  background: #f3f5ee;
+}
+.asset-card-menu {
+  position: absolute;
+  top: 42px;
+  right: 8px;
+  z-index: 2;
+  min-width: 132px;
+  padding: 4px;
+  border: 1px solid #dfe3d5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 30px #26301f26;
+}
+.asset-card-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 9px;
+  border-radius: 5px;
+  color: #98402f;
+  font-size: 11px;
+  text-align: left;
+}
+.asset-card-menu button:hover,
+.asset-card-menu button:focus-visible {
+  background: #f6ece7;
+}
+.asset-card[aria-busy="true"] {
+  opacity: .6;
+}
 .comment-card {
   border: 1px solid var(--line);
   padding: 22px;

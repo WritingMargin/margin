@@ -16,14 +16,14 @@ export default function MediaPicker(props: Parameters<typeof useMediaPicker>[0])
     <MediaTabs state={state} />
     <div className="media-picker-content" role="region" aria-label="Media options" tabIndex={0}>
       <MediaSource state={state} />
-      {state.tag && state.tab !== "defaults" && <MediaSelection state={state} />}
+      {state.selected && state.tab !== "defaults" && <MediaSelection state={state} />}
     </div>
   </div>;
 }
 function MediaSource({ state }: { state: MediaPickerController }) {
   const { role } = useTeamIdentity();
   if (role !== "owner" && ["defaults", "library"].includes(state.tab)) return <p>Only publication owners can manage media settings and integrations.</p>;
-  if (state.tab === "uploads") return <UploadedMedia onSelect={(url, kind) => state.insert(url, kind)} />;
+  if (state.tab === "uploads") return <UploadedMedia onSelect={(url, kind) => state.insert(url, kind)} notify={state.notify} />;
   if (state.tab === "defaults") return <MediaDefaultsSettings notify={state.notify} />;
   if (state.tab === "link" && state.onInsert) return <MediaLink state={state} />;
   return <div className="media-picker-body">

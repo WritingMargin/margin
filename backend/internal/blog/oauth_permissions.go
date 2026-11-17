@@ -167,7 +167,7 @@ func oauthRoutePermission(pattern string) string {
 	switch pattern {
 	case "POST /api/posts", "PUT /api/posts/{id}":
 		return "content:write"
-	case "POST /api/media/images", "POST /api/media/covers", "POST /api/media/videos", "POST /api/media/audio", "POST /api/media/models", "POST /api/media/preview":
+	case "POST /api/media/images", "DELETE /api/media/images/{id}", "POST /api/media/covers", "POST /api/media/videos", "POST /api/media/audio", "POST /api/media/models", "POST /api/media/preview":
 		return "media:write"
 	case "GET /api/settings", "PUT /api/settings", "GET /api/settings/templates", "GET /api/settings/design", "PUT /api/settings/design", "POST /api/settings/design/validate", "GET /api/settings/seo", "PUT /api/settings/seo":
 		return "settings:manage"

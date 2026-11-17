@@ -74,6 +74,10 @@ export function useMediaPicker({
     setStickyVideo(false);
     setSelected({ src, kind: mediaKind });
   };
+  const clear = () => {
+    setSelected(null);
+    setStickyVideo(false);
+  };
   const upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -113,6 +117,7 @@ export function useMediaPicker({
     url,
     setUrl,
     selected,
+    clear,
     stickyVideo,
     setStickyVideo,
     defaults,
