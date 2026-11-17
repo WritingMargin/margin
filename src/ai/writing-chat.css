@@ -321,6 +321,9 @@
   border-top: 1px solid var(--assistant-line);
   background: #fafaf7;
 }
+.chat-dock > .notice {
+  margin-bottom: 12px;
+}
 .chat-compose-box {
   padding: 8px 7px 2px;
   border: 1px solid #bfc9b8;
