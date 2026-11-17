@@ -1,4 +1,5 @@
-import { History,ImagePlus,Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import InnerTabs, { type InnerTab } from "../components/InnerTabs";
 import "../ai.css";
 import type { AIPanelController } from "./useAIStudio";
 type Props = {
@@ -9,6 +10,11 @@ type Props = {
 };
 export default function AIStudioHeader({ state }: Props) {
   const { post, published, tab, setTab, history } = state;
+  const tabs: InnerTab<typeof tab>[] = [
+    ...(published ? [{ value: "social" as const, label: "Social summaries", shortLabel: "Social" }] : []),
+    { value: "images", label: "Generate images", shortLabel: "Images" },
+    { value: "history", label: "History", count: (published ? history.summaries.length : 0) + history.images.length },
+  ];
   return (
     <header className="ai-studio-header">
       <span className="eyebrow">
@@ -33,37 +39,13 @@ export default function AIStudioHeader({ state }: Props) {
           words
         </span>
       </div>
-      <div className="section-tabs">
-        {published && (
-          <button
-            aria-pressed={tab === "social"}
-            className={tab === "social" ? "active" : ""}
-            onClick={() => setTab("social")}
-          >
-            <Sparkles size={14} />
-            Social summaries
-          </button>
-        )}
-        <button
-          aria-pressed={tab === "images"}
-          className={tab === "images" ? "active" : ""}
-          onClick={() => setTab("images")}
-        >
-          <ImagePlus size={14} />
-          Generate images
-        </button>
-        <button
-          aria-pressed={tab === "history"}
-          className={tab === "history" ? "active" : ""}
-          onClick={() => setTab("history")}
-        >
-          <History size={14} />
-          History
-          <span className="ai-count">
-            {(published ? history.summaries.length : 0) + history.images.length}
-          </span>
-        </button>
-      </div>
+      <InnerTabs
+        label="AI studio"
+        tabs={tabs}
+        value={tab}
+        onChange={setTab}
+        numbered={false}
+      />
     </header>
   );
 }

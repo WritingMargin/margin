@@ -55,15 +55,6 @@
   font-size: 9px;
   color: #96967e;
 }
-.ai-count {
-  font-size: 8px;
-  background: #ecece3;
-  border-radius: 3px;
-  padding: 2px 4px;
-}
-.ai-studio .section-tabs {
-  gap: 23px;
-}
 .ai-label {
   font-size: 11px;
   margin-top: 0;
@@ -391,16 +382,6 @@
   .ai-studio > h2 {
     font-size: 23px;
   }
-  .ai-studio .section-tabs {
-    gap: 15px;
-  }
-  .ai-studio .section-tabs button {
-    font-size: 9px;
-    gap: 4px;
-  }
-  .ai-studio .section-tabs svg {
-    width: 12px;
-  }
   .ai-platforms {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -453,7 +434,6 @@
 .ai-studio-header > h2 { font-size: 26px; margin: 12px 0 8px; letter-spacing: -.8px; padding-right: 24px; }
 .ai-studio-header .ai-intro { margin-bottom: 16px; }
 .ai-studio-header .ai-source { padding: 11px 13px; margin-bottom: 10px; }
-.ai-studio-header .section-tabs { margin: 0; border-bottom: 0; }
 .ai-scroll {
   min-height: 0;
   overflow-y: auto;
