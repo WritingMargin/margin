@@ -15,7 +15,8 @@ const offer = z.object({
   featured: z.boolean(),
 });
 export const pricingSchema = z.object({
-  autoTopup: z.object({enabled:z.boolean(),status:z.string(),packId:z.string(),threshold:z.number(),monthlyLimit:z.number(),spentThisMonth:z.number()}).optional(),
+  customCredits: z.object({ available: z.boolean(), minAmount: z.number().int().positive(), maxAmount: z.number().int().positive() }).nullish(),
+  autoTopup: z.object({enabled:z.boolean(),status:z.string(),packId:z.string(),amount:z.number().int().nonnegative().optional(),threshold:z.number(),monthlyLimit:z.number(),spentThisMonth:z.number()}).optional(),
   audience: z.enum(["ai", "hosting"]).nullish(),
   plans: z
     .array(offer)

@@ -1,8 +1,8 @@
-import FoldingWriter from "./FoldingWriter";
+import RichWriter from "./rich/RichWriter";
 import { useImageDrop } from "./useImageDrop";
 import "./image-drop.css";
 
-type Props = Parameters<typeof useImageDrop>[0];
+type Props = Parameters<typeof useImageDrop>[0] & { toolbarSlot?: HTMLElement | null };
 export default function WriterPad(props: Props) {
   const drop = useImageDrop(props);
   return (
@@ -11,7 +11,12 @@ export default function WriterPad(props: Props) {
         className={`source-body writer-source${drop.dragging ? " image-drop-active" : ""}`}
         {...drop.handlers}
       >
-        <FoldingWriter {...props} onChange={drop.onChange} />
+        <RichWriter
+          editorRef={props.editorRef}
+          value={props.value}
+          onChange={drop.onChange}
+          toolbarSlot={props.toolbarSlot}
+        />
         {drop.dragging && (
           <div className="image-drop-hint">{drop.dropLabel}</div>
         )}

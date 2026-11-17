@@ -5,8 +5,7 @@ import { BookOpenCheck, BookOpenText } from "lucide-react";
 import SimplifiedPanel from "./SimplifiedPanel";
 import WritingPanel from "../ai/WritingPanel";
 import EditorCard from "./EditorCard";
-import EditorFooter from "./EditorFooter";
-import EditorHeading from "./EditorHeading";
+import EditorTopBar from "./EditorTopBar";
 import PostTemplatePicker from "../editor/PostTemplatePicker";
 import type { AdminController } from "./useAdminController";
 export default function EditorPage({ state }: { state: AdminController }) {
@@ -37,36 +36,19 @@ function EditorWorkspace({ state }: { state: AdminController }) {
   useEffect(() => {
     if (
       !focusOutline.current ||
-      state.mode === "preview" ||
       !state.editor.current
     )
       return;
     focusOutline.current = false;
     state.editor.current.focus();
     state.editor.current.setSelectionRange(0, 0);
-  }, [state.post.content, state.mode, state.editor]);
+  }, [state.post.content, state.editor]);
   return (
     <>
-      <EditorHeading state={state} />
-      <div
-        className={`editor-assistant-layout ${state.writing.open ? "with-assistant" : ""}`}
-      >
-        {openPanel && (
-          <EditorSidePanel
-            panel={openPanel}
-            state={state}
-            close={() => setPanel(null)}
-          />
-        )}
-        {state.writing.open && (
-          <WritingPanel state={state} />
-        )}
-        <div className="editor-composition">
-          <LivePostNotice state={state} />
-          <EditorCard
-            state={state}
-            templateAction={
-              <>
+      <EditorTopBar
+        state={state}
+        actions={
+          <>
                 <button
                   aria-controls="draft-tools"
                   aria-expanded={openPanel === "Peer review"}
@@ -92,17 +74,31 @@ function EditorWorkspace({ state }: { state: AdminController }) {
                   onChange={(patch) => {
                     focusOutline.current = true;
                     state.change(patch);
-                    if (state.mode === "preview") state.setMode("write");
                     state.notify(
                       "Outline added. Replace the prompts with your writing, then save your draft.",
                     );
                   }}
                   busy={state.busy}
                 />
-              </>
-            }
+          </>
+        }
+      />
+      <div
+        className={`editor-assistant-layout ${state.writing.open ? "with-assistant" : ""}`}
+      >
+        {openPanel && (
+          <EditorSidePanel
+            panel={openPanel}
+            state={state}
+            close={() => setPanel(null)}
           />
-          <EditorFooter state={state} />
+        )}
+        {state.writing.open && (
+          <WritingPanel state={state} />
+        )}
+        <div className="editor-composition">
+          <LivePostNotice state={state} />
+          <EditorCard state={state} />
         </div>
       </div>
     </>

@@ -23,7 +23,11 @@ func (a *App) aiRoutes() {
 	})
 	a.mux.HandleFunc("POST /api/ai/topups", func(w http.ResponseWriter, r *http.Request) {
 		input := body(w, r)
-		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups", billingInput(Row{"packId": stringField(input, "packId", 0, 64, false)}), ""))
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups", billingInput(creditPurchaseInput(input)), ""))
+	})
+	a.mux.HandleFunc("POST /api/ai/topups/status", func(w http.ResponseWriter, r *http.Request) {
+		input := body(w, r)
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups/status", Row{"purchaseId": stringField(input, "purchaseId", 1, 64, false)}, ""))
 	})
 	a.mux.HandleFunc("POST /api/ai/billing/auto-topup", func(w http.ResponseWriter, r *http.Request) {
 		input := body(w, r)
@@ -386,7 +390,7 @@ func pricingProjection(row Row) Row {
 	for _, value := range arrayValue(row, "topups") {
 		topups = append(topups, pickFields(object(value), "id", "name", "credits", "amount", "currency", "available"))
 	}
-	return Row{"autoTopup": row["autoTopup"], "audience": row["audience"], "hostingPlans": hostingPricingProjection(row), "plans": plans, "topups": topups, "account": pickFields(object(row["account"]), "planId", "credits", "monthlyCredits", "topupCredits", "canManage", "subscriptionStatus", "renewsAt", "cancelsAtPeriodEnd", "hostingPlanId", "hostingRenewsAt", "aiRenewalStopped", "hostingRenewalStopped"), "costs": pickFields(object(row["costs"]), "writing", "summaries", "image"), "terms": row["terms"]}
+	return Row{"customCredits": row["customCredits"], "autoTopup": row["autoTopup"], "audience": row["audience"], "hostingPlans": hostingPricingProjection(row), "plans": plans, "topups": topups, "account": pickFields(object(row["account"]), "planId", "credits", "monthlyCredits", "topupCredits", "canManage", "subscriptionStatus", "renewsAt", "cancelsAtPeriodEnd", "hostingPlanId", "hostingRenewsAt", "aiRenewalStopped", "hostingRenewalStopped"), "costs": pickFields(object(row["costs"]), "writing", "summaries", "image"), "terms": row["terms"]}
 }
 
 func nodeBase64(value string) []byte {

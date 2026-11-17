@@ -42,7 +42,7 @@ function ActionLabel({ plan, state }: Props) {
       </>
     );
   if (plan.id === "free") return "Included with every plan";
-  if (!plan.available) return "Coming soon";
+  if (!plan.available) return "Payments unavailable";
   if (existing && !canUpgradePlan(current, plan.id)) return "Manage your subscription";
   if (existing) return <>{changeLabel(current)} {plan.name}<ArrowUpRight size={16} /></>;
   return (

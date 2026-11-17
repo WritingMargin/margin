@@ -252,7 +252,7 @@
   {
     "name": "unusual8",
     "content": "[Font=\"Caveat; color:red\"]Safe[/Font]",
-    "html": "<p>[Font=&quot;Caveat; color<div></div>&quot;]Safe[/Font]</p>"
+    "html": "<p><span>Safe</span></p>"
   },
   {
     "name": "unusual9",

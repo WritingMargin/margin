@@ -15,17 +15,12 @@ import { usePricingPage } from "./usePricingPage";
 function ConnectedPricingPage() {
   const state = usePricingPage();
   const { data, error, loading, refresh } = state;
-  const [paymentReturned] = useState(() => new URLSearchParams(window.location.search).get("aiCredits") === "success");
+  const [autoTopupOpen, setAutoTopupOpen] = useState(false);
+  const closeAutoTopup = () => { setAutoTopupOpen(false); state.purchase.dismiss(); };
   return (
     <section className="pricing-page">
       <ConfirmDialog confirmation={state.confirmation} icon={<Cloud size={21} />} />
       <PricingIntro />
-      {paymentReturned && (
-        <p role="status">
-          Payment confirmation can take a few moments. Your plan and credits
-          refresh automatically.
-        </p>
-      )}
       {error && (
         <div className="pricing-error" role="alert">
           <span>{error}</span>
@@ -46,21 +41,20 @@ function ConnectedPricingPage() {
         </div>
       ) : (
         <>
+          <PricingTopups state={state} onAutoTopup={() => setAutoTopupOpen(true)} />
+          {(autoTopupOpen || state.purchase.confirmed) && <AutoTopup state={state} purchased={Boolean(state.purchase.confirmed)} onClose={closeAutoTopup} />}
           <PricingAccount state={state} />
           <SubscriptionControls state={state} />
           <HostingPlans state={state} />
-          <SettingsDisclosure title="Content storage" description="Used storage and your remaining allowance." icon={<Cloud />} className="pricing-storage">
+          <SettingsDisclosure title="Content storage" description="Usage and allowance." icon={<Cloud />} className="pricing-storage">
             <StorageQuota />
           </SettingsDisclosure>
-          <PricingTopups state={state} />
-          <AutoTopup state={state} />
-          <footer className="pricing-footer">
-            <span>Good to know</span>
+          <details className="billing-terms"><summary>Billing details</summary>
             {data.terms.map((term) => (
               <p key={term}>{term}</p>
             ))}
             <p>Secure payment through Stripe. Checkout opens in a new tab.</p>
-          </footer>
+          </details>
         </>
       )}
     </section>
@@ -69,9 +63,7 @@ function ConnectedPricingPage() {
 
 function PricingIntro() {
   return <header className="pricing-intro">
-    <span className="pricing-eyebrow">MARGIN AI</span>
-    <h1>AI credits, wherever you host.</h1>
-    <p>Buy AI credits as you need them, with optional auto top-up. No AI subscription. Hosting is billed separately.</p>
+    <h1>Plans & billing</h1>
   </header>;
 }
 

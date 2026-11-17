@@ -1,4 +1,9 @@
 .editor-actions { position:relative; flex-shrink:0; }
+.editor-title-actions { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.editor-writing-toggle {
+  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
+  width:36px; height:36px; padding:0; border-radius:6px; color:#62625c;
+}
 .editor-title-row .title-input { min-width:0; flex:1; }
 .editor-actions-trigger {
   width:36px; height:36px; padding:0; justify-content:center;

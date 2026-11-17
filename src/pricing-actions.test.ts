@@ -25,6 +25,9 @@ test("an existing subscription can upgrade through the portal and retry an error
     assert.equal(PlanAction({plan,state:{...state,current:"hosting-studio"}}).props.disabled,true);
     assert.equal(PlanAction({plan,state:{...state,busy:"hosting-studio"}}).props.disabled,true);
     assert.equal(PlanAction({plan:{...plan,available:false},state}).props.disabled,true);
+    const unavailable = renderToStaticMarkup(createElement(PlanAction,{plan:{...plan,available:false},state}));
+    assert.match(unavailable,/Payments unavailable/);
+    assert.doesNotMatch(unavailable,/Coming soon/);
     await PlanAction({plan,state:{...state,current:"free",existing:false}}).props.onClick();
     assert.deepEqual(calls.at(-1),["hosting-studio","plan"]);
     await PlanAction({plan:{...plan,id:"hosting-starter"},state:{...state,current:"hosting-studio"}}).props.onClick();

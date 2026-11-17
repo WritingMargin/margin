@@ -19,29 +19,45 @@ type Props = {
     | "conflicts"
   >;
 };
-export default function EditorFooter({ state }: Props) {
-  const { storageConfigured, post, dirty, busy, save, localDraft } = state;
+/** Where the draft stands (shared by the footer and the editor's top bar). */
+function saveState(state: Props["state"]) {
+  const { storageConfigured, post, dirty, busy, localDraft } = state;
   const label = contentTypeLabel(post.contentType, state.theme.publicationType).toLowerCase();
   const published = post.status === "published";
   const visibility = visibilityChange(state.conflicts.baseline.current?.status, post.status, label);
   const status = visibility && !busy ? { label: "Visibility change not saved", detail: visibility.detail } : editorSaveState(published, !!post.id, dirty, busy, localDraft.status, storageConfigured, post.status === "archived", label);
   const displayed = stagedSaveState(state, localSaveState(status, localDraft, busy, post.status));
+  return { label, visibility, displayed };
+}
+export function SaveStatus({ state }: Props) {
+  const { displayed } = saveState(state);
+  return (
+    <div className="save-state" role="status" aria-live="polite" title={displayed.detail}>
+      {state.dirty ? <span className="draft-dot" /> : <CheckCheck size={15} />}
+      <span className="save-state-copy">
+        <span className="save-state-label">{displayed.label}</span>
+        <small>{displayed.detail}</small>
+      </span>
+    </div>
+  );
+}
+export function SaveButtons({ state }: Props) {
+  const { label, visibility } = saveState(state);
+  const { busy, save } = state;
+  return (
+    <div className="bottom-actions">
+      {visibility ? <button className="button primary" disabled={busy} onClick={() => save()}>{busy ? "Saving…" : visibility.action}</button> : <SaveActions state={state} label={label} />}
+    </div>
+  );
+}
+export default function EditorFooter({ state }: Props) {
   return (
     <footer className="editor-bottom editor-button-surface">
-      <div className="save-state" role="status" aria-live="polite" title={displayed.detail}>
-        {dirty ? <span className="draft-dot" /> : <CheckCheck size={15} />}
-        <span className="save-state-copy">
-          <span className="save-state-label">{displayed.label}</span>
-          <small>{displayed.detail}</small>
-        </span>
-      </div>
-      <div className="bottom-actions">
-        {visibility ? <button className="button primary" disabled={busy} onClick={() => save()}>{busy ? "Saving…" : visibility.action}</button> : <SaveActions state={state} label={label} />}
-      </div>
+      <SaveStatus state={state} />
+      <SaveButtons state={state} />
     </footer>
   );
 }
-
 function localSaveState(
   status: { label: string; detail: string },
   localDraft: AdminController["localDraft"],

@@ -61,7 +61,8 @@ test("the writing pad and preview show a selected cover without changing article
       );
     const html = render();
     assert.match(html, /alt="Selected article cover"/);
-    assert.match(html, /class="preview-post-cover"/);
+    // The unified pad shows one editable cover card (class "writer-cover …").
+    assert.match(html, /class="writer-cover[\s"]/);
     assert.match(html, /src="\/blog\/api\/public\/covers\//);
     assert.match(html, />Change cover<\/button>/);
     assert.match(
@@ -69,17 +70,21 @@ test("the writing pad and preview show a selected cover without changing article
       /<textarea[^>]*>Article content stays unchanged\.<\/textarea>/,
     );
     state.theme.article.showCover = false;
-    assert.match(render(), /Hidden on the article by your design settings/);
-    assert.doesNotMatch(render(), /class="preview-post-cover"/);
+    const hidden = render();
+    // When the design hides the cover, the pad keeps it editable and says so.
+    assert.match(hidden, /Hidden on the article by your design settings/);
+    assert.match(hidden, /class="writer-cover[\s"]/);
+    assert.match(hidden, />Change cover<\/button>/);
+    assert.doesNotMatch(hidden, /class="preview-post-cover"/);
     state.post.cover = "";
     assert.doesNotMatch(
       render(),
-      /class="writer-cover"|class="preview-post-cover"/,
+      /class="writer-cover[\s"]|class="preview-post-cover"/,
     );
     state.post.cover = "javascript:alert(1)";
     assert.doesNotMatch(
       render(),
-      /class="writer-cover"|class="preview-post-cover"/,
+      /class="writer-cover[\s"]|class="preview-post-cover"/,
     );
     const picker = renderToStaticMarkup(
       createElement(CoverPicker, { content: "", value: cover, onChange: noop }),
