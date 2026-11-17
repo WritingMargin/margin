@@ -1,5 +1,6 @@
 import type { DragEvent, RefObject } from "react";
 import { X } from "lucide-react";
+import "./editor-menu.css";
 import type { WriterEditor } from "./editor-handle";
 import {
   COMPONENT_DRAG_TYPE,
@@ -32,7 +33,7 @@ export default function ComponentShelf({ editor, onClose }: { editor: RefObject<
   }
 
   return (
-    <aside id="component-shelf" className="component-shelf" aria-label="Components">
+    <aside id="component-shelf" className="component-shelf editor-button-surface" aria-label="Components">
       <div className="component-shelf-head">
         <p className="component-shelf-title">Insert</p>
         <button type="button" className="component-shelf-close" aria-label="Close components" title="Close" onClick={onClose}>
@@ -49,7 +50,7 @@ export default function ComponentShelf({ editor, onClose }: { editor: RefObject<
               <button
                 key={item.id}
                 type="button"
-                className="component-shelf-item"
+                className="component-shelf-item editor-menu-item"
                 draggable={!!item.source}
                 title={item.source ? `Drag ${item.label} into your writing, or click to add it` : item.hint}
                 onDragStart={(event) => onDragStart(event, item)}

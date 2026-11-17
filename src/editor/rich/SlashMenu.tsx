@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 import type { Editor } from "@tiptap/react";
 import { filterCatalog, runCatalogAction, type CatalogItem } from "./component-catalog";
 import { insertComponentAtSelection } from "./insert-component";
+import "../editor-menu.css";
 
 /** "/query" typed at the start of an otherwise empty top-level paragraph. */
 type Slash = { from: number; to: number; query: string };
@@ -119,7 +120,7 @@ export default function SlashMenu({
 }) {
   return (
     <div
-      className="slash-menu"
+      className="slash-menu editor-button-surface"
       role="listbox"
       aria-label="Insert a component"
       style={{ top: menu.top, left: menu.left }}
@@ -131,7 +132,7 @@ export default function SlashMenu({
           type="button"
           role="option"
           aria-selected={index === menu.index}
-          className={index === menu.index ? "is-active" : ""}
+          className="editor-menu-item"
           onClick={() => pick(item)}
         >
           <item.icon size={16} aria-hidden="true" />

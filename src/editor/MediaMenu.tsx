@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ImagePlus, Sparkles, Upload } from "lucide-react";
 import "./media-menu.css";
+import "./editor-menu.css";
 
 type Position = { top: number; left: number };
 export default function MediaMenu({
@@ -94,13 +95,13 @@ export default function MediaMenu({
               if (!event.currentTarget.contains(event.relatedTarget)) close();
             }}
           >
-            <button role="menuitem" onClick={() => select(onMedia)}>
+            <button className="editor-menu-item" role="menuitem" onClick={() => select(onMedia)}>
               <Upload size={17} />
               <span>
                 Insert media<small>Upload, library, or a link</small>
               </span>
             </button>
-            {role === "owner" && <button role="menuitem" onClick={() => select(onGenerate)}>
+            {role === "owner" && <button className="editor-menu-item" role="menuitem" onClick={() => select(onGenerate)}>
               <Sparkles size={17} />
               <span>
                 Generate image<small>Create an image with AI</small>

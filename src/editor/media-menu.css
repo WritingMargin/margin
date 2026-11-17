@@ -19,28 +19,3 @@
   background: #fffffc;
   box-shadow: 0 12px 32px #26301f24;
 }
-.editor-media-menu button {
-  width: 100%;
-  justify-content: flex-start;
-  gap: 12px;
-  padding: 12px;
-  text-align: left;
-  border-radius: 7px;
-  color: #46513b;
-}
-.editor-media-menu button:hover,
-.editor-media-menu button:focus-visible {
-  background: #edf1e5;
-  outline: none;
-}
-.editor-media-menu span {
-  font-size: 12px;
-  font-weight: 500;
-}
-.editor-media-menu small {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
-  font-weight: 400;
-  color: #828a77;
-}

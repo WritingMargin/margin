@@ -1,0 +1,38 @@
+/* Shared menu rows for the editor's media and component insertion menus. */
+.editor-menu-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #46513b;
+  text-align: left;
+  cursor: pointer;
+}
+.editor-menu-item > svg {
+  flex: none;
+  margin-top: 1px;
+  color: currentColor;
+}
+.editor-menu-item > span {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.editor-menu-item strong {
+  display: block;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.editor-menu-item small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #828a77;
+}
