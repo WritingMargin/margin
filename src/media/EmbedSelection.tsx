@@ -104,6 +104,7 @@ export default function EmbedSelection({
           onClick={() => {
             state.onInsert?.(`\n\n${tag}\n\n`);
             state.notify("Embed inserted.");
+            state.clear();
           }}
         >
           Insert into post

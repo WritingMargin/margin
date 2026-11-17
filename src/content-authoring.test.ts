@@ -23,9 +23,9 @@ test("creation and designer galleries use the selected content type", async () =
       assert.equal(draft.content, "");
       assert.equal(draft.status, "draft");
     }
-    const editorState = { post: emptyDraft("guide"), theme: defaultTheme, storageConfigured: true, dirty: false, busy: false, localDraft: { status: "idle" }, conflicts: { baseline: { current: null } } };
+    const editorState = { post: emptyDraft("guide"), theme: defaultTheme, storageConfigured: true, dirty: false, busy: false, localDraft: { status: "idle" }, conflicts: { baseline: { current: null } }, writing: { open: false, setOpen: () => {} } };
     const heading = renderToStaticMarkup(createElement(EditorHeading, { state: editorState }));
-    assert.match(heading, /aria-label="Guide title"/);
+    assert.match(heading, /<h1[^>]*class="title-input title-display"[^>]*>Untitled<\/h1>/);
     assert.match(heading, /aria-label="Guide options"/);
     assert.match(renderToStaticMarkup(createElement(EditorFooter, { state: editorState })), /Publish guide/);
     assert.doesNotMatch(menu, /<strong>Doc<\/strong>/);

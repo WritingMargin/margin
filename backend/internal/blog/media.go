@@ -21,6 +21,7 @@ func (a *App) mediaRoutes() {
 	a.mux.HandleFunc("POST /api/media/preview", a.previewLink)
 	a.mux.HandleFunc("GET /api/media", a.listMedia)
 	a.mux.HandleFunc("GET /api/media/images", a.listImages)
+	a.mux.HandleFunc("DELETE /api/media/images/{id}", a.deleteImage)
 	a.mux.HandleFunc("POST /api/media/sign", a.signMedia)
 }
 
