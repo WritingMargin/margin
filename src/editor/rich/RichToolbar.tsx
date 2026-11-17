@@ -1,5 +1,7 @@
 import { useEffect, useReducer, useRef, useState, type KeyboardEvent } from "react";
 import type { Editor } from "@tiptap/react";
+import Select from "../../components/Select";
+import { codeLanguages } from "../../../shared/code-languages";
 import {
   Bold,
   Code2,
@@ -144,7 +146,15 @@ export default function RichToolbar({ editor }: { editor: Editor }) {
 
   return (
     <div className="pad-format" role="group" aria-label="Text formatting">
-      <select
+      {editor.isActive("codeBlock") ? <Select
+        className="pad-style pad-code-language"
+        aria-label="Code language"
+        value={editor.getAttributes("codeBlock").language || ""}
+        onChange={event => editor.chain().focus().updateAttributes("codeBlock", { language: event.target.value || null }).run()}
+      >
+        <option value="">Detect automatically</option>
+        {codeLanguages.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+      </Select> : (<select
         className="pad-style"
         aria-label="Text style"
         value={currentStyle(editor)}
@@ -155,7 +165,7 @@ export default function RichToolbar({ editor }: { editor: Editor }) {
             {style.label}
           </option>
         ))}
-      </select>
+      </select>)}
       <span className="pad-divider" />
       {marks.map((tool) => <ToolButton key={tool.label} editor={editor} tool={tool} />)}
       <LinkTool editor={editor} />

@@ -2,7 +2,9 @@ import type { Editor } from "@tiptap/react";
 import { Fragment, Slice, type Node as PMNode } from "@tiptap/pm/model";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import { serializeDoc } from "./serialize";
 import { MARGIN_COMPONENT } from "./markdown";
+import { draftComponentSource, type DraftComponentKind } from "./draft-component";
 import { componentBlocks } from "./markdown-components";
 
 /** Build a component node from its Markdown source, labelled like the reader sees it. */
@@ -58,4 +60,40 @@ export function startComponentDrag(editor: Editor, src: string) {
 export function endComponentDrag(editor: Editor) {
   const view = editor.view as DraggingView;
   if (view.dragging && !view.dragging.move) view.dragging = null;
+}
+
+/** Insert an editable code block, retaining selected text and undo history. */
+export function insertCodeBlockAtSelection(editor: Editor) {
+  const { from, to, empty } = editor.state.selection;
+  const selected = editor.state.selection instanceof TextSelection && !empty;
+  const text = selected ? editor.state.doc.textBetween(from, to, "\n") : "";
+  const code = editor.schema.nodes.codeBlock.create(null, text ? editor.schema.text(text) : null);
+  insertWriterBlock(editor, code, selected, true);
+}
+
+export function insertDraftAtSelection(editor: Editor, kind: DraftComponentKind) {
+  const { empty } = editor.state.selection;
+  const selected = kind === "citation" && !empty && editor.state.selection instanceof TextSelection;
+  const text = selected ? serializeDoc(editor.schema.nodes.doc.create(null, editor.state.selection.content().content)).markdown : "";
+  const node = componentNode(editor, draftComponentSource(kind, text));
+  insertWriterBlock(editor, node, selected, false);
+}
+
+function insertWriterBlock(editor: Editor, node: PMNode, replaceSelection: boolean, enter: boolean) {
+  const block = currentBlock(editor);
+  const { tr } = editor.state;
+  if (replaceSelection) {
+    tr.replaceSelectionWith(node);
+    if (enter) tr.doc.descendants((child, pos) => {
+      if (child === node) tr.setSelection(TextSelection.create(tr.doc, pos + 1));
+      return child !== node;
+    });
+  } else {
+    const replaceEmpty = block?.node.isTextblock && block.node.content.size === 0;
+    const from = block ? (replaceEmpty ? block.from : block.to) : tr.doc.content.size;
+    tr.replaceWith(from, replaceEmpty && block ? block.to : from, Fragment.from([node, editor.schema.nodes.paragraph.create()]));
+    tr.setSelection(TextSelection.create(tr.doc, from + (enter ? 1 : node.nodeSize + 1)));
+  }
+  editor.view.dispatch(tr.scrollIntoView());
+  editor.commands.focus();
 }

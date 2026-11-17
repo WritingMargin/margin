@@ -1,7 +1,6 @@
 import { useTeamIdentity } from "../auth/TeamContext";
 import { contentTypeLabel, themeForContentType } from "../../shared/content-types";
-import CodeBlockPicker from "../editor/CodeBlockPicker";
-import { MessageSquareQuote, Plus, ScanText } from "lucide-react";
+import { Code2, MessageSquareQuote, Plus, ScanText } from "lucide-react";
 import MediaMenu from "../editor/MediaMenu";
 import FormattingToolbar from "../editor/FormattingToolbar";
 import WriterPad from "../editor/WriterPad";
@@ -51,9 +50,9 @@ export default function EditorCard({ state }: Props) {
   const [formatSlot, setFormatSlot] = useState<HTMLDivElement | null>(null);
   const [shelfOpen, setShelfOpen] = useState(false);
   useEffect(() => {
-    setCatalogActionHandler((action) => setModal(action));
+    setCatalogActionHandler((action) => editor.current?.insertDraftComponent?.(action));
     return () => setCatalogActionHandler(null);
-  }, [setModal]);
+  }, [editor]);
   function focusBody() {
     editor.current?.focus();
     editor.current?.setSelectionRange(0, 0);
@@ -72,16 +71,18 @@ export default function EditorCard({ state }: Props) {
         <div className="pad-format-slot" ref={setFormatSlot} />
         <span className="pad-divider" />
         <MediaMenu
-          onMedia={() => setModal("media")}
+          onMedia={() => editor.current?.insertDraftComponent?.("media")}
           onGenerate={() => openAI("images")}
         />
-        <CodeBlockPicker editor={editor} content={post.content || ""} onChange={content => change({content})} />
+        <button type="button" title="Insert code block" aria-label="Insert code block" onMouseDown={event => event.preventDefault()} onClick={() => editor.current?.insertCodeBlock?.()}>
+          <Code2 size={16} aria-hidden="true" /> Code block
+        </button>
         <button
           title="Attach citation"
           aria-label="Attach citation"
-          aria-haspopup="dialog"
-          aria-expanded={state.modal === "citation"}
-          onClick={() => setModal("citation")}
+          type="button"
+          onMouseDown={event => event.preventDefault()}
+          onClick={() => editor.current?.insertDraftComponent?.("citation")}
         >
           <MessageSquareQuote size={16} aria-hidden="true" /> Citation
         </button>

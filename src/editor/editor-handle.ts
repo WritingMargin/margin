@@ -4,6 +4,8 @@ export type WriterEditor = HTMLElement & {
   selectionEnd: number;
   setSelectionRange: (start: number, end: number) => void;
   /** Rich writer only: put a component at the caret / start or end a shelf drag. */
+  insertCodeBlock?: () => void;
+  insertDraftComponent?: (kind: import("./rich/draft-component").DraftComponentKind) => void;
   insertComponent?: (src: string) => void;
   startComponentDrag?: (src: string) => void;
   endComponentDrag?: () => void;

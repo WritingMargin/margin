@@ -14,8 +14,12 @@ const PdfPage = lazy(() => import("./PdfPage"));
 type Document = { id: string; title: string; url: string };
 export default function CitationPicker({
   onInsert,
+  text,
+  onTextChange,
 }: {
   onInsert: (before: string, after?: string) => void;
+  text?: string;
+  onTextChange?: (text: string) => void;
 }) {
   const [source, setSource] = useState<Citation>({
     url: "",
@@ -85,10 +89,7 @@ export default function CitationPicker({
         <h2>Add a citation.</h2>
       </header>
       <div className="dialog-body">
-        <p className="muted">
-          Select text in your article first. The citation wraps that selection;
-          only tagged text is highlighted.
-        </p>
+        <CitedText text={text} onChange={onTextChange} />
         <div className="source-mode">
           <button
             aria-pressed={mode === "url"}
@@ -237,8 +238,8 @@ export default function CitationPicker({
       </div>
       <footer className="dialog-footer">
         <button
-          className="primary-button citation-insert"
-          disabled={busy || !citationURL(source.url)}
+          className="button primary citation-insert"
+          disabled={citationDisabled(busy, source.url, text)}
           onClick={insert}
         >
           Insert citation
@@ -246,4 +247,11 @@ export default function CitationPicker({
       </footer>
     </div>
   );
+}
+
+function CitedText({ text, onChange }: { text?: string; onChange?: (text: string) => void }) {
+  return onChange ? <label>Cited text<textarea rows={2} value={text} onChange={event => onChange(event.target.value)} /></label> : <p className="muted">Select text in your article first. The citation wraps that selection; only tagged text is highlighted.</p>;
+}
+function citationDisabled(busy: boolean, url: string, text?: string) {
+  return busy || !citationURL(url) || (text !== undefined && !text.trim());
 }

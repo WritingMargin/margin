@@ -18,7 +18,7 @@
   padding-top:20px;
   padding-bottom:20px;
 }
-.app-shell .editor-card .source-body textarea {
+.app-shell .editor-card .source-body textarea:not(.writer-inline-insert textarea) {
   font-size:var(--writer-input-size); line-height:26px;
   top:20px; height:calc(100% - 40px);
   white-space:pre-wrap; overflow-wrap:anywhere; overflow-x:hidden;
@@ -77,7 +77,7 @@
   .app-shell .editor-card .mode-tabs button { width:36px; min-height:32px; padding:6px; white-space:nowrap; }
   .app-shell .editor-card .mode-tabs button span { display:none; }
   .app-shell .editor-card .preview-content { padding:16px; }
-  .app-shell .editor-card .source-body textarea { line-height:24px; }
+  .app-shell .editor-card .source-body textarea:not(.writer-inline-insert textarea) { line-height:24px; }
   .app-shell .editor-card .line-numbers { line-height:24px; }
   .app-shell .editor-composition .editor-bottom { min-height:56px; padding:8px 12px; gap:10px; }
   .app-shell .editor-bottom .save-state { font-size:11px; gap:6px; }

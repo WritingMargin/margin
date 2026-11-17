@@ -1,3 +1,4 @@
+import { parseDraftComponent } from "./draft-component";
 import { contentTags, marker } from "../../../shared/content-tags";
 import { blockLanguages, type BlockLanguage } from "../../blocks/schema";
 
@@ -182,7 +183,20 @@ function containerDirectiveComponent(source: string, rows: Line[], i: number): M
   return { block: blockFrom(source, rows, i, close, componentLabel(name), name), last: close };
 }
 
+function draftComponent(source: string, rows: Line[], i: number): Match {
+  const draft = parseDraftComponent(rows[i].text);
+  if (!draft) return undefined;
+  return { block: blockFrom(source, rows, i, i, draft.kind === "citation" ? "Citation" : "Insert", "insert"), last: i };
+}
+
+function citationComponent(source: string, rows: Line[], i: number): Match {
+  if (!/^\[Citation(?:\s[^\r\n]*)?\].*\[\/Citation\]$/.test(rows[i].text.trim())) return undefined;
+  return { block: blockFrom(source, rows, i, i, "Citation", "markdown"), last: i };
+}
+
 const matchers = [
+  citationComponent,
+  draftComponent,
   tagComponent,
   fenceComponent,
   leafDirectiveComponent,
@@ -207,7 +221,12 @@ export function componentBlocks(source: string): MarginComponent[] {
   const blocks: MarginComponent[] = [];
   for (let i = 0; i < rows.length; i++) {
     const found = componentAt(source, rows, i);
-    if (!found) continue;
+    if (!found) {
+      // Tags and insertion markers inside ordinary code fences are code.
+      const fence = fenceInfo(rows[i].text);
+      if (fence) i = closingLine(rows, i, text => closesFence(text, fence)) ?? rows.length;
+      continue;
+    }
     blocks.push(found.block);
     i = found.last;
   }

@@ -692,6 +692,7 @@
   font: 500 12.5px var(--font-sans, system-ui, sans-serif);
   cursor: pointer;
 }
+.pad-code-language { width: 180px; flex: none; }
 .pad-style:hover {
   background-color: #efefea;
 }

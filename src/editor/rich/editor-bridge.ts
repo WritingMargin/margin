@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import type { WriterEditor } from "../editor-handle";
 import { serializeDoc, posToOffset, offsetToPos } from "./serialize";
-import { endComponentDrag, insertComponentAtSelection, startComponentDrag } from "./insert-component";
+import { endComponentDrag, insertComponentAtSelection, insertCodeBlockAtSelection, insertDraftAtSelection, startComponentDrag } from "./insert-component";
 
 /**
  * Adapt a Tiptap editor to the legacy `WriterEditor` contract used by search,
@@ -49,6 +49,8 @@ export function richEditorBridge(
       const el = scrollEl();
       if (el) el.scrollTop = value;
     },
+    insertCodeBlock() { insertCodeBlockAtSelection(editor); },
+    insertDraftComponent(kind: import("./draft-component").DraftComponentKind) { insertDraftAtSelection(editor, kind); },
     insertComponent(src: string) {
       insertComponentAtSelection(editor, src);
     },

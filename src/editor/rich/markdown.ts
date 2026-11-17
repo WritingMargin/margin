@@ -199,7 +199,7 @@ const blockBuilders = new Map<string, BlockBuilder>([
     (node) => ({
       type: "codeBlock",
       attrs: { language: node.lang || null },
-      content: [{ type: "text", text: node.value ?? "" }],
+      content: node.value ? [{ type: "text", text: node.value }] : [],
     }),
   ],
   ["thematicBreak", () => ({ type: "horizontalRule" })],

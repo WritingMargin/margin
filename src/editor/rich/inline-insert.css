@@ -1,0 +1,54 @@
+.writer-inline-insert {
+  position: relative;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line, #e6e6e2);
+  border-radius: 10px;
+  background: #fbfbf8;
+  color: #242424;
+  font:
+    13px/1.6 "Inter",
+    sans-serif;
+}
+.writer-inline-insert .writer-inline-insert-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+}
+.writer-inline-insert .dialog-header {
+  padding: 0 28px 12px 0;
+}
+.writer-inline-insert .dialog-header h2 {
+  font-size: 17px;
+  margin: 0;
+}
+.writer-inline-insert .eyebrow {
+  display: none;
+}
+.writer-inline-insert .dialog-body {
+  padding: 16px 0;
+}
+.writer-inline-insert .dialog-footer {
+  padding: 12px 0 0;
+}
+.writer-inline-insert
+  :is(
+    .dialog-stack,
+    .dialog-body,
+    .media-picker,
+    .media-picker-content,
+    .tabs-builder-body
+  ) {
+  overflow: visible;
+  max-height: none;
+}
+.writer-inline-insert .media-picker {
+  padding-top: 20px;
+}
+.writer-inline-insert label {
+  font: inherit;
+}
+.writer-inline-insert :is(input, textarea) {
+  max-width: 100%;
+}
