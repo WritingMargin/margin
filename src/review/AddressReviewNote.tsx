@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { api } from "../api";
 import Select from "../components/Select";
+import Accordion from "../Accordion";
 
 interface Option {
   revision: string;
@@ -22,8 +23,7 @@ export default function AddressReviewNote({
 }: Props) {
   const [open, setOpen] = useState(false);
   return (
-    <details onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary>Choose fixing revision</summary>
+    <Accordion title="Choose fixing revision" onToggle={(e) => setOpen(e.currentTarget.open)}>
       {open && (
         <RevisionPicker
           key={currentRevision}
@@ -32,7 +32,7 @@ export default function AddressReviewNote({
           address={address}
         />
       )}
-    </details>
+    </Accordion>
   );
 }
 function RevisionPicker({ path, busy, address }: Props) {
@@ -94,7 +94,7 @@ function RevisionPicker({ path, busy, address }: Props) {
       )}
       {loading && <p role="status">Loading saved revisions…</p>}
       {error && (
-        <p role="alert">
+        <p className="error-box" role="alert">
           {error}{" "}
           <button
             className="text-link"

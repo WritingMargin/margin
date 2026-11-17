@@ -2,6 +2,7 @@ package blog
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -127,4 +128,45 @@ func TestPostEventBrowserSessionAndMount(t *testing.T) {
 	if packet := readPostPacket(t, out); !strings.Contains(packet, "event: unauthorized") {
 		t.Fatal(packet)
 	}
+}
+
+func readPostEventData(t *testing.T, out *postEventRecorder) Row {
+	t.Helper()
+	packet := readPostPacket(t, out)
+	_, data, ok := strings.Cut(packet, "data: ")
+	if !ok {
+		t.Fatal(packet)
+	}
+	var event Row
+	if err := json.Unmarshal([]byte(strings.TrimSpace(data)), &event); err != nil {
+		t.Fatal(err)
+	}
+	return event
+}
+func assertPostEventRevisions(t *testing.T, out *postEventRecorder, live, draft string) {
+	t.Helper()
+	event := readPostEventData(t, out)
+	if event.str("revision") != live || event.str("draftRevision") != draft {
+		t.Fatal(event)
+	}
+	if draft == "" {
+		if _, present := event["draftRevision"]; present {
+			t.Fatal("empty staged revision must be omitted", event)
+		}
+	}
+}
+func TestPostEventsFollowStagedDraftAndDiscard(t *testing.T) {
+	a, _ := coreFixture(t)
+	saved := responseRow(t, request(t, a, "POST", "/api/posts", Row{"title": "Staged events", "slug": "staged-events", "content": "Live version", "status": "published"}, true), 201)
+	path := "/api/posts/" + saved.str("id")
+	out, _ := openPostStream(t, a, path+"/events", roleToken(t, a, "writer"))
+	assertPostEventRevisions(t, out, saved.str("revision"), "")
+	staged := responseRow(t, request(t, a, "PUT", path+"/draft", Row{"revision": saved["revision"], "content": "Team edit"}, true), 200)
+	assertPostEventRevisions(t, out, saved.str("revision"), staged.str("revision"))
+	// Existing REST consumers still receive the current live revision. A live
+	// edit is observable even while the staged revision remains unchanged.
+	live := responseRow(t, request(t, a, "PUT", path, Row{"revision": saved["revision"], "content": "Updated live version"}, true), 200)
+	assertPostEventRevisions(t, out, live.str("revision"), staged.str("revision"))
+	expectStatus(t, request(t, a, "DELETE", path+"/draft", Row{"revision": staged["revision"]}, true), 200)
+	assertPostEventRevisions(t, out, live.str("revision"), "")
 }

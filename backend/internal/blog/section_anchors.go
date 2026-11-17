@@ -61,6 +61,7 @@ func (a *App) reconcileAnchors(ctx context.Context, tx *sql.Tx, post Row, oldTex
 	query, args := a.DB.adapt("SELECT id,quote,position,occurrence FROM section_anchors WHERE post_id=$1 AND quote<>''", []any{post["id"]})
 	rows, err := tx.QueryContext(ctx, query, args...)
 	must(err)
+	defer rows.Close()
 	items := []Row{}
 	for rows.Next() {
 		var id, quote string

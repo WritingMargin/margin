@@ -1,0 +1,17 @@
+.oauth-consent-page {
+  max-width: 760px;
+  overflow-wrap: anywhere;
+}
+.oauth-consent-page .page-heading > div {
+  min-width: 0;
+}
+.oauth-consent-permissions {
+  grid-column: 1 / -1;
+}
+.oauth-consent-permissions small {
+  display: block;
+  margin-top: 5px;
+}
+.oauth-consent-page .settings-actions {
+  justify-content: flex-end;
+}

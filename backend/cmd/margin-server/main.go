@@ -169,7 +169,7 @@ func serve(args []string) error {
 	if err != nil {
 		return err
 	}
-	defer db.SQL.Close()
+	defer db.Close()
 	storage, err := blog.NewStorage(context.Background())
 	if err != nil {
 		return err

@@ -1,3 +1,4 @@
+import { TeamContext } from "../auth/TeamContext";
 import { AuthorProfileProvider } from "../profile/AuthorProfileContext";
 import ConfirmDialog from "./ConfirmDialog";
 import AdminDialog from "./AdminDialog";
@@ -12,7 +13,7 @@ import "../editor/editor-button-states.css";
 export default function Admin(props: Parameters<typeof useAdminController>[0]) {
   const state = useAdminController(props);
   return (
-    <AuthorProfileProvider><div
+    <TeamContext.Provider value={{ role: props.role || "owner", user: props.user, primaryOwner: props.primaryOwner ?? !props.user }}><AuthorProfileProvider><div
       className={`app-shell ${state.mobile ? "sidebar-open" : ""}`}
       style={themeStyle(state.theme)}
     >
@@ -31,6 +32,6 @@ export default function Admin(props: Parameters<typeof useAdminController>[0]) {
       </main>
       <AdminDialog state={state} />
       <ConfirmDialog confirmation={state.confirmation} />
-    </div></AuthorProfileProvider>
+    </div></AuthorProfileProvider></TeamContext.Provider>
   );
 }

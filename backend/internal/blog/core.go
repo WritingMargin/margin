@@ -19,6 +19,7 @@ func (a *App) coreRoutes() {
 	a.ownerEmailRoutes()
 	a.passwordRecoveryRoutes()
 	a.cloudOwnerRoutes()
+	a.teamRoutes()
 	a.commentVerificationRoutes()
 	a.commentAuthRoutes()
 	routes := map[string]http.HandlerFunc{
@@ -32,7 +33,7 @@ func (a *App) coreRoutes() {
 		"GET /api/posts/{id}/writing-notes": a.writingNotes, "POST /api/posts/{id}/writing-notes": a.saveWritingNote,
 		"GET /api/settings": a.readSettings, "PUT /api/settings": a.saveSettings, "GET /api/settings/captcha": a.readTurnstile, "PUT /api/settings/captcha": a.saveTurnstile, "GET /api/settings/turnstile": a.readTurnstile, "PUT /api/settings/turnstile": a.saveTurnstile,
 		"GET /api/comments": a.comments, "PATCH /api/comments/{id}": a.moderateComment, "DELETE /api/comments/{id}": a.deleteComment,
-		"PATCH /api/tokens/{id}": a.updateToken, "GET /api/tokens": a.tokens, "POST /api/tokens": a.createToken, "DELETE /api/tokens/{id}": a.deleteToken, "GET /api/storage": a.storageStatus,
+		"PATCH /api/tokens/{id}": a.updateToken, "GET /api/tokens": a.tokens, "POST /api/tokens": a.createToken, "DELETE /api/tokens/{id}": a.deleteToken, "GET /api/storage": a.storageStatus, "GET /api/storage/usage": a.storageUsageStatus,
 	}
 	for pattern, handler := range routes {
 		a.mux.HandleFunc(pattern, handler)
@@ -47,10 +48,11 @@ func (a *App) session(w http.ResponseWriter, r *http.Request) {
 	binding := a.cloudOwner(r.Context())
 	result["cloudManaged"] = binding.str("subject") != ""
 	if result.yes("cloudManaged") {
-		result["passwordRecoveryUrl"] = cloudCentralOrigin(binding.str("centralOrigin")) + "/forgot-password"
+		result["hostedOwnerRecoveryUrl"] = cloudCentralOrigin(binding.str("centralOrigin")) + "/forgot-password"
 	}
+	a.addSessionIdentity(r, result)
 	scopes, oauth := a.requestOAuthScopes(r)
-	if a.requestRole(r) == "owner" && (!oauth || hasOAuthScope(scopes, "administration:manage")) {
+	if a.requestRole(r) == "owner" && (!oauth || hasOAuthScope(scopes, "administration:manage")) && (r.Header.Get("Authorization") != "" || a.primaryOwnerSession(r)) {
 		result["ownerEmail"] = a.ownerEmail(r.Context())
 	}
 	send(w, 200, result)
@@ -96,7 +98,7 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	input := body(w, r)
 	email := emailField(input, "email", false)
 	providedPassword := stringField(input, "password", 1, 128, false)
-	if a.cloudPasswordLogin(w, r, email, providedPassword) {
+	if a.localUserPasswordLogin(w, r, email, providedPassword) || a.cloudPasswordLogin(w, r, email, providedPassword) {
 		return
 	}
 	password := []byte(providedPassword)

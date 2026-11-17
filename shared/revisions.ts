@@ -1,12 +1,13 @@
 import type { Post } from "./types";
 
 export type RevisionAuthor = {
-  kind: "owner" | "api_token" | "unknown";
+  kind: "owner" | "member" | "api_token" | "unknown";
   name: string;
+  id?: string;
 };
 export function authorLabel(author: RevisionAuthor): string {
   if (author.kind === "unknown") return "Author not recorded";
-  return `${author.name} · ${author.kind === "api_token" ? "API token" : "Workspace owner"}`;
+  return `${author.name} · ${author.kind === "api_token" ? "API token" : author.kind === "member" ? "Team member" : "Workspace owner"}`;
 }
 export interface PostRevisionSummary {
   author: RevisionAuthor;

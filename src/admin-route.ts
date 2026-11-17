@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 export type AdminView =
   | "editor"
   | "posts"
+  | "connections"
+  | "reviews"
   | "designer"
   | "media"
   | "comments"
@@ -18,7 +20,7 @@ export type AdminView =
 export type DesignSection = "homepage" | ContentType | "comments" | "footer";
 export type EditorMode = "split" | "write" | "preview";
 export type MediaTab = "uploads" | "link" | "library" | "defaults";
-export type SettingsTab = "general" | "seo" | "pwa" | "integrations";
+export type SettingsTab = "general" | "seo" | "pwa" | "integrations" | "team";
 export type ReadersTab =
   "conversations" | "flags" | "guides" | "subscribers" | "campaigns" | "settings";
 export interface AdminRoute {
@@ -37,6 +39,8 @@ export interface AdminRoute {
 const entryRoutes: Record<string, (query: URLSearchParams) => AdminRoute> = {
   "/admin": () => ({ view: "posts" }),
   "/admin/posts": () => ({ view: "posts" }),
+  "/admin/connections": () => ({ view: "connections" }),
+  "/admin/reviews": () => ({ view: "reviews" }),
   "/admin/analytics": () => ({ view: "analytics" }),
   "/admin/profile": () => ({ view: "profile" }),
   "/admin/pricing": () => ({ view: "pricing" }),
@@ -49,7 +53,7 @@ const entryRoutes: Record<string, (query: URLSearchParams) => AdminRoute> = {
     view: "settings",
     ...(query.get("tab") === "seo" && query.get("provider") === "google" ? {seoProvider: "google" as const} : {}),
     settingsTab:
-      query.get("tab") === "seo"
+      query.get("tab") === "team" ? "team" : query.get("tab") === "seo"
         ? "seo"
         : query.get("tab") === "integrations"
           ? "integrations"
@@ -148,6 +152,7 @@ export function adminEntryDestination(search: string): string {
     return fallback;
   const target = new URL(next, "https://margin.invalid");
   if (target.origin !== "https://margin.invalid" || target.hash) return fallback;
+  if (/^\/review\/[a-zA-Z0-9_-]+$/.test(unmountPath(target.pathname)) && !target.search) return target.pathname;
   const route = parseAdminRoute(target.pathname, target.search);
   return route.view === "not-found" ? fallback : adminUrl(route);
 }

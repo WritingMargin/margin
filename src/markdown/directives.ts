@@ -160,9 +160,25 @@ function leaf(node: Directive, attrs: Attributes) {
   if (node.name === "linkcard") return { hName: "div", hProperties: { className: ["md-link-card"], dataLinkUrl: attrs.url || "", dataLinkTitle: attrs.title || "", dataLinkDescription: attrs.description || "", dataLinkImage: attrs.image || "", dataLinkMode: choice(attrs.mode, ["link", "preview", "figma"], "preview") }, hChildren: [] };
   return node.name === "audio" ? audio(attrs) : common(node, attrs);
 }
+/**
+ * Prose like "10:30", "re:Invent" or "mailto:me@x" parses as a bare text
+ * directive (`:30`, `:Invent`, `:me`). When the name means nothing to Margin
+ * and there is no [label] or {attributes}, it is just text: keep it as typed.
+ */
+function isLiteralColon(directive: Directive, attrs: Attributes, handled: unknown) {
+  return (
+    directive.type === "textDirective" &&
+    !handled &&
+    !directive.children?.length &&
+    !Object.keys(attrs).length
+  );
+}
+
+type Siblings = { children: unknown[] };
+
 export default function styledDirectives() {
   return (tree: Root) =>
-    visit(tree, (node) => {
+    visit(tree, (node, index, parent) => {
       if (
         !["textDirective", "leafDirective", "containerDirective"].includes(
           node.type,
@@ -171,12 +187,17 @@ export default function styledDirectives() {
         return;
       const directive = node as unknown as Directive;
       const attrs = directive.attributes || {};
-      const data = directive.data || (directive.data = {});
       const rendered =
         directive.type === "containerDirective"
           ? container(directive, attrs)
           : undefined;
-      Object.assign(data, rendered || leaf(directive, attrs));
+      const handled = rendered || leaf(directive, attrs);
+      if (parent && index !== undefined && isLiteralColon(directive, attrs, handled)) {
+        (parent as unknown as Siblings).children.splice(index, 1, { type: "text", value: `:${directive.name}` });
+        return index;
+      }
+      const data = directive.data || (directive.data = {});
+      Object.assign(data, handled);
     });
 }
 

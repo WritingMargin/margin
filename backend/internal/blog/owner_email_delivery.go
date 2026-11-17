@@ -9,18 +9,18 @@ import (
 func (a *App) ownerEmailDelivery(ctx context.Context) Row {
 	config := a.newsletterSettings(ctx)
 	if a.newsletterOrigin(ctx) == "" {
-		coded(503, "Set your public URL in Settings before requesting verification.", "OWNER_EMAIL_CONFIGURATION")
+		coded(503, "Set your public URL in Settings before sending account email.", "OWNER_EMAIL_CONFIGURATION")
 	}
 	if config.str("delivery") == "managed" {
 		if a.accountToken(ctx) == "" {
-			coded(503, "Connect Margin email or configure SMTP in Readers → Settings, then request verification.", "OWNER_EMAIL_CONFIGURATION")
+			coded(503, "Connect Margin email or configure SMTP in Readers → Settings, then try again.", "OWNER_EMAIL_CONFIGURATION")
 		}
 		config = a.newsletterStatus(ctx, config)
 		if !config.yes("ready") {
-			coded(503, "Finish setting up Margin email in Readers → Settings, or choose your SMTP server, then request verification.", "OWNER_EMAIL_CONFIGURATION")
+			coded(503, "Finish setting up Margin email in Readers → Settings, or choose your SMTP server, then try again.", "OWNER_EMAIL_CONFIGURATION")
 		}
 	} else if a.smtpSettings(ctx).str("host") == "" {
-		coded(503, "Configure your SMTP server in Readers → Settings, then request verification.", "OWNER_EMAIL_CONFIGURATION")
+		coded(503, "Configure your SMTP server in Readers → Settings, then try again.", "OWNER_EMAIL_CONFIGURATION")
 	}
 	return config
 }

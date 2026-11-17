@@ -23,7 +23,21 @@ func (a *App) aiRoutes() {
 	})
 	a.mux.HandleFunc("POST /api/ai/topups", func(w http.ResponseWriter, r *http.Request) {
 		input := body(w, r)
-		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups", billingInput(Row{"packId": stringField(input, "packId", 0, 64, false)}), ""))
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups", billingInput(creditPurchaseInput(input)), ""))
+	})
+	a.mux.HandleFunc("POST /api/ai/topups/status", func(w http.ResponseWriter, r *http.Request) {
+		input := body(w, r)
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/topups/status", Row{"purchaseId": stringField(input, "purchaseId", 1, 64, false)}, ""))
+	})
+	a.mux.HandleFunc("POST /api/ai/billing/auto-topup", func(w http.ResponseWriter, r *http.Request) {
+		input := body(w, r)
+		delete(input, "publicUrl")
+		input = billingInput(input)
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/billing/auto-topup", input, ""))
+	})
+	a.mux.HandleFunc("POST /api/ai/billing/stop", func(w http.ResponseWriter, r *http.Request) {
+		input := body(w, r)
+		send(w, 200, a.serviceRequest(r.Context(), "/v1/billing/stop", Row{"component": stringField(input, "component", 1, 20, false)}, ""))
 	})
 	a.mux.HandleFunc("POST /api/ai/billing/portal", func(w http.ResponseWriter, r *http.Request) {
 		input := body(w, r)
@@ -278,7 +292,7 @@ func pricingOffer(row Row, plan bool) {
 	minimum := float64(1)
 	if plan {
 		minimum = 0
-		enumField(row, "id", "free", "starter", "studio")
+		pricingPlanID(row, "id")
 		stringField(row, "description", 0, 100000, false)
 		stringArray(row, "features")
 		booleanField(row, "featured")
@@ -287,7 +301,7 @@ func pricingOffer(row Row, plan bool) {
 	pricingInteger(row, "credits", minimum)
 }
 func pricingAccount(row Row) {
-	enumField(row, "planId", "free", "starter", "studio")
+	pricingPlanID(row, "planId")
 	for _, key := range []string{"credits", "monthlyCredits", "topupCredits"} {
 		pricingInteger(row, key, 0)
 	}
@@ -303,11 +317,15 @@ func pricingAccount(row Row) {
 func validPricing(row Row) Row {
 	defer func() {
 		if recover() != nil {
-			coded(502, "Margin Central returned invalid pricing. Please try again.", "PRICING_INVALID")
+			coded(502, "Margin could not load pricing. Please try again.", "PRICING_INVALID")
 		}
 	}()
+	if _, ok := row["audience"]; ok {
+		enumField(row, "audience", "ai", "hosting")
+	}
+	validateHostingPricing(row)
 	plans := arrayValue(row, "plans")
-	if len(plans) != 3 {
+	if len(plans) == 0 {
 		panic("invalid plans")
 	}
 	seen := map[string]bool{}
@@ -316,7 +334,7 @@ func validPricing(row Row) Row {
 		pricingOffer(plan, true)
 		seen[plan.str("id")] = true
 	}
-	if len(seen) != 3 {
+	if len(seen) != len(plans) {
 		panic("duplicate plans")
 	}
 	for _, p := range arrayValue(row, "topups") {
@@ -372,7 +390,7 @@ func pricingProjection(row Row) Row {
 	for _, value := range arrayValue(row, "topups") {
 		topups = append(topups, pickFields(object(value), "id", "name", "credits", "amount", "currency", "available"))
 	}
-	return Row{"plans": plans, "topups": topups, "account": pickFields(object(row["account"]), "planId", "credits", "monthlyCredits", "topupCredits", "canManage", "subscriptionStatus", "renewsAt", "cancelsAtPeriodEnd"), "costs": pickFields(object(row["costs"]), "writing", "summaries", "image"), "terms": row["terms"]}
+	return Row{"customCredits": row["customCredits"], "autoTopup": row["autoTopup"], "audience": row["audience"], "hostingPlans": hostingPricingProjection(row), "plans": plans, "topups": topups, "account": pickFields(object(row["account"]), "planId", "credits", "monthlyCredits", "topupCredits", "canManage", "subscriptionStatus", "renewsAt", "cancelsAtPeriodEnd", "hostingPlanId", "hostingRenewsAt", "aiRenewalStopped", "hostingRenewalStopped"), "costs": pickFields(object(row["costs"]), "writing", "summaries", "image"), "terms": row["terms"]}
 }
 
 func nodeBase64(value string) []byte {
@@ -389,4 +407,41 @@ func nodeBase64(value string) []byte {
 	}, strings.SplitN(value, "=", 2)[0])
 	bytes, _ := base64.RawStdEncoding.DecodeString(normalized)
 	return bytes
+}
+
+func validateHostingPricing(row Row) {
+	if row["hostingPlans"] == nil {
+		return
+	}
+	plans := arrayValue(row, "hostingPlans")
+	seen := map[string]bool{}
+	for _, value := range plans {
+		plan := object(value)
+		pricingOffer(plan, true)
+		if enginePlan(plan.str("id")).str("family") != "hosting" || enginePlan(plan.str("id")).yes("legacy") {
+			panic("invalid hosting plan")
+		}
+		if seen[plan.str("id")] {
+			panic("duplicate hosting plan")
+		}
+		seen[plan.str("id")] = true
+	}
+	account := object(row["account"])
+	id := stringField(account, "hostingPlanId", 0, 64, false)
+	if id != "" && enginePlan(id).str("family") != "hosting" {
+		panic("invalid hosting plan")
+	}
+	if !nullableString(account["hostingRenewsAt"]) {
+		panic("invalid hosting date")
+	}
+}
+func hostingPricingProjection(row Row) []Row {
+	result := []Row{}
+	if row["hostingPlans"] == nil {
+		return result
+	}
+	for _, value := range arrayValue(row, "hostingPlans") {
+		result = append(result, pickFields(object(value), "id", "name", "description", "amount", "currency", "credits", "features", "available", "featured"))
+	}
+	return result
 }

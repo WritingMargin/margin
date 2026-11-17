@@ -1,35 +1,26 @@
+import SubscriptionControls from "./SubscriptionControls";
+import StorageQuota from "../admin/StorageQuota";
+import HostingPlans from "./HostingPlans";
 import AccountGate from "../auth/AccountGate";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Cloud, Loader2 } from "lucide-react";
+import SettingsDisclosure from "../settings/SettingsDisclosure";
+import ConfirmDialog from "../admin/ConfirmDialog";
 import "../pricing.css";
 import PricingAccount from "./PricingAccount";
-import PricingPlans from "./PricingPlans";
+import AutoTopup from "./AutoTopup";
 import PricingTopups from "./PricingTopups";
 import { usePricingPage } from "./usePricingPage";
 
 function ConnectedPricingPage() {
   const state = usePricingPage();
   const { data, error, loading, refresh } = state;
-  const [paymentReturned] = useState(() => new URLSearchParams(window.location.search).get("aiCredits") === "success");
+  const [autoTopupOpen, setAutoTopupOpen] = useState(false);
+  const closeAutoTopup = () => { setAutoTopupOpen(false); state.purchase.dismiss(); };
   return (
     <section className="pricing-page">
-      <header className="pricing-intro">
-        <span className="pricing-eyebrow">A LITTLE SPACE. ROOM TO GROW.</span>
-        <h1>
-          Your words.
-          <br />
-          Your next chapter.
-        </h1>
-        <p>
-          Start with a home for your ideas. Add the tools to take them further.
-        </p>
-      </header>
-      {paymentReturned && (
-        <p role="status">
-          Payment confirmation can take a few moments. Your plan and credits
-          refresh automatically.
-        </p>
-      )}
+      <ConfirmDialog confirmation={state.confirmation} icon={<Cloud size={21} />} />
+      <PricingIntro />
       {error && (
         <div className="pricing-error" role="alert">
           <span>{error}</span>
@@ -42,29 +33,38 @@ function ConnectedPricingPage() {
         <div className="pricing-loading" role="status">
           {loading ? (
             <>
-              <Loader2 size={18} className="spin" /> Getting plans from Margin
-              Central…
+              <Loader2 size={18} className="spin" /> Loading plans…
             </>
           ) : (
-            "Pricing is unavailable until Margin Central reconnects."
+            "Pricing is unavailable right now. Please try again."
           )}
         </div>
       ) : (
         <>
+          <PricingTopups state={state} onAutoTopup={() => setAutoTopupOpen(true)} />
+          {(autoTopupOpen || state.purchase.confirmed) && <AutoTopup state={state} purchased={Boolean(state.purchase.confirmed)} onClose={closeAutoTopup} />}
           <PricingAccount state={state} />
-          <PricingPlans state={state} />
-          <PricingTopups state={state} />
-          <footer className="pricing-footer">
-            <span>Good to know</span>
+          <SubscriptionControls state={state} />
+          <HostingPlans state={state} />
+          <SettingsDisclosure title="Content storage" description="Usage and allowance." icon={<Cloud />} className="pricing-storage">
+            <StorageQuota />
+          </SettingsDisclosure>
+          <details className="billing-terms"><summary>Billing details</summary>
             {data.terms.map((term) => (
               <p key={term}>{term}</p>
             ))}
             <p>Secure payment through Stripe. Checkout opens in a new tab.</p>
-          </footer>
+          </details>
         </>
       )}
     </section>
   );
+}
+
+function PricingIntro() {
+  return <header className="pricing-intro">
+    <h1>Plans & billing</h1>
+  </header>;
 }
 
 export default function PricingPage() {

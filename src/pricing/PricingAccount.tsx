@@ -1,6 +1,7 @@
 import { ArrowUpRight,RefreshCw } from "lucide-react";
 import "../pricing.css";
 import type { PricingPageController } from "./usePricingPage";
+import { subscriptionPlans, isLegacyPlan } from "../../shared/plans";
 type Props = {
   state: Pick<
     PricingPageController,
@@ -9,17 +10,17 @@ type Props = {
 };
 export default function PricingAccount({ state }: Props) {
   const { data, loading, busy, refresh, checkout, current } = state;
-  if (!data) return null;
+  if (!data || !data.account.canManage) return null;
   return (
     <div className="pricing-account">
       <div>
         <p>
-          Your plan:{" "}
-          <strong>{data.plans.find((p) => p.id === current)?.name}</strong>
+          AI billing:{" "}
+          <strong>{billingName(data.plans, current)}</strong>
           {data.account.renewsAt && (
             <>
               {" "}
-              · {data.account.cancelsAtPeriodEnd
+              · {renewalStopped(data.account)
                 ? "Access until"
                 : "Renews"}{" "}
               {new Date(data.account.renewsAt).toLocaleDateString("en-GB", {
@@ -30,6 +31,7 @@ export default function PricingAccount({ state }: Props) {
             </>
           )}
         </p>
+        <ExistingCredits audience={data.audience} current={current} />
       </div>
       <div className="pricing-account-actions">
         {data.account.canManage && (
@@ -42,14 +44,27 @@ export default function PricingAccount({ state }: Props) {
           </button>
         )}
         <button
-          className="button"
+          type="button"
+          className="icon-button pricing-account-refresh"
           disabled={loading}
           aria-label="Refresh pricing and balance"
+          title="Refresh pricing and balance"
           onClick={() => void refresh()}
         >
-          <RefreshCw size={14} className={loading ? "spin" : ""} />
+          <RefreshCw size={14} className={loading ? "spin" : ""} aria-hidden="true" />
         </button>
       </div>
     </div>
   );
+}
+
+function ExistingCredits({ audience, current }: { audience: string | null | undefined; current: string | undefined }) {
+  if (audience !== "ai" || !isLegacyPlan(current)) return null;
+  return <p>Your existing subscription already includes AI credits for this engine.</p>;
+}
+
+function renewalStopped(account: { aiRenewalStopped?: boolean | null; cancelsAtPeriodEnd: boolean }) { return account.aiRenewalStopped || account.cancelsAtPeriodEnd; }
+
+function billingName(plans: { id: string; name: string }[], current: string | undefined) {
+  return plans.find(p => p.id === current)?.name ?? subscriptionPlans.find(p => p.id === current)?.name ?? "Prepaid credits";
 }

@@ -3,6 +3,7 @@ import { api } from "../api";
 import type { Post } from "../../shared/types";
 import type { ReviewNote } from "./types";
 import PostDiff from "../editor/PostDiff";
+import Accordion from "../Accordion";
 
 export default function NoteRevision({
   note,
@@ -40,19 +41,17 @@ export default function NoteRevision({
     }
   }
   return (
-    <details
+    <Accordion
+      title={`Addressed · View revision ${note.addressed_revision.slice(0, 8)}`}
       onToggle={(e) => {
         if (e.currentTarget.open && !diff && !busy) void load();
       }}
     >
-      <summary>
-        Addressed · View revision {note.addressed_revision.slice(0, 8)}
-      </summary>
       {diff && (
         <PostDiff before={diff.revision} after={diff.addressed_revision} />
       )}
       {busy && <p role="status">Loading revision…</p>}
-      {error && <p role="alert">{error}</p>}
-    </details>
+      {error && <p className="error-box" role="alert">{error} <button className="button" disabled={busy} onClick={() => void load()}>Retry</button></p>}
+    </Accordion>
   );
 }

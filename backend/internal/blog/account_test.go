@@ -47,7 +47,7 @@ func TestCentralOutageDoesNotBlockCoreFeatures(t *testing.T) {
 		expectStatus(t, request(t, a, "GET", path, nil, true), 200)
 	}
 	expectStatus(t, request(t, a, "POST", "/api/posts", Row{"title": "Still writing", "slug": "still-writing", "content": "Offline from Central"}, true), 201)
-	expectStatus(t, request(t, a, "GET", "/api/media", nil, true), 503)
+	expectStatus(t, request(t, a, "GET", "/api/media", nil, true), 200)
 	expectStatus(t, request(t, a, "GET", "/api/ai/config", nil, true), 503)
 	image := uploadSharingImage(t, a)
 	expectStatus(t, request(t, a, "GET", image, nil, true), 200)
@@ -93,7 +93,7 @@ func TestAccountCreationRequiresConsentAndRecoversAfterTimeout(t *testing.T) {
 	if a.accountToken(context.Background()) != secret {
 		t.Fatal("credential not persisted")
 	}
-	expectStatus(t, request(t, a, "GET", "/api/media", nil, true), 402)
+	expectStatus(t, request(t, a, "GET", "/api/media", nil, true), 200)
 	t.Setenv("AI_SERVICE_URL", "https://other.example.com")
 	expectPanicCode(t, "ACCOUNT_CONFIGURATION", func() { a.accountToken(context.Background()) })
 }

@@ -9,7 +9,7 @@ import (
 
 // @Summary Watch saved post changes
 // @ID postEvents
-// @Description Streams revision events (id, revision, deleted), including the current state on every connection. Changes are pushed after saves and deletes commit, using local notifications for SQLite and PostgreSQL LISTEN/NOTIFY across server instances. No content polling. Clients reconnect after disconnection. No article content is streamed.
+// @Description Streams revision events (id, revision, deleted), including the current state on every connection. revision is always the live/current post revision. Optional draftRevision identifies staged changes; changes to either revision emit an event. Changes are pushed after saves and deletes commit, using local notifications for SQLite and PostgreSQL LISTEN/NOTIFY across server instances. No content polling. Clients reconnect after disconnection. No article content is streamed.
 // @Tags Posts
 // @Produce text/event-stream
 // @Security BearerAuth
@@ -24,7 +24,7 @@ func (a *App) postEvents(w http.ResponseWriter, r *http.Request) {
 	must(err)
 	defer unsubscribe()
 	// Subscribe before reading current state so a concurrent commit cannot be missed.
-	rows, err := a.DB.Query(r.Context(), "SELECT revision FROM posts WHERE id=$1", r.PathValue("id"))
+	rows, err := a.DB.Query(r.Context(), "SELECT p.revision,d.revision AS draft_revision FROM posts p LEFT JOIN post_drafts d ON d.post_id=p.id WHERE p.id=$1", r.PathValue("id"))
 	must(err)
 	row := first(rows)
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -38,12 +38,22 @@ func (a *App) postEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if row != nil {
-		a.watchPostEvents(w, r, row.str("revision"), changed)
+		a.watchPostEvents(w, r, postEventVersion(row), changed)
 	}
 }
 
 func postEvent(row Row, id string) Row {
-	return Row{"id": id, "revision": row.str("revision"), "deleted": row == nil}
+	event := Row{"id": id, "revision": row.str("revision"), "deleted": row == nil}
+	if revision := row.str("draft_revision"); revision != "" {
+		event["draftRevision"] = revision
+	}
+	return event
+}
+
+// The two revisions are independent: a live edit must still notify clients
+// when an older staged draft remains in place.
+func postEventVersion(row Row) string {
+	return row.str("revision") + "\x00" + row.str("draft_revision")
 }
 
 func writePostEvent(w http.ResponseWriter, event string, data Row) bool {
@@ -94,12 +104,12 @@ func (a *App) sendPostChange(w http.ResponseWriter, r *http.Request, revision st
 	if !a.authorizePostStream(w, r) {
 		return revision, false
 	}
-	rows, err := a.DB.Query(r.Context(), "SELECT revision FROM posts WHERE id=$1", r.PathValue("id"))
+	rows, err := a.DB.Query(r.Context(), "SELECT p.revision,d.revision AS draft_revision FROM posts p LEFT JOIN post_drafts d ON d.post_id=p.id WHERE p.id=$1", r.PathValue("id"))
 	if err != nil {
 		return revision, false
 	}
 	row := first(rows)
-	next := row.str("revision")
+	next := postEventVersion(row)
 	if row == nil || next != revision {
 		if !writePostEvent(w, "revision", postEvent(row, r.PathValue("id"))) {
 			return revision, false
@@ -108,15 +118,23 @@ func (a *App) sendPostChange(w http.ResponseWriter, r *http.Request, revision st
 	return next, row != nil
 }
 
-func (a *App) postStreamAuthorized(r *http.Request) bool {
+func (a *App) postStreamAuthorized(r *http.Request) (allowed bool) {
+	// A stream outlives a request snapshot. Revalidate membership for each
+	// heartbeat and event, and close it if Central is unavailable.
+	defer func() {
+		if recover() != nil {
+			allowed = false
+		}
+	}()
 	if value, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer "); ok {
+		if strings.HasPrefix(value, "moat_") {
+			principal := a.loadOAuthPrincipal(r, value)
+			scopes, _ := principal["scopes"].([]string)
+			return hasOAuthScope(scopes, "content:read")
+		}
 		rows, err := a.DB.Query(r.Context(), "SELECT role FROM api_tokens WHERE token_hash=$1", hash(value))
 		return err == nil && validTokenRole(first(rows).str("role"))
 	}
-	cookie, err := r.Cookie(sessionCookieName("margin_session"))
-	if err != nil {
-		return false
-	}
-	rows, err := a.DB.Query(r.Context(), "SELECT token_hash FROM sessions WHERE token_hash=$1 AND expires_at>NOW()", hash(cookie.Value))
-	return err == nil && len(rows) > 0
+	principal := a.loadBrowserPrincipal(r)
+	return principal != nil && tokenRouteAllowed(principal.str("role"), "GET /api/posts/{id}/events")
 }

@@ -167,6 +167,7 @@ func (a *App) reconcileAppliedSectionFlags(ctx context.Context, tx *sql.Tx, row 
 	query, args := a.DB.adapt(`SELECT id,reader_id FROM section_flags WHERE post_id=$1 AND status='accepted' AND accepted_draft_revision=$2`, []any{row["id"], draft.Revision})
 	rows, err := tx.QueryContext(ctx, query, args...)
 	must(err)
+	defer rows.Close()
 	items := []Row{}
 	for rows.Next() {
 		var id, readerID string

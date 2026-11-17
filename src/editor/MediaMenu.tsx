@@ -1,3 +1,4 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ImagePlus, Sparkles, Upload } from "lucide-react";
@@ -12,6 +13,7 @@ export default function MediaMenu({
   onGenerate: () => void;
 }) {
   const id = useId();
+  const { role } = useTeamIdentity();
   const trigger = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position | null>(null);
@@ -98,12 +100,12 @@ export default function MediaMenu({
                 Insert media<small>Upload, library, or a link</small>
               </span>
             </button>
-            <button role="menuitem" onClick={() => select(onGenerate)}>
+            {role === "owner" && <button role="menuitem" onClick={() => select(onGenerate)}>
               <Sparkles size={17} />
               <span>
                 Generate image<small>Create an image with AI</small>
               </span>
-            </button>
+            </button>}
           </div>,
           document.body,
         )}

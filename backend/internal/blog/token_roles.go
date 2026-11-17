@@ -43,8 +43,8 @@ func (a *App) requestRole(r *http.Request) string {
 		row := first(a.DB.Must(r.Context(), "SELECT role FROM api_tokens WHERE token_hash=$1", hash(value)))
 		return row.str("role")
 	}
-	if a.authenticated(r) {
-		return "owner"
+	if principal := a.browserPrincipal(r); principal != nil {
+		return principal.str("role")
 	}
 	return ""
 }
@@ -69,6 +69,9 @@ func tokenRouteAllowed(role, pattern string) bool {
 
 func (a *App) authorizeToken(r *http.Request) {
 	_, pattern := a.mux.Handler(r)
+	if a.authorizeBrowserMember(r, pattern) {
+		return
+	}
 	if strings.HasPrefix(r.Header.Get("Authorization"), "Bearer moat_") && (strings.HasPrefix(r.URL.Path, "/api/tokens") || strings.HasPrefix(r.URL.Path, "/api/oauth")) {
 		coded(403, "Use an owner browser session to manage credentials.", "PERMISSION_DENIED")
 	}

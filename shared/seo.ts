@@ -9,6 +9,14 @@ export interface DomainSettings {
   url: string;
   effectiveUrl: string;
   serverUrl: string;
+  hosting?: {
+    assignedUrl: string;
+    publicUrl: string;
+    requestedUrl?: string;
+    mode: "dns" | "proxy";
+    status: "ready" | "pending_dns" | "applying" | "failed" | "unavailable";
+    message?: string;
+  };
 }
 export type PostSEOSettings = Pick<
   SEOSettings,

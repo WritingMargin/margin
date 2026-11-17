@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StickyNote, X } from "lucide-react";
 import { usePassageSelection } from "../blog/usePassageSelection";
 import type { Post } from "../../shared/types";
 import ReviewMarkers from "./ReviewMarkers";
 import type { ReviewNote } from "./types";
 import Markdown from "../Markdown";
+import ReaderDialog from "../blog/ReaderDialog";
 import "../blog/passage-interactions.css";
 
 type Selection = {
@@ -23,10 +24,12 @@ export default function ReviewPassages({
   post,
   notes,
   saveNote,
+  reviewPath,
 }: {
   post: Post;
   notes: ReviewNote[];
   saveNote: SaveNote;
+  reviewPath: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -41,7 +44,7 @@ export default function ReviewPassages({
           tableOfContents={post.tableOfContents}
         />
       </div>
-      <ReviewMarkers content={content} notes={notes} />
+      <ReviewMarkers content={content} notes={notes} reviewPath={reviewPath} />
       {selection && !anchor && (
         <div
           className="passage-selection"
@@ -75,14 +78,14 @@ export default function ReviewPassages({
       {anchor && (
         <ReviewNoteComposer
           anchor={anchor}
-          close={() => setAnchor(null)}
+          close={() => { setAnchor(null); setSelection(null); }}
           saveNote={saveNote}
         />
       )}
     </div>
   );
 }
-function ReviewNoteComposer({
+export function ReviewNoteComposer({
   anchor,
   close,
   saveNote,
@@ -91,19 +94,16 @@ function ReviewNoteComposer({
   close: () => void;
   saveNote: SaveNote;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState("");
   const submission = useRef({ id: crypto.randomUUID(), body: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  useLayoutEffect(() => {
-    if (!dialog.current?.open) dialog.current?.showModal();
-  }, []);
   useEffect(() => {
     textarea.current?.focus();
   }, []);
   async function submit() {
+    if (busy || !body.trim()) return;
     setBusy(true);
     setError("");
     try {
@@ -122,28 +122,8 @@ function ReviewNoteComposer({
     }
   }
   return (
-    <dialog
-      ref={dialog}
-      className="passage-dialog passage-modal-sheet"
-      aria-labelledby="review-note-title"
-      onCancel={(e) => {
-        if (busy) e.preventDefault();
-        else close();
-      }}
-    >
-      <header>
-        <h2 id="review-note-title">Review note</h2>
-        <button
-          type="button"
-          className="button"
-          aria-label="Close"
-          disabled={busy}
-          onClick={close}
-        >
-          <X size={16} />
-        </button>
-      </header>
-      <div className="passage-dialog-body passage-notes">
+    <ReaderDialog open title="Review note" className="passage-modal-sheet" dismissDisabled={busy} onClose={close}>
+      <div className="passage-notes">
         <blockquote>{anchor.quote}</blockquote>
         <form
           className="passage-note-composer"
@@ -164,7 +144,7 @@ function ReviewNoteComposer({
               onChange={(e) => setBody(e.target.value)}
             />
           </label>
-          {error && <p role="alert">{error}</p>}
+          {error && <p className="error-box" role="alert">{error}</p>}
           <div className="comment-form-actions">
             <button className="button primary" disabled={busy || !body.trim()}>
               {busy ? "Saving…" : "Save review note"}
@@ -172,6 +152,6 @@ function ReviewNoteComposer({
           </div>
         </form>
       </div>
-    </dialog>
+    </ReaderDialog>
   );
 }

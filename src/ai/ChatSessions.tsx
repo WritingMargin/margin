@@ -27,7 +27,7 @@ export default function ChatSessions({
     <div className="chat-sessions-bar">
       <button
         type="button"
-        className="chat-session-trigger chat-context-trigger"
+        className="chat-session-trigger"
         aria-label="Switch chat"
         aria-expanded={history}
         onClick={toggle}

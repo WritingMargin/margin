@@ -29,8 +29,8 @@ func (a *App) printArticle(w http.ResponseWriter, r *http.Request) {
 		Title:  row.str("title"), Blog: a.settings(r.Context()).str("name"),
 		Excerpt: row.str("excerpt"), Created: row.str("created_at"), Tags: strings.Join(rssTags(row["tags"]), ", "),
 		Cover: coverImage(row.str("cover")), Canonical: links.str("canonical"), Markdown: links.str("markdown"), Nonce: token(),
-		Content: printContent(audioCoverContent(row.str("cover"), content), links.str("canonical")),
-		Robots:  robotsDirective(true, !a.seoSettings(r.Context()).yes("indexing") || object(row["seo"]).yes("nofollow")),
+		Content:   printContent(audioCoverContent(row.str("cover"), content), links.str("canonical")),
+		Robots:    robotsDirective(true, !a.seoSettings(r.Context()).yes("indexing") || object(row["seo"]).yes("nofollow")),
 		AutoPrint: r.URL.Query().Get("download") == "pdf",
 	}
 	var output bytes.Buffer

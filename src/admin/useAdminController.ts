@@ -1,3 +1,5 @@
+import { canOpenWorkspaceView, canPublish, memberWorkspaceKey, type TeamRole, type TeamUser } from "../../shared/team";
+import { readEditablePost, persistEditablePost, changePublishedVisibility, DraftPublishError } from "./team-posts";
 import type { WriterEditor } from "../editor/editor-handle";
 import { contentTypeLabel, resolveContentType, type ContentType } from "../../shared/content-types";
 import { useArticleAudit } from "./useArticleAudit";
@@ -12,26 +14,35 @@ import { useLocalDraft } from "./useLocalDraft";
 import { useNavigationSidebar } from "./useNavigationSidebar";
 import { useWritingCompanion } from "../ai/useWritingCompanion";
 import { sitePath } from "../base-path";
-import { FileText, Image, Users, Paintbrush, ChartNoAxesCombined } from "lucide-react";
+import { FileText, Image, Users, Paintbrush, ChartNoAxesCombined, Plug } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { defaultTheme, type Post, type Theme } from "../../shared/types";
 import { useAdminRoute, type AdminView, type EditorMode } from "../admin-route";
 import { draft, emptyDraft } from "../admin/post-utils";
-import { APIError, api, json } from "../api";
+import { APIError, api } from "../api";
 import { cacheSavedPost, recoverOfflinePost } from "../../shared/local-drafts";
 
 export function useAdminController({
   cloudManaged,
+  role = "owner",
+  user,
+  primaryOwner = !user,
+  articleIds = [],
   storageConfigured,
   offline,
   logout,
 }: {
   cloudManaged?: boolean;
+  role?: TeamRole;
+  user?: TeamUser;
+  primaryOwner?: boolean;
+  articleIds?: string[];
   storageConfigured: boolean;
   offline: boolean;
   logout: () => Promise<void>;
 }) {
   const { route, navigate, guard } = useAdminRoute();
+  const workspaceKey = memberWorkspaceKey(sitePath("/admin"), user);
   const confirmation = useConfirmation();
   const articleAudit = useArticleAudit();
   const confirmDiscard = () => confirmation.ask({
@@ -46,7 +57,7 @@ export function useAdminController({
   const [post, setPost] = useState<Post>(() =>
     route.view === "editor" && !route.postId ? emptyDraft(route.contentType) : draft(),
   );
-  const writing = useWritingCompanion(post.id, resolveContentType(post.contentType));
+  const writing = useWritingCompanion(post.id, resolveContentType(post.contentType), role === "owner", workspaceKey);
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -96,6 +107,7 @@ export function useAdminController({
   const savingRef = useRef(false);
   const openedPost = useRef<string | null>(null);
   guard.current = async (next) => {
+    if (!canOpenWorkspaceView(role, next.view)) return false;
     if (!(await allowReaderNavigation(next))) return false;
     if (settingsDirty && next.view !== route.view && !(await confirmation.ask({
       title: "Discard your settings?", description: "Your unsaved profile or publication settings will be lost. Keep editing to review and save them.",
@@ -131,7 +143,7 @@ export function useAdminController({
     open: () => setModal("conflict"),
     close: () => setModal(null),
   });
-  const localDraft = useLocalDraft(post, dirty, conflicts.baseline, notify);
+  const localDraft = useLocalDraft(post, dirty, conflicts.baseline, notify, workspaceKey);
   const livePost = useLivePost({
     post,
     enabled: route.view === "editor" && route.postId === post.id,
@@ -150,7 +162,7 @@ export function useAdminController({
   });
   function openPost(saved: Post, cache = false) {
     if (cache) {
-      try { cacheSavedPost(localStorage, sitePath("/admin"), saved); }
+      try { cacheSavedPost(localStorage, workspaceKey, saved); }
       catch { /* The editor's local backup reports storage failures. */ }
     }
     const recovered = localDraft.recover(saved);
@@ -194,7 +206,7 @@ export function useAdminController({
       openPost(emptyDraft(route.contentType));
       return;
     }
-    api<Post>(`/posts/${encodeURIComponent(route.postId)}`)
+    readEditablePost(route.postId)
       .then((saved) => {
         if (active) {
           openPost(saved, true);
@@ -204,7 +216,7 @@ export function useAdminController({
         if (!active) return;
         if (error instanceof TypeError) {
           try {
-            const workspace = sitePath("/admin");
+            const workspace = workspaceKey;
             const cached = recoverOfflinePost(localStorage, workspace, route.postId!);
             if (cached) { openPost(cached); return; }
           } catch { /* Show the original connection error. */ }
@@ -227,6 +239,7 @@ export function useAdminController({
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty, designDirty, settingsDirty, readersDirty]);
   const change = (p: Partial<Post>) => {
+    if (!canPublish(role) && p.status && p.status !== post.status) return;
     const next = { ...latestPost.current, ...p };
     latestPost.current = next;
     setPost(next);
@@ -265,7 +278,30 @@ export function useAdminController({
       : "Saved on this device. Reconnect and save these changes when ready.");
     return false;
   }
+  function allowedSave(publish: boolean) {
+    if (publish && !canPublish(role)) { notify("A publisher or owner must publish these changes."); return false; }
+    return true;
+  }
+  async function setVisibility(status: "draft" | "archived") {
+    if (!canPublish(role) || dirty || busy) return;
+    if (!(await confirmation.ask({ title: status === "draft" ? "Unpublish this article?" : "Archive this article?", description: "Readers will no longer be able to open this article. Saved revisions remain available." }))) return;
+    setBusy(true);
+    try {
+      const next = await changePublishedVisibility(post, status);
+      openPost(next, true);
+      refreshPosts();
+      notify(status === "draft" ? "Article unpublished. Saved changes are now a private draft." : "Article archived.");
+    } catch (cause) { notify((cause as Error).message); }
+    finally { setBusy(false); }
+  }
+  function recoverPublishFailure(error: unknown) {
+    if (!(error instanceof DraftPublishError)) return;
+    conflicts.saved(error.savedDraft);
+    setPost(current => ({ ...current, revision: error.savedDraft.revision, baseRevision: error.savedDraft.baseRevision, status: error.savedDraft.status }));
+    refreshPosts();
+  }
   const save = async (publish = false) => {
+    if (!allowedSave(publish)) return false;
     if (savingRef.current || modal === "conflict") return;
     savingRef.current = true;
     const snapshot = post;
@@ -274,7 +310,7 @@ export function useAdminController({
     try {
       if (offline || !navigator.onLine) return saveOnDevice();
       await articleAudit.beforeSave(post, publish);
-      const next = await persistPost(post, publish);
+      const next = await persistEditablePost(post, publish, conflicts.baseline.current);
       writing.saved(next.id);
       conflicts.saved(next);
       localDraft.discard(snapshot.id, snapshot.contentType);
@@ -291,10 +327,11 @@ export function useAdminController({
       const label = contentTypeLabel(snapshot.contentType, theme.publicationType);
       notify(savedPostMessage(previousPost, next, publish, label));
       articleAudit.afterSave(next);
-      if (publish && next.status === "published") setPublishedNoticeId(next.id);
+      if (next.status === "published") setPublishedNoticeId(next.id);
       return true;
     } catch (e) {
       if (e instanceof TypeError) return saveOnDevice();
+      recoverPublishFailure(e);
       handleSaveFailure(e, conflicts.review, notify);
       return false;
     } finally {
@@ -359,12 +396,14 @@ export function useAdminController({
     return () => window.removeEventListener("keydown", handler);
   });
   const nav = [
+    ...(articleIds.length ? [{ id: "reviews", icon: Users, label: "My peer reviews" }] : []),
     { id: "posts", icon: FileText, label: "All content" },
     { id: "designer", icon: Paintbrush, label: "Publication designer" },
     { id: "media", icon: Image, label: "Media library" },
     { id: "readers", icon: Users, label: "Readers" },
     { id: "analytics", icon: ChartNoAxesCombined, label: "Analytics" },
-  ] as const;
+    { id: "connections", icon: Plug, label: "Connected apps" },
+  ].filter(item => canOpenWorkspaceView(role, item.id)) as { id: AdminView; icon: typeof FileText; label: string }[];
   const words = (post.content || "").trim().split(/\s+/).filter(Boolean).length;
   return {
     confirmation,
@@ -377,6 +416,10 @@ export function useAdminController({
     setSettingsDirty,
     setReadersDirty,
     cloudManaged,
+    role,
+    user,
+    primaryOwner,
+    workspaceKey,
     storageConfigured,
     offline,
     logout: async () => {
@@ -425,6 +468,7 @@ export function useAdminController({
     load,
     newPost,
     save,
+    setVisibility,
     insert,
     nav,
     words,
@@ -452,6 +496,7 @@ async function applySavedPost(
       ...current,
       id: next.id,
       revision: next.revision,
+      baseRevision: next.baseRevision,
       createdAt: next.createdAt,
       updatedAt: next.updatedAt,
       status: next.status,
@@ -461,20 +506,11 @@ async function applySavedPost(
 }
 
 function savedPostMessage(previous: Post | null, next: Post, publish: boolean, label: string) {
+  if (next.baseRevision) return "Draft changes saved. The published version is unchanged.";
   const visibility = visibilityChange(previous?.status, next.status, label.toLowerCase());
   if (visibility) return visibility.success;
   if (next.status === "archived") return `${label} archived. It is not publicly visible.`;
   return postSavedMessage(next.status === "published" && previous?.status === "published", publish, label);
-}
-
-function persistPost(post: Post, publish: boolean) {
-  return api<Post>(
-    post.id ? `/posts/${post.id}` : "/posts",
-    json(post.id ? "PUT" : "POST", {
-      ...post,
-      status: publish ? "published" : post.status,
-    }),
-  );
 }
 
 function handleSaveFailure(
@@ -482,7 +518,8 @@ function handleSaveFailure(
   review: () => void,
   notify: (message: string) => void,
 ) {
-  if (error instanceof APIError && error.code === "REVISION_CONFLICT") review();
+  if (error instanceof DraftPublishError) notify(error.message);
+  else if (error instanceof APIError && error.code === "REVISION_CONFLICT") review();
   else notify((error as Error).message);
 }
 

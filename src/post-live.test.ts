@@ -49,10 +49,10 @@ function harness(read: (signal: AbortSignal) => Promise<Post>) {
     },
     closed: () => closed,
     deleted: () => deleted,
-    emit: (revision: string, removed = false) =>
+    emit: (revision: string, removed = false, draftRevision?: string) =>
       listeners.get("revision")!(
         new MessageEvent("revision", {
-          data: JSON.stringify({ id: "article", revision, deleted: removed }),
+          data: JSON.stringify({ id: "article", revision, draftRevision, deleted: removed }),
         }),
       ),
     unauthorized: () =>
@@ -200,4 +200,16 @@ test("deletion and revoked authentication close the stream without replacing loc
   } finally {
     missing.watch.close();
   }
+});
+
+
+test("staged draft events refresh editors even when the live revision is unchanged", async () => {
+  let reads = 0;
+  const h = harness(async () => { reads++; return { ...post("draft-two"), baseRevision: "live" }; });
+  h.current({ post: { ...post("draft-one"), baseRevision: "live" }, saving: false });
+  h.emit("live", false, "draft-two");
+  await flush();
+  assert.equal(reads, 1);
+  assert.equal(h.updates[0].post.revision, "draft-two");
+  h.watch.close();
 });

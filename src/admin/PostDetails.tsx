@@ -1,3 +1,5 @@
+import { useTeamIdentity } from "../auth/TeamContext";
+import { canPublish } from "../../shared/team";
 import { contentTypeLabel } from "../../shared/content-types";
 import Select from "../components/Select";
 import PostContentsControl from "./PostContentsControl";
@@ -27,12 +29,15 @@ type Props = {
     | "theme"
     | "save"
     | "busy"
+    | "dirty"
+    | "setVisibility"
     | "conflicts"
     | "articleAudit"
   >;
 };
 export default function PostDetails({ state, published, startInSEO }: Props) {
   const { post, setModal, change, theme } = state;
+  const { role } = useTeamIdentity();
   const label = contentTypeLabel(post.contentType, theme.publicationType);
   const visibility = detailsVisibility(state, label);
   const [section, setSection] = useState<Section>(
@@ -103,16 +108,18 @@ export default function PostDetails({ state, published, startInSEO }: Props) {
             <label>
               Visibility
               <Select
+                disabled={!canPublish(role) || !!post.baseRevision}
                 value={post.status}
                 onChange={(e) =>
                   change({ status: e.target.value as Post["status"] })
                 }
               >
-                <option value="draft">Draft — only you</option>
+                <option value="draft">Draft — publication team</option>
                 <option value="published">Published — everyone</option>
                 <option value="archived">Archived — private</option>
               </Select>
             </label>
+            <PublishedVisibility state={state} />
             {visibility && (
               <p className="muted" role="status">
                 {visibility.detail}
@@ -185,6 +192,7 @@ function DetailsHeader({
   section: Section;
   setSection: (section: Section) => void;
 }) {
+  const { role } = useTeamIdentity();
   return (
     <header className="dialog-header">
       <span className="eyebrow">
@@ -222,8 +230,8 @@ function DetailsHeader({
         >
           Related content
         </button>
-        <button type="button" aria-pressed={section === "update"} onClick={() => setSection("update")}>Author update</button>
-        <button type="button" aria-pressed={section === "polls"} onClick={() => setSection("polls")}>Polls</button>
+        {canPublish(role) && <button type="button" aria-pressed={section === "update"} onClick={() => setSection("update")}>Author update</button>}
+        {canPublish(role) && <button type="button" aria-pressed={section === "polls"} onClick={() => setSection("polls")}>Polls</button>}
       </div>
     </header>
   );
@@ -235,4 +243,10 @@ function detailsVisibility(state: Props["state"], label: string) {
     state.post.status,
     label.toLowerCase(),
   );
+}
+
+function PublishedVisibility({ state }: Props) {
+ const { role } = useTeamIdentity();
+ if (!canPublish(role) || !state.post.baseRevision) return null;
+ return <div><p>The published version stays live while this draft is reviewed.</p><button className="button" disabled={state.busy || state.dirty} onClick={() => void state.setVisibility("draft")}>Unpublish article</button> <button className="button" disabled={state.busy || state.dirty} onClick={() => void state.setVisibility("archived")}>Archive article</button>{state.dirty && <p>Save your draft before changing publication visibility.</p>}</div>;
 }

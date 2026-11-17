@@ -299,7 +299,11 @@ func (a *App) generateSimplified(ctx context.Context, post Row) {
 			if e, ok := failure.(*HTTPError); ok {
 				message = e.Message
 			}
-			a.DB.Must(context.WithoutCancel(ctx), `UPDATE simplified_versions SET status='failed',error=$1,updated_at=NOW() WHERE post_id=$2 AND source_revision=$3 AND status='generating'`, message, post["id"], post["revision"])
+			cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+			defer cancel()
+			if _, err := a.DB.Query(cleanup, `UPDATE simplified_versions SET status='failed',error=$1,updated_at=NOW() WHERE post_id=$2 AND source_revision=$3 AND status='generating'`, message, post["id"], post["revision"]); err != nil {
+				log.Printf("[margin] simplified generation cleanup: %v", err)
+			}
 			log.Printf("[margin] simplified generation: %v", failure)
 		}
 	}()

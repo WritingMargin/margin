@@ -489,8 +489,18 @@
   margin: 10px 0 0;
 }
 .chat-dock .account-gate-embedded {
-  font-size: 13px;
+  padding: 12px;
+  border: 1px solid var(--assistant-line);
+  border-radius: 7px;
+  background: #fff;
+  font-size: 11px;
+  line-height: 1.5;
 }
+.chat-dock .account-gate-embedded > p { margin: 0; }
+.chat-dock .account-connect-title { font-size: 12px; font-weight: 500; color: var(--assistant-ink); }
+.chat-dock .account-gate-embedded .account-connect-summary { margin-top: 4px; color: var(--assistant-muted); }
+.chat-dock .account-actions { margin-top: 10px; gap: 8px; }
+.chat-dock .account-actions .button:not(.primary) { border-color: transparent; background: transparent; color: var(--assistant-muted); }
 /* Assistant actions use the same quiet, compact controls in every view. */
 .assistant-panel .writing-assistant .button {
   min-height: 34px;

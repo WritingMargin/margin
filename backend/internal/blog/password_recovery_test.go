@@ -28,7 +28,7 @@ func passwordRecoveryFixture(t *testing.T) (*App, *[]Row) {
 			return fixtureResponse(paidAccount()), nil
 		case "/v1/newsletter/status":
 			return fixtureResponse(Row{"ready": true}), nil
-		case "/v1/newsletter/owner-password-reset":
+		case "/v1/newsletter/owner-password-reset", "/v1/newsletter/member-password-reset":
 			var input Row
 			if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 				t.Error(err)
@@ -174,7 +174,7 @@ func TestCloudOwnerRecoveryURLAndLocalResetRejection(t *testing.T) {
 	a := cloudOwnerFixture(t)
 	expectStatus(t, cloudMachineCall(a, "/api/cloud/bootstrap", cloudOwnerInput()), 201)
 	result := responseRow(t, request(t, a, "GET", "/api/session", nil, false), 200)
-	if result.str("passwordRecoveryUrl") != "https://margin.example/forgot-password" {
+	if result.str("hostedOwnerRecoveryUrl") != "https://margin.example/forgot-password" {
 		t.Fatal("wrong Central recovery destination")
 	}
 	expectStatus(t, request(t, a, "POST", "/api/public/password/reset", Row{"token": strings.Repeat("a", 64), "password": "new-password-123"}, false), 400)

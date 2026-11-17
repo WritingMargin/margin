@@ -160,7 +160,7 @@ function ManagedProtection({ state }: Props) {
   return (
     <>
       <p className="small-text">
-        Margin Central uses Google reCAPTCHA v2 for your connected blog. No
+        Margin uses Google reCAPTCHA v2 for your connected blog. No
         CAPTCHA keys or paid subscription are needed. Saving this option removes
         any custom keys.
       </p>
@@ -169,7 +169,7 @@ function ManagedProtection({ state }: Props) {
         onConnected={() => void state.refresh()}
       >
         <p className="small-text">
-          Verification tokens and reader IP addresses are sent to Margin Central
+          Verification tokens and reader IP addresses are sent to Margin
           and Google. Comments and moderation stay with your blog.
         </p>
       </AccountGate>

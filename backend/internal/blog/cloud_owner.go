@@ -47,14 +47,14 @@ func cloudMachineRequest(r *http.Request) {
 func cloudCentralOrigin(raw string) string {
 	u, err := url.Parse(raw)
 	if err != nil || u == nil {
-		fail(400, "Invalid Central origin.")
+		fail(400, "Invalid Margin account service address.")
 	}
 	secure := u.Scheme == "https"
 	if env("MARGIN_ENV", "production") != "production" && u.Scheme == "http" {
 		secure = u.Hostname() == "127.0.0.1" || u.Hostname() == "localhost"
 	}
 	if !secure || !plainCloudOrigin(u) {
-		fail(400, "Invalid Central origin.")
+		fail(400, "Invalid Margin account service address.")
 	}
 	return strings.TrimSuffix(raw, "/")
 }

@@ -84,7 +84,7 @@ function BlogFooter({ theme }: { theme: Theme }) {
         <a className="rss-link" href={sitePath("/rss.xml")}><Rss size={13} />Follow via RSS</a>
       </nav>
     </div>
-    <small className="public-footer-credit">Powered by <a href="https://github.com/WritingMargin/margin">Margin</a></small>
+    <small className="public-footer-credit">Powered by <a href="https://usemargin.studio">Margin</a></small>
   </footer>;
 }
 

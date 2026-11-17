@@ -1,41 +1,30 @@
+import { useTeamIdentity } from "../auth/TeamContext";
 import { contentTypeLabel, themeForContentType } from "../../shared/content-types";
 import CodeBlockPicker from "../editor/CodeBlockPicker";
-import {
-  Bold,
-  BookOpen,
-  Boxes,
-  ChevronDown,
-  CircleHelp,
-  MessageSquareQuote,
-  Code2,
-  Columns2,
-  Italic,
-  Link,
-  List,
-  Paintbrush,
-  Quote,
-  ScanText,
-} from "lucide-react";
+import { MessageSquareQuote, Plus, ScanText } from "lucide-react";
 import MediaMenu from "../editor/MediaMenu";
-import HeadingPicker from "../editor/HeadingPicker";
 import FormattingToolbar from "../editor/FormattingToolbar";
 import WriterPad from "../editor/WriterPad";
+import ComponentShelf from "../editor/ComponentShelf";
+import PadTitle from "../editor/PadTitle";
+import { setCatalogActionHandler } from "../editor/rich/component-catalog";
+import { slugify } from "./post-utils";
 import EditorCover from "../editor/EditorCover";
-import Markdown from "../Markdown";
 import { blogThemeStyle } from "../blog/theme";
 import type { AdminController } from "./useAdminController";
 import { useMediaDefaults } from "../media/useMediaDefaults";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import "./editor-space.css";
+import "../editor/headings.css";
+import "../editor/rich/rich-writer.css";
 type Props = {
+  /** Kept for callers that still pass header actions; the top bar shows them now. */
   templateAction?: ReactNode;
   state: Pick<
     AdminController,
     | "view"
     | "post"
     | "theme"
-    | "mode"
-    | "setMode"
     | "setView"
     | "setModal"
     | "modal"
@@ -47,173 +36,141 @@ type Props = {
     | "writing"
   >;
 };
-export default function EditorCard({ state, templateAction }: Props) {
+
+/**
+ * The writer's pad: one slim formatting bar, then a plain page with the title,
+ * subtitle, cover and body written in place. Components open from Insert.
+ */
+export default function EditorCard({ state }: Props) {
   const media = useMediaDefaults();
-  const label = contentTypeLabel(state.post.contentType, state.theme.publicationType).toLowerCase();
+  const { role } = useTeamIdentity();
+  const typeLabel = contentTypeLabel(state.post.contentType, state.theme.publicationType);
+  const label = typeLabel.toLowerCase();
   const contentTheme = themeForContentType(state.theme, state.post.contentType);
-  const {
-    post,
-    mode,
-    setMode,
-    setView,
-    setModal,
-    openAI,
-    editor,
-    change,
-    insert,
-  } = state;
+  const { post, setModal, openAI, editor, change } = state;
+  const [formatSlot, setFormatSlot] = useState<HTMLDivElement | null>(null);
+  const [shelfOpen, setShelfOpen] = useState(false);
+  useEffect(() => {
+    setCatalogActionHandler((action) => setModal(action));
+    return () => setCatalogActionHandler(null);
+  }, [setModal]);
+  function focusBody() {
+    editor.current?.focus();
+    editor.current?.setSelectionRange(0, 0);
+  }
+  function focusWriter(event: MouseEvent<HTMLDivElement>) {
+    const target = event.target as Element;
+    if (target !== event.currentTarget && target.closest(".rich-writer-content, .pad-title, .pad-subtitle, .editor-cover, button, a, input, textarea, select")) return;
+    const input = editor.current;
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+  }
   return (
-    <section className="editor-card">
-      <div className="editor-controls editor-button-surface">
-        <div className="mode-tabs" role="group" aria-label="Editor view">
-          <button
-            className={mode === "write" ? "active" : ""}
-            aria-label="Write"
-            title="Write"
-            aria-pressed={mode === "write"}
-            onClick={() => setMode("write")}
-          >
-            <Code2 size={14} />
-            <span>Write</span>
-          </button>
-          <button
-            className={mode === "split" ? "active" : ""}
-            aria-label="Split view"
-            title="Split view"
-            aria-pressed={mode === "split"}
-            onClick={() => setMode("split")}
-          >
-            <Columns2 size={14} />
-            <span>Split view</span>
-          </button>
-          <button
-            className={mode === "preview" ? "active" : ""}
-            aria-label="Preview"
-            title="Preview"
-            aria-pressed={mode === "preview"}
-            onClick={() => setMode("preview")}
-          >
-            <BookOpen size={14} />
-            <span>Preview</span>
-          </button>
-        </div>
-        <div className="editor-control-right">
-          {templateAction}
-          <button title="Markdown guide" aria-label="Markdown guide" aria-haspopup="dialog" aria-expanded={state.modal === "help"} onClick={() => setModal("help")}>
-            <CircleHelp size={16} aria-hidden="true" />
-            <span className="editor-control-label">Guide</span>
-          </button>
-        </div>
-      </div>
-      <div className={`editor-panes ${mode}`}>
-        <div className="source-pane">
-          <FormattingToolbar>
-            <HeadingPicker
-              editor={editor}
-              content={post.content || ""}
+    <section className="editor-card writer-pad-card">
+      <FormattingToolbar>
+        <div className="pad-format-slot" ref={setFormatSlot} />
+        <span className="pad-divider" />
+        <MediaMenu
+          onMedia={() => setModal("media")}
+          onGenerate={() => openAI("images")}
+        />
+        <CodeBlockPicker editor={editor} content={post.content || ""} onChange={content => change({content})} />
+        <button
+          title="Attach citation"
+          aria-label="Attach citation"
+          aria-haspopup="dialog"
+          aria-expanded={state.modal === "citation"}
+          onClick={() => setModal("citation")}
+        >
+          <MessageSquareQuote size={16} aria-hidden="true" /> Citation
+        </button>
+        {role === "owner" && <button disabled={state.writing.session.busy} title={`Review selected passage, or the full ${label}`} aria-label={`Review selection or ${label}`} onClick={() => {
+          const input = editor.current;
+          const passage = input?.value.slice(input.selectionStart, input.selectionEnd) || "";
+          state.writing.review(passage);
+        }}>
+          <ScanText size={16} aria-hidden="true" /> Review
+        </button>}
+        <button
+          className={`pad-insert-toggle${shelfOpen ? " is-open" : ""}`}
+          title="Charts, polls, callouts, tabs and more"
+          aria-label="Insert a component"
+          aria-expanded={shelfOpen}
+          aria-controls="component-shelf"
+          onClick={() => setShelfOpen(!shelfOpen)}
+        >
+          <Plus size={16} aria-hidden="true" /> Insert
+        </button>
+      </FormattingToolbar>
+      <div className="pad-row">
+        {shelfOpen && <ComponentShelf editor={editor} onClose={() => setShelfOpen(false)} />}
+        <div className="article-canvas publication-content" style={blogThemeStyle(contentTheme)} onClick={focusWriter}>
+          <div className="preview-article writer-page">
+            <PadHeading
+              post={post}
+              typeLabel={typeLabel}
+              showSubtitle={contentTheme.article.showExcerpt}
+              change={change}
+              onDone={focusBody}
+            />
+            <EditorCover cover={post.cover} mode={post.coverMode} showCover={contentTheme.article.showCover} onEdit={() => setModal("details")} />
+            <WriterPad
+              key={post.id}
+              editorRef={editor}
+              mediaDefaults={media.defaults}
+              value={post.content || ""}
               onChange={(content) => change({ content })}
+              toolbarSlot={formatSlot}
             />
-            {[
-              { icon: Bold, title: "Bold", before: "**", after: "**" },
-              {
-                icon: Italic,
-                title: "Italic",
-                before: "_",
-                after: "_",
-              },
-              { icon: Quote, title: "Quote", before: "\n> " },
-              { icon: List, title: "List", before: "\n- " },
-              {
-                icon: Link,
-                title: "Link",
-                before: "[",
-                after: "](https://example.com)",
-              },
-              { icon: Code2, title: "Inline code", before: "`", after: "`" },
-            ].map((f) => (
-              <button
-                key={f.title}
-                title={f.title}
-                aria-label={f.title}
-                onClick={() => insert(f.before, f.after)}
-              >
-                <f.icon size={16} aria-hidden="true" />
-                <span>{f.title}</span>
-              </button>
-            ))}
-            <CodeBlockPicker editor={editor} content={post.content || ""} onChange={content => change({content})} />
-            <span />
-            <button
-              title="Attach citation"
-              aria-label="Attach citation"
-              aria-haspopup="dialog"
-              aria-expanded={state.modal === "citation"}
-              onClick={() => setModal("citation")}
-            >
-              <MessageSquareQuote size={16} aria-hidden="true" /> Citation
-            </button>
-            <MediaMenu
-              onMedia={() => setModal("media")}
-              onGenerate={() => openAI("images")}
-            />
-            <button disabled={state.writing.session.busy} title={`Review selected passage, or the full ${label}`} aria-label={`Review selection or ${label}`} onClick={() => {
-              const input = editor.current;
-              const passage = input?.value.slice(input.selectionStart, input.selectionEnd) || "";
-              state.writing.review(passage);
-            }}>
-              <ScanText size={16} aria-hidden="true" /> Review
-            </button>
-            <button
-              title="Insert tabs"
-              aria-label="Insert tabs"
-              aria-haspopup="dialog"
-              aria-expanded={state.modal === "tabs"}
-              onClick={() => setModal("tabs")}
-            >
-              <Columns2 size={16} aria-hidden="true" /> Tabs
-            </button>
-            <button
-              title="Insert interactive block"
-              aria-label="Insert interactive block"
-              aria-haspopup="dialog"
-              aria-expanded={state.modal === "blocks"}
-              onClick={() => setModal("blocks")}
-            >
-              <Boxes size={16} aria-hidden="true" /> Interactive
-            </button>
-            <button className="markdown-label" aria-haspopup="dialog" aria-expanded={state.modal === "help"} onClick={() => setModal("help")}>
-              Markdown <ChevronDown size={12} />
-            </button>
-          </FormattingToolbar>
-          <EditorCover cover={post.cover} mode={post.coverMode} showCover={contentTheme.article.showCover} onEdit={() => setModal("details")} />
-          <WriterPad
-            key={post.id}
-            editorRef={editor}
-            mediaDefaults={media.defaults}
-            value={post.content || ""}
-            onChange={(content) => change({ content })}
-          />
-        </div>
-        <div className="preview-pane">
-          <div className="preview-label editor-button-surface">
-            <span className="editor-live-status"><span className="live-dot" aria-hidden="true" />Live preview</span>
-            <button onClick={() => setView("designer")} title="Customize your blog theme">
-              <Paintbrush size={13} aria-hidden="true" /> Customize
-            </button>
-          </div>
-          <div className="preview-content publication-content" style={blogThemeStyle(contentTheme)}>
-            <div className="preview-article">
-              <h1 className="preview-post-title">{post.title}</h1>
-              <EditorCover cover={post.cover} mode={post.coverMode} showCover={contentTheme.article.showCover} />
-              <Markdown
-                content={post.content || "*Your words will appear here.*"}
-                tableOfContents={post.tableOfContents}
-                contentsDesign={contentTheme.article.tableOfContents}
-              />
-            </div>
           </div>
         </div>
       </div>
+      <p className="pad-wordcount">
+        {state.words} words · {Math.max(1, Math.ceil(state.words / 200))} min read
+      </p>
     </section>
+  );
+}
+
+type HeadingProps = {
+  post: AdminController["post"];
+  typeLabel: string;
+  showSubtitle: boolean;
+  change: AdminController["change"];
+  onDone: () => void;
+};
+
+/** Title and subtitle, written as the first lines of the page (Enter moves down). */
+function PadHeading({ post, typeLabel, showSubtitle, change, onDone }: HeadingProps) {
+  const subtitle = useRef<HTMLTextAreaElement>(null);
+  function setTitle(next: string) {
+    const empty = !next.trim();
+    const title = empty && !post.id ? "Untitled" : next;
+    change({ title, ...(!post.id && !empty ? { slug: slugify(next) } : {}) });
+  }
+  return (
+    <>
+      <PadTitle
+        className="pad-title"
+        label={`${typeLabel} title`}
+        placeholder="Title"
+        value={!post.id && post.title === "Untitled" ? "" : post.title}
+        onChange={setTitle}
+        onNext={() => subtitle.current?.focus()}
+      />
+      <PadTitle
+        className="pad-subtitle"
+        fieldRef={subtitle}
+        label={`${typeLabel} subtitle`}
+        placeholder="Add a subtitle…"
+        value={post.excerpt || ""}
+        onChange={(excerpt) => change({ excerpt })}
+        onNext={onDone}
+      />
+      {post.excerpt && !showSubtitle && (
+        <p className="pad-subtitle-note">Hidden on the {typeLabel.toLowerCase()} by your design settings.</p>
+      )}
+    </>
   );
 }

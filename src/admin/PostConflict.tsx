@@ -9,7 +9,7 @@ import {
   type Resolutions,
   type ReviewField,
 } from "../../shared/post-conflicts";
-import { api } from "../api";
+import { readEditablePost } from "./team-posts";
 import PostDiff from "../editor/PostDiff";
 import { useOverlayFocus } from "../useOverlayFocus";
 import type { ConflictSession } from "./usePostConflicts";
@@ -32,9 +32,9 @@ export default function PostConflict(props: Props) {
     let active = true;
     setRemote(null);
     setError("");
-    api<RemotePost>(`/posts/${encodeURIComponent(props.session.local.id)}`)
+    readEditablePost(props.session.local.id)
       .then((post) => {
-        if (active) setRemote(post);
+        if (active) setRemote(post as RemotePost);
       })
       .catch((e) => {
         if (active) setError(e.message);

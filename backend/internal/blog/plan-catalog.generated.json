@@ -1,0 +1,138 @@
+{
+  "generatedFrom": "margin-central/internal/central/catalog.json — DO NOT EDIT",
+  "schemaVersion": 1,
+  "sha256": "5a817ed62571c416dd699ec81f350dd81f47211671f1dbf75624a277a322619f",
+  "plans": [
+    {
+      "id": "starter",
+      "name": "Starter",
+      "credits": 200,
+      "amount": 1000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "hosting",
+      "legacy": true,
+      "hostingSize": "starter",
+      "entitlements": {
+        "ai": true,
+        "hosting": true,
+        "email": true,
+        "newsletter": true,
+        "integrations": false
+      }
+    },
+    {
+      "id": "studio",
+      "name": "Studio",
+      "credits": 1000,
+      "amount": 5000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "hosting",
+      "legacy": true,
+      "hostingSize": "studio",
+      "entitlements": {
+        "ai": true,
+        "hosting": true,
+        "email": true,
+        "newsletter": true,
+        "integrations": true
+      }
+    },
+    {
+      "id": "ai-starter",
+      "name": "AI Starter",
+      "credits": 200,
+      "amount": 1000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "ai",
+      "legacy": true,
+      "hostingSize": "",
+      "entitlements": {
+        "ai": true,
+        "hosting": false,
+        "email": false,
+        "newsletter": false,
+        "integrations": false
+      }
+    },
+    {
+      "id": "ai-studio",
+      "name": "AI Studio",
+      "credits": 1000,
+      "amount": 5000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "ai",
+      "legacy": true,
+      "hostingSize": "",
+      "entitlements": {
+        "ai": true,
+        "hosting": false,
+        "email": false,
+        "newsletter": false,
+        "integrations": false
+      }
+    },
+    {
+      "id": "hosting-starter",
+      "name": "Hosting Starter",
+      "credits": 0,
+      "amount": 1000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "hosting",
+      "legacy": false,
+      "hostingSize": "starter",
+      "entitlements": {
+        "ai": false,
+        "hosting": true,
+        "email": false,
+        "newsletter": false,
+        "integrations": false
+      }
+    },
+    {
+      "id": "hosting-studio",
+      "name": "Hosting Studio",
+      "credits": 0,
+      "amount": 3000,
+      "currency": "gbp",
+      "interval": "month",
+      "family": "hosting",
+      "legacy": false,
+      "hostingSize": "studio",
+      "entitlements": {
+        "ai": false,
+        "hosting": true,
+        "email": false,
+        "newsletter": false,
+        "integrations": false
+      }
+    }
+  ],
+  "packs": [
+    {
+      "id": "ai-100",
+      "name": "100 AI credits",
+      "credits": 100,
+      "amount": 500,
+      "currency": "gbp"
+    },
+    {
+      "id": "ai-800",
+      "name": "800 AI credits",
+      "credits": 800,
+      "amount": 2000,
+      "currency": "gbp"
+    },
+    {
+      "id": "ai-3200",
+      "name": "3,200 AI credits",
+      "credits": 3200,
+      "amount": 5000,
+      "currency": "gbp"
+    }
+  ]
+}

@@ -25,10 +25,11 @@ func (r Row) str(k string) string { s, _ := r[k].(string); return s }
 func (r Row) yes(k string) bool   { b, _ := r[k].(bool); return b }
 
 type Database struct {
-	SQL         *sql.DB
-	Kind        string
-	dsn         string
-	postChanges postChangeHub
+	SQL          *sql.DB
+	Kind         string
+	dsn          string
+	postChanges  postChangeHub
+	postListener postgresPostListener
 }
 
 func databaseLocation(url, filename string) (string, string, error) {
@@ -67,6 +68,9 @@ func OpenDatabase(url, filename string) (*Database, error) {
 		return nil, err
 	}
 	result := &Database{SQL: db, Kind: driver, dsn: dsn}
+	if err = result.configurePool(); err != nil {
+		return nil, errors.Join(err, db.Close())
+	}
 	if err = result.initialize(); err != nil {
 		return nil, errors.Join(err, db.Close())
 	}
@@ -89,6 +93,9 @@ func (d *Database) initialize() error {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
+		return err
+	}
+	if err := d.migrateOAuthMembers(); err != nil {
 		return err
 	}
 	if err := d.migrateAnalyticsVisitorIPs(); err != nil {
@@ -228,7 +235,7 @@ func decodeColumn(key string, value any) any {
 		return t.UTC().Format("2006-01-02T15:04:05.000Z")
 	}
 	switch key {
-	case "closed", "approved", "featured", "email_required", "approval_required", "pinned":
+	case "enabled", "closed", "approved", "featured", "email_required", "approval_required", "pinned":
 		if n, ok := value.(int64); ok {
 			return n != 0
 		}
@@ -260,4 +267,10 @@ func first(rows []Row) Row {
 		return nil
 	}
 	return rows[0]
+}
+
+// Close releases the query pool and the independently owned notification socket.
+func (d *Database) Close() error {
+	d.postListener.close()
+	return d.SQL.Close()
 }

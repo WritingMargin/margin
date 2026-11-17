@@ -99,6 +99,6 @@ func TestPublicMarginAttribution(t *testing.T) {
 	for _, path := range []string{"/", "/post/crawlable"} {
 		w := request(t, a, "GET", path, nil, false)
 		expectStatus(t, w, 200)
-		containsHTML(t, w.Body.String(), `<meta name="generator" content="Margin">`, `Powered by <a href="https://github.com/WritingMargin/margin">Margin</a>`)
+		containsHTML(t, w.Body.String(), `<meta name="generator" content="Margin">`, `Powered by <a href="https://usemargin.studio">Margin</a>`)
 	}
 }

@@ -41,6 +41,7 @@ func (a *App) reserveCampaign(ctx context.Context, row Row, expected float64) {
 	// never enter the queue, and the worker checks subscription status again.
 	rows, err := tx.QueryContext(ctx, "SELECT email FROM newsletter_subscribers WHERE status='subscribed' ORDER BY email")
 	must(err)
+	defer rows.Close()
 	var emails []string
 	for rows.Next() {
 		var email string
@@ -103,7 +104,11 @@ func (a *App) sendCampaignDelivery(ctx context.Context, delivery Row) {
 	state, message := "uncertain", "Email acceptance could not be confirmed. Check the provider before resending."
 	defer func() {
 		_ = recover() // A provider timeout may happen after acceptance: never replay it.
-		a.DB.Must(context.WithoutCancel(ctx), "UPDATE newsletter_deliveries SET status=$3,message=$4 WHERE campaign_id=$1 AND email=$2 AND status='sending'", delivery["campaign_id"], delivery["email"], state, message)
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if _, err := a.DB.Query(cleanup, "UPDATE newsletter_deliveries SET status=$3,message=$4 WHERE campaign_id=$1 AND email=$2 AND status='sending'", delivery["campaign_id"], delivery["email"], state, message); err != nil {
+			log.Printf("[margin] newsletter delivery cleanup: %v", err)
+		}
 	}()
 	subscriber := first(a.DB.Must(ctx, "SELECT email FROM newsletter_subscribers WHERE email=$1 AND status='subscribed'", delivery["email"]))
 	if subscriber == nil {

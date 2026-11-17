@@ -1,5 +1,4 @@
-import { sitePath } from "../base-path";
-import { ArrowUpRight } from "lucide-react";
+import BillingLink from "../auth/BillingLink";
 import type { AIConfig } from "../../shared/ai";
 import "../ai.css";
 export default function AICredits({
@@ -20,9 +19,7 @@ export default function AICredits({
         </button>
       </div>
       <p>Manage your plan, explore what’s included, or add more AI credits.</p>
-      <a className="button" href={sitePath("/admin/pricing")}>
-        Plans & credits <ArrowUpRight size={14} />
-      </a>
+      <BillingLink />
     </div>
   );
 }

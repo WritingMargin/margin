@@ -7,6 +7,7 @@ export default [
   route("post/:slug/simplified", "routes/simplified-article.tsx"),
   route("reader/alerts", "routes/reader-alerts.tsx"),
   route("admin/*", "routes/workspace.tsx"),
+  route("oauth/authorize", "routes/oauth-authorize.tsx"),
   route("review/:invite", "routes/peer-review.tsx"),
   route("reader/sign-in", "routes/reader-sign-in.tsx"),
   route("comments/verify", "routes/comment-verification.tsx"),

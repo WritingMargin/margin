@@ -2,13 +2,14 @@ import { useState } from "react";
 import { api, json } from "../api";
 
 type GeneratedConfig = { config: string; filename: string };
-export function useDeploymentConfig(publicUrl: string) {
+export function useDeploymentConfig(publicUrl: string, hosted = false, assignedUpstream = "") {
   const [server, setServer] = useState("nginx");
-  const [upstream, setUpstream] = useState("http://127.0.0.1:3001");
+  const [localUpstream, setUpstream] = useState("http://127.0.0.1:3001");
+  const upstream = hosted ? assignedUpstream : localUpstream;
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ key: string; data?: GeneratedConfig; error?: string } | null>(null);
   const [message, setMessage] = useState("");
-  const key = JSON.stringify([server, publicUrl, upstream]);
+  const key = JSON.stringify([server, publicUrl, upstream, hosted]);
   const current = result?.key === key ? result : null;
   async function generate() {
     setBusy(true);
@@ -16,7 +17,7 @@ export function useDeploymentConfig(publicUrl: string) {
     setResult(null);
     const address = publicUrl.includes("://") ? publicUrl.trim() : `https://${publicUrl.trim()}`;
     try {
-      const data = await api<GeneratedConfig>("/settings/deployment", json("POST", { server, publicUrl: address, upstream }));
+      const data = await api<GeneratedConfig>("/settings/deployment", json("POST", { server, publicUrl: address, upstream, hosted }));
       setResult({ key, data });
     } catch (error) {
       setResult({ key, error: error instanceof Error ? error.message : "Could not generate the configuration." });

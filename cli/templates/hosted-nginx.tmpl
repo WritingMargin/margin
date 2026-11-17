@@ -1,0 +1,80 @@
+# Margin hosted publication — Nginx proxy configuration.
+# First activate {{.PublicURL}} as this publication's publishing address in Margin.
+# Wait for activation to finish before enabling this proxy: the hosted engine must
+# serve the same mount path ({{if .BasePath}}{{.BasePath}}{{else}}/{{end}}) and generate URLs/cookies for {{.Domain}}.
+# Point your domain's DNS to YOUR Nginx server and provision its HTTPS certificate.
+# The assigned hosting hostname below remains the upstream; do not point it here.
+# Validate with nginx -t, then reload Nginx using your service manager.
+# The upstream CA bundle path below is standard on Debian/Ubuntu. On other systems,
+# use the platform CA bundle (for example /etc/pki/tls/certs/ca-bundle.crt on RHEL).
+# Keep upstream TLS verification enabled. No credentials are embedded in this file.
+# This assumes Nginx receives clients directly; forwarding headers are replaced.
+# If another proxy fronts Nginx, configure its trusted real-IP handling separately.
+{{define "hosted-proxy"}}
+    # No URI suffix: preserve the entire public mount path and query string.
+    proxy_pass {{.Upstream}};
+    proxy_http_version 1.1;
+    # Hosted ingress routes by the assigned hostname; SNI must match it too.
+    proxy_set_header Host {{.UpstreamHost}};
+    proxy_ssl_server_name on;
+    proxy_ssl_name {{.UpstreamHost}};
+    proxy_ssl_verify on;
+    proxy_ssl_verify_depth 5;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_ssl_protocols TLSv1.2 TLSv1.3;
+    proxy_set_header X-Forwarded-Host {{.Domain}};
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Port 443;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Forwarded "";
+    proxy_set_header Connection "";
+    # Margin's activated public URL owns redirects and cookie domains.
+    proxy_redirect off;
+    proxy_cookie_domain off;
+    client_max_body_size 50m;
+    client_body_timeout 300s;
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_buffering off;
+    proxy_cache off;
+{{end}}
+{{define "hosted-locations"}}
+{{if .BasePath}}location = {{.BasePath}} {
+{{template "hosted-proxy" .}}}
+location ^~ {{.BasePath}}/ {
+{{template "hosted-proxy" .}}}
+{{else}}location / {
+{{template "hosted-proxy" .}}}
+{{end}}
+# OAuth discovery uses the origin root, including for mounted publications.
+location = /.well-known/oauth-authorization-server{{.BasePath}} {
+{{template "hosted-proxy" .}}}
+location = /.well-known/oauth-protected-resource{{.BasePath}}/mcp {
+{{template "hosted-proxy" .}}}
+location = /.well-known/oauth-protected-resource{{.BasePath}}/api {
+{{template "hosted-proxy" .}}}
+{{end}}
+{{if .BasePath}}# Include INSIDE the existing HTTPS server block for {{.Domain}}.
+# Reuse its TLS certificate; leave the existing site's other routes unchanged.
+{{template "hosted-locations" .}}
+{{else}}# Install inside Nginx's http context (for example /etc/nginx/conf.d/margin.conf).
+# Provision these certificate files before enabling this site.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{.Domain}};
+    return 308 https://{{.Domain}}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name {{.Domain}};
+    ssl_certificate "{{.Cert}}";
+    ssl_certificate_key "{{.Key}}";
+    ssl_protocols TLSv1.2 TLSv1.3;
+{{template "hosted-locations" .}}
+}
+{{end}}

@@ -14,20 +14,29 @@ import (
 // All OAuth mutations take the same database row lock before reading state.
 // This serializes code consumption, rotation and revocation across processes
 // on both SQLite and PostgreSQL, without caching authorization decisions.
-type oauthStore struct{ db *Database }
+type oauthStore struct {
+	db  *Database
+	app *App
+}
 type oauthTx struct {
 	store oauthStore
 	tx    *sql.Tx
 	ctx   context.Context
 }
 type oauthResourceKey struct{}
+type oauthConsentRecord struct {
+	oauthserver.OAuthConsent[int]
+	Member oauthMemberBinding
+}
 type oauthCode struct {
 	oauthserver.OAuthAuthorizationCodeIssue[int]
 	Resource string
+	Member   oauthMemberBinding
 }
 type oauthGrant struct {
 	oauthserver.OAuthTokenMetadata[int]
 	Resource string
+	Member   oauthMemberBinding
 }
 
 func (s oauthStore) mutate(ctx context.Context, fn func(oauthTx) error) (int64, error) {
@@ -125,18 +134,19 @@ func (s oauthStore) RecordOAuthConsentAndIssueCode(ctx context.Context, grant oa
 		if err := t.replaceScope(grant); err != nil {
 			return err
 		}
-		consent := oauthserver.OAuthConsent[int]{ClientID: grant.ClientID, SubjectID: grant.SubjectID, GrantedScope: grant.GrantedScope, GrantedAt: time.Now().UTC()}
-		if err := t.exec("INSERT INTO oauth_consents(client_id,subject_id,data) VALUES($1,$2,$3) ON CONFLICT(client_id) DO UPDATE SET subject_id=EXCLUDED.subject_id,data=EXCLUDED.data", grant.ClientID.String(), grant.SubjectID, encode(consent)); err != nil {
+		member, _ := ctx.Value(oauthMemberBindingKey{}).(oauthMemberBinding)
+		consent := oauthConsentRecord{OAuthConsent: oauthserver.OAuthConsent[int]{ClientID: grant.ClientID, SubjectID: grant.SubjectID, GrantedScope: grant.GrantedScope, GrantedAt: time.Now().UTC()}, Member: member}
+		if err := t.exec("INSERT INTO oauth_consents(client_id,subject_id,legacy_admin_id,data) VALUES($1,$2,CASE WHEN $2=1 THEN 1 ELSE NULL END,$3) ON CONFLICT(client_id,subject_id) DO UPDATE SET data=EXCLUDED.data", grant.ClientID.String(), grant.SubjectID, encode(consent)); err != nil {
 			return err
 		}
 		resource, _ := ctx.Value(oauthResourceKey{}).(string)
-		return t.exec("INSERT INTO oauth_codes(code_hash,client_id,expires_at,data) VALUES($1,$2,$3,$4)", code.CodeHash, code.ClientID.String(), code.ExpiresAt.Unix(), encode(oauthCode{code, resource}))
+		return t.exec("INSERT INTO oauth_codes(code_hash,client_id,subject_id,expires_at,data) VALUES($1,$2,$3,$4,$5)", code.CodeHash, code.ClientID.String(), code.SubjectID, code.ExpiresAt.Unix(), encode(oauthCode{code, resource, member}))
 	})
 	return err
 }
 func (t oauthTx) activeSubject(id guuid.UUID, subject int) error {
 	var found int
-	err := t.row("SELECT subject_id FROM oauth_consents WHERE client_id=$1 AND subject_id=$2 AND EXISTS(SELECT 1 FROM admins WHERE id=$2)", id.String(), subject).Scan(&found)
+	err := t.row("SELECT subject_id FROM oauth_consents WHERE client_id=$1 AND subject_id=$2 AND (subject_id<>1 OR EXISTS(SELECT 1 FROM admins WHERE id=1))", id.String(), subject).Scan(&found)
 	if errors.Is(err, sql.ErrNoRows) {
 		return oauthserver.ErrOAuthGrantDenied
 	}
@@ -149,21 +159,17 @@ func oauthResourceMatches(ctx context.Context, resource string) bool {
 func (t oauthTx) issue(grant oauthGrant, issue oauthserver.OAuthTokenIssue) error {
 	grant.ID = guuid.New()
 	grant.AccessExpiresAt, grant.RefreshExpiresAt = issue.AccessExpiresAt, issue.RefreshExpiresAt
-	return t.exec("INSERT INTO oauth_tokens(access_hash,refresh_hash,client_id,family_id,expires_at,data) VALUES($1,$2,$3,$4,$5,$6)", issue.AccessTokenHash, issue.RefreshTokenHash, grant.ClientID.String(), grant.TokenFamilyID.String(), issue.RefreshExpiresAt.Unix(), encode(grant))
+	return t.exec("INSERT INTO oauth_tokens(access_hash,refresh_hash,client_id,subject_id,family_id,expires_at,data) VALUES($1,$2,$3,$4,$5,$6,$7)", issue.AccessTokenHash, issue.RefreshTokenHash, grant.ClientID.String(), grant.SubjectID, grant.TokenFamilyID.String(), issue.RefreshExpiresAt.Unix(), encode(grant))
 }
 func (s oauthStore) ExchangeOAuthAuthorizationCode(ctx context.Context, in oauthserver.OAuthCodeExchange, now time.Time) (oauthserver.OAuthTokenMetadata[int], error) {
 	var grant oauthGrant
+	principal, err := s.validateCodeMember(ctx, in.CodeHash)
+	if err != nil {
+		return grant.OAuthTokenMetadata, err
+	}
 	revision, err := s.mutate(ctx, func(t oauthTx) error {
-		var raw string
-		err := t.row("SELECT data FROM oauth_codes WHERE code_hash=$1 AND client_id=$2 AND expires_at>$3", in.CodeHash, in.ClientID.String(), now.Unix()).Scan(&raw)
-		if errors.Is(err, sql.ErrNoRows) {
-			return oauthserver.ErrOAuthGrantDenied
-		}
+		code, err := t.authorizationCode(in, now)
 		if err != nil {
-			return err
-		}
-		var code oauthCode
-		if err = oauthDecode(raw, &code); err != nil {
 			return err
 		}
 		if code.RedirectURI != in.RedirectURI || !validOAuthVerifier(in.CodeVerifier, code.CodeChallenge) || !oauthResourceMatches(ctx, code.Resource) {
@@ -175,7 +181,10 @@ func (s oauthStore) ExchangeOAuthAuthorizationCode(ctx context.Context, in oauth
 		if err = t.exec("DELETE FROM oauth_codes WHERE code_hash=$1", in.CodeHash); err != nil {
 			return err
 		}
-		grant = oauthGrant{OAuthTokenMetadata: oauthserver.OAuthTokenMetadata[int]{ClientID: code.ClientID, SubjectID: code.SubjectID, Scope: code.Scope, TokenFamilyID: guuid.New()}, Resource: code.Resource}
+		grant = oauthGrant{OAuthTokenMetadata: oauthserver.OAuthTokenMetadata[int]{ClientID: code.ClientID, SubjectID: code.SubjectID, Scope: effectiveOAuthScopes(code.Scope, principal), TokenFamilyID: guuid.New()}, Resource: code.Resource, Member: code.Member}
+		if len(grant.Scope) == 0 {
+			return oauthserver.ErrOAuthGrantDenied
+		}
 		return t.issue(grant, in.Issue)
 	})
 	grant.AuthorizationRevision = revision
@@ -183,33 +192,25 @@ func (s oauthStore) ExchangeOAuthAuthorizationCode(ctx context.Context, in oauth
 }
 func (s oauthStore) RotateOAuthRefreshToken(ctx context.Context, in oauthserver.OAuthRefreshExchange, now time.Time) (oauthserver.OAuthTokenMetadata[int], error) {
 	var grant oauthGrant
+	principal, err := s.validateRefreshMember(ctx, in.RefreshTokenHash)
+	if err != nil {
+		return grant.OAuthTokenMetadata, err
+	}
 	revision, err := s.mutate(ctx, func(t oauthTx) error {
-		var raw string
-		var rotated, revoked int
-		err := t.row("SELECT data,rotated,revoked FROM oauth_tokens WHERE refresh_hash=$1 AND client_id=$2 AND expires_at>$3", in.RefreshTokenHash, in.ClientID.String(), now.Unix()).Scan(&raw, &rotated, &revoked)
-		if errors.Is(err, sql.ErrNoRows) {
-			return oauthserver.ErrOAuthGrantDenied
-		}
+		var err error
+		grant, err = t.refreshGrant(in, now)
 		if err != nil {
 			return err
-		}
-		if err = oauthDecode(raw, &grant); err != nil {
-			return err
-		}
-		if rotated != 0 {
-			if err = t.exec("UPDATE oauth_tokens SET revoked=1 WHERE family_id=$1", grant.TokenFamilyID.String()); err != nil {
-				return err
-			}
-			return oauthserver.ErrOAuthGrantReuseDetected
-		}
-		if revoked != 0 || !oauthResourceMatches(ctx, grant.Resource) {
-			return oauthserver.ErrOAuthGrantDenied
 		}
 		if err = t.activeSubject(grant.ClientID, grant.SubjectID); err != nil {
 			return err
 		}
 		if err = t.exec("UPDATE oauth_tokens SET rotated=1 WHERE refresh_hash=$1", in.RefreshTokenHash); err != nil {
 			return err
+		}
+		grant.Scope = effectiveOAuthScopes(grant.Scope, principal)
+		if len(grant.Scope) == 0 {
+			return oauthserver.ErrOAuthGrantDenied
 		}
 		return t.issue(grant, in.Issue)
 	})
@@ -256,10 +257,10 @@ func (s oauthStore) RevokeOAuthConnectedApp(ctx context.Context, id guuid.UUID, 
 		if err := t.exec("DELETE FROM oauth_consents WHERE client_id=$1 AND subject_id=$2", id.String(), subject); err != nil {
 			return err
 		}
-		if err := t.exec("DELETE FROM oauth_codes WHERE client_id=$1", id.String()); err != nil {
+		if err := t.exec("DELETE FROM oauth_codes WHERE client_id=$1 AND subject_id=$2", id.String(), subject); err != nil {
 			return err
 		}
-		return t.exec("UPDATE oauth_tokens SET revoked=1 WHERE client_id=$1", id.String())
+		return t.exec("UPDATE oauth_tokens SET revoked=1 WHERE client_id=$1 AND subject_id=$2", id.String(), subject)
 	})
 }
 func (s oauthStore) ExpireOAuthArtifacts(ctx context.Context, now time.Time, limit int) (int, error) {
@@ -275,7 +276,7 @@ func (s oauthStore) ExpireOAuthArtifacts(ctx context.Context, now time.Time, lim
 // A newly approved role replaces the previous role and invalidates old grants.
 func (t oauthTx) replaceScope(grant oauthserver.OAuthConsentGrant[int]) error {
 	var raw string
-	err := t.row("SELECT data FROM oauth_consents WHERE client_id=$1", grant.ClientID.String()).Scan(&raw)
+	err := t.row("SELECT data FROM oauth_consents WHERE client_id=$1 AND subject_id=$2", grant.ClientID.String(), grant.SubjectID).Scan(&raw)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil
 	}
@@ -289,5 +290,44 @@ func (t oauthTx) replaceScope(grant oauthserver.OAuthConsentGrant[int]) error {
 	if encode(previous.GrantedScope) == encode(grant.GrantedScope) {
 		return nil
 	}
-	return t.exec("DELETE FROM oauth_consents WHERE client_id=$1", grant.ClientID.String())
+	return t.exec("DELETE FROM oauth_consents WHERE client_id=$1 AND subject_id=$2", grant.ClientID.String(), grant.SubjectID)
+}
+
+func (t oauthTx) authorizationCode(in oauthserver.OAuthCodeExchange, now time.Time) (oauthCode, error) {
+	var code oauthCode
+	var raw string
+	err := t.row("SELECT data FROM oauth_codes WHERE code_hash=$1 AND client_id=$2 AND expires_at>$3", in.CodeHash, in.ClientID.String(), now.Unix()).Scan(&raw)
+	if errors.Is(err, sql.ErrNoRows) {
+		return code, oauthserver.ErrOAuthGrantDenied
+	}
+	if err != nil {
+		return code, err
+	}
+	err = oauthDecode(raw, &code)
+	return code, err
+}
+func (t oauthTx) refreshGrant(in oauthserver.OAuthRefreshExchange, now time.Time) (oauthGrant, error) {
+	var grant oauthGrant
+	var raw string
+	var rotated, revoked int
+	err := t.row("SELECT data,rotated,revoked FROM oauth_tokens WHERE refresh_hash=$1 AND client_id=$2 AND expires_at>$3", in.RefreshTokenHash, in.ClientID.String(), now.Unix()).Scan(&raw, &rotated, &revoked)
+	if errors.Is(err, sql.ErrNoRows) {
+		return grant, oauthserver.ErrOAuthGrantDenied
+	}
+	if err != nil {
+		return grant, err
+	}
+	if err = oauthDecode(raw, &grant); err != nil {
+		return grant, err
+	}
+	if rotated != 0 {
+		if err = t.exec("UPDATE oauth_tokens SET revoked=1 WHERE family_id=$1", grant.TokenFamilyID.String()); err != nil {
+			return grant, err
+		}
+		return grant, oauthserver.ErrOAuthGrantReuseDetected
+	}
+	if revoked != 0 || !oauthResourceMatches(t.ctx, grant.Resource) {
+		return grant, oauthserver.ErrOAuthGrantDenied
+	}
+	return grant, nil
 }

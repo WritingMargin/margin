@@ -34,7 +34,7 @@ type oauthRevisions struct{}
 func (oauthRevisions) SetRevision(int64) bool { return true } // Requests always read live grants.
 
 func (a *App) oauthService() *oauthserver.Service[int] {
-	service, err := oauthserver.NewService[int](oauthStore{a.DB}, oauthRevisions{}, oauthCatalog{}, oauthserver.Prefixes{ClientID: "moc_", ClientSecret: "mos_", AccessToken: "moat_", RefreshToken: "mort_"})
+	service, err := oauthserver.NewService[int](oauthStore{db: a.DB, app: a}, oauthRevisions{}, oauthCatalog{}, oauthserver.Prefixes{ClientID: "moc_", ClientSecret: "mos_", AccessToken: "moat_", RefreshToken: "mort_"})
 	must(err)
 	return service
 }
@@ -252,25 +252,60 @@ func (a *App) oauthRevoke(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 func (a *App) oauthActor(r *http.Request) oauthserver.Actor[int] {
-	if r.Header.Get("Authorization") != "" || !a.authenticated(r) {
+	if r.Header.Get("Authorization") != "" {
 		return oauthserver.Actor[int]{}
 	}
-	if first(a.DB.Must(r.Context(), "SELECT id FROM admins WHERE id=1")) == nil {
+	principal := a.oauthBrowserPrincipal(r)
+	if principal == nil {
 		return oauthserver.Actor[int]{}
 	}
-	return oauthserver.Actor[int]{SubjectID: 1, IsBrowserSession: true, CanGrant: func(_ context.Context, scope string) (bool, error) { return validOAuthPermission(scope), nil }}
+	if principal.str("subject") == "" && first(a.DB.Must(r.Context(), "SELECT id FROM admins WHERE id=1")) == nil {
+		return oauthserver.Actor[int]{}
+	}
+	subject := a.oauthSubject(r.Context(), principal)
+	return oauthserver.Actor[int]{SubjectID: subject, IsBrowserSession: true, CanGrant: func(_ context.Context, scope string) (bool, error) {
+		return oauthMemberScopeAllowed(principal, scope), nil
+	}}
+}
+func (a *App) requireOAuthMember(r *http.Request) oauthserver.Actor[int] {
+	actor := a.oauthActor(r)
+	if !actor.IsBrowserSession {
+		fail(401, "Sign in to manage your application connections.")
+	}
+	return actor
 }
 func (a *App) requireOAuthOwner(r *http.Request) oauthserver.Actor[int] {
 	actor := a.oauthActor(r)
-	if !actor.IsBrowserSession {
+	if !actor.IsBrowserSession || !a.primaryOwnerSession(r) {
 		fail(401, "Sign in as the owner to manage OAuth connections.")
 	}
 	return actor
 }
 func (a *App) oauthConnections(w http.ResponseWriter, r *http.Request) {
-	actor := a.requireOAuthOwner(r)
+	actor := a.requireOAuthMember(r)
 	apps, err := a.oauthService().ListConnectedApps(r.Context(), actor)
 	must(err)
+	if actor.SubjectID != 1 && a.primaryOwnerSession(r) {
+		legacy, err := (oauthStore{db: a.DB, app: a}).ListOAuthConnectedApps(r.Context(), 1)
+		must(err)
+		for _, previous := range legacy {
+			merged := false
+			for i := range apps {
+				if apps[i].ClientID == previous.ClientID {
+					for _, scope := range previous.GrantedScope {
+						if !hasOAuthScope(apps[i].GrantedScope, scope) {
+							apps[i].GrantedScope = append(apps[i].GrantedScope, scope)
+						}
+					}
+					merged = true
+					break
+				}
+			}
+			if !merged {
+				apps = append(apps, previous)
+			}
+		}
+	}
 	result := []Row{}
 	for _, app := range apps {
 		result = append(result, Row{"id": app.ClientID.String(), "name": app.ClientName, "role": strings.Join(app.GrantedScope, " "), "permissions": oauthPermissionNames(normalizedOAuthScopes(app.GrantedScope)), "grantedAt": app.GrantedAt})
@@ -278,12 +313,16 @@ func (a *App) oauthConnections(w http.ResponseWriter, r *http.Request) {
 	send(w, 200, result)
 }
 func (a *App) oauthDisconnect(w http.ResponseWriter, r *http.Request) {
-	actor := a.requireOAuthOwner(r)
+	actor := a.requireOAuthMember(r)
 	id, err := guuid.Parse(r.PathValue("id"))
 	if err != nil {
 		fail(400, "Invalid client ID.")
 	}
 	must(a.oauthService().RevokeConnectedApp(r.Context(), actor, id))
+	if actor.SubjectID != 1 && a.primaryOwnerSession(r) {
+		actor.SubjectID = 1
+		must(a.oauthService().RevokeConnectedApp(r.Context(), actor, id))
+	}
 	send(w, 200, Row{"ok": true})
 }
 func (a *App) oauthClients(w http.ResponseWriter, r *http.Request) {
@@ -306,7 +345,32 @@ func (a *App) oauthDeleteClient(w http.ResponseWriter, r *http.Request) {
 	send(w, 200, Row{"ok": true})
 }
 func (a *App) oauthPrincipal(r *http.Request, value string) Row {
-	rows := a.DB.Must(r.Context(), "SELECT t.data,c.data AS client FROM oauth_tokens t JOIN oauth_clients c ON c.id=t.client_id JOIN oauth_consents g ON g.client_id=t.client_id JOIN admins a ON a.id=g.subject_id WHERE t.access_hash=$1 AND t.revoked=0 AND t.rotated=0", hash(value))
+	cache, _ := r.Context().Value(browserPrincipalKey{}).(*browserPrincipalCache)
+	if cache != nil {
+		cache.oauthMu.Lock()
+		defer cache.oauthMu.Unlock()
+	}
+	resource := "/api"
+	if r.URL.Path == "/mcp" || r.Context().Value(mcpRequestKey{}) != nil {
+		resource = "/mcp"
+	}
+	key := value + resource
+	if cache != nil {
+		if principal, ok := cache.oauth[key]; ok {
+			return principal
+		}
+	}
+	principal := a.loadOAuthPrincipal(r, value)
+	if cache != nil {
+		if cache.oauth == nil {
+			cache.oauth = map[string]Row{}
+		}
+		cache.oauth[key] = principal
+	}
+	return principal
+}
+func (a *App) loadOAuthPrincipal(r *http.Request, value string) Row {
+	rows := a.DB.Must(r.Context(), "SELECT t.data,c.data AS client FROM oauth_tokens t JOIN oauth_clients c ON c.id=t.client_id JOIN oauth_consents g ON g.client_id=t.client_id AND g.subject_id=t.subject_id WHERE t.access_hash=$1 AND t.revoked=0 AND t.rotated=0", hash(value))
 	row := first(rows)
 	if row == nil {
 		return nil
@@ -318,16 +382,28 @@ func (a *App) oauthPrincipal(r *http.Request, value string) Row {
 	if !time.Now().Before(grant.AccessExpiresAt) || len(grant.Scope) == 0 {
 		return nil
 	}
+	if !oauthGrantAudience(r, grant.Resource) {
+		return nil
+	}
+	principal, err := a.validateOAuthMember(r.Context(), grant.SubjectID, grant.Member)
+	if err != nil {
+		return nil
+	}
+	scopes := effectiveOAuthScopes(grant.Scope, principal)
+	if len(scopes) == 0 {
+		return nil
+	}
+	if principal == nil {
+		return Row{"role": oauthScopeRole(scopes), "scopes": scopes, "name": client.Name}
+	}
+	principal["scopes"], principal["clientName"] = scopes, client.Name
+	return principal
+}
+
+func oauthGrantAudience(r *http.Request, resource string) bool {
 	suffix := "/api"
 	if r.URL.Path == "/mcp" || r.Context().Value(mcpRequestKey{}) != nil {
 		suffix = "/mcp"
 	}
-	if oauthIssuer() == "" || grant.Resource != oauthIssuer()+suffix {
-		return nil
-	}
-	scopes := normalizedOAuthScopes(grant.Scope)
-	if len(scopes) == 0 {
-		return nil
-	}
-	return Row{"role": oauthScopeRole(scopes), "scopes": scopes, "name": client.Name}
+	return oauthIssuer() != "" && resource == oauthIssuer()+suffix
 }

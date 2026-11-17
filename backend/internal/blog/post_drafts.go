@@ -179,7 +179,9 @@ func (a *App) storePostDraft(ctx context.Context, live, draft, row, author Row, 
 			WHERE post_id=$1 AND status='accepted' AND accepted_draft_revision=$2`, live["id"], draft["revision"], row["revision"])
 	}
 	a.reviewDraftChanged(ctx, tx, row["id"])
+	a.DB.notifyPostTransaction(ctx, tx, row.str("id"))
 	must(tx.Commit())
+	a.DB.postCommitted(row.str("id"))
 	saved = true
 }
 
@@ -295,6 +297,8 @@ func (a *App) discardPostDraft(w http.ResponseWriter, r *http.Request) {
 	a.lockPostWrites(ctx, tx)
 	requireDraftWrite(a.queryPostTransaction(ctx, tx, "DELETE FROM post_drafts WHERE post_id=$1 AND revision=$2 RETURNING post_id", draft["post_id"], draft["revision"]))
 	a.execInteraction(ctx, tx, "UPDATE peer_reviews SET closed=TRUE WHERE post_id=$1 AND closed=FALSE", draft["post_id"])
+	a.DB.notifyPostTransaction(ctx, tx, draft.str("post_id"))
 	must(tx.Commit())
+	a.DB.postCommitted(draft.str("post_id"))
 	send(w, 200, Row{"ok": true})
 }

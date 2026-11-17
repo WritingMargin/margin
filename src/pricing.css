@@ -6,8 +6,13 @@
 .pricing-account {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;}
 .pricing-account p {font-size:12px;margin:8px 0 0;color:#737373;}
 .pricing-account strong {color:#171717;font-weight:500;}
-.pricing-account-actions {display:flex;gap:8px;}
+.pricing-account-actions {display:flex;gap:8px;flex-wrap:wrap;}
+.pricing-hosting {margin-top:32px;}
+.pricing-hosting>h2 {font-size:23px;font-weight:500;letter-spacing:-.8px;margin:0 0 12px;}
+.pricing-hosting>p {font-size:12px;line-height:1.8;color:#737373;}
+.pricing-storage {margin-top:30px;}
 .pricing-plans {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;}
+.pricing-hosting-plans {grid-template-columns:repeat(2,minmax(0,1fr));}
 .pricing-plan {border:1px solid #dcdcdc;background:#fff;border-radius:12px;padding:26px;display:flex;flex-direction:column;}
 .pricing-plan-featured {border:1.5px solid #181818;box-shadow:0 4px 20px #00000006;}
 .pricing-plan-label {min-height:27px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
@@ -56,3 +61,95 @@
 .workspace-unavailable a {display:inline-block;margin-left:16px;text-decoration:underline;}
 @media(max-width:1100px) {.pricing-page{padding:32px 24px;}.pricing-plan{padding:20px;}.pricing-plan-label{min-height:52px;align-content:flex-start;}.pricing-price{font-size:40px;}.pricing-allowance{font-size:10px;}}
 @media(max-width:760px) {.pricing-page{padding:28px 18px;}.pricing-plans{grid-template-columns:1fr;}.pricing-plan-label{min-height:27px;}.pricing-description{min-height:0;margin-bottom:16px;}.pricing-topups{grid-template-columns:1fr;padding:22px;gap:24px;}.pricing-account{align-items:flex-start;}.pricing-price{font-size:46px;}.pricing-allowance{font-size:12px;}}
+
+/* One place to buy credits; recurring purchases are configured in a dialog. */
+.credit-purchase {border:1px solid var(--line);background:#fff;border-radius:14px;padding:32px;margin-bottom:30px;}
+.credit-purchase-heading {display:flex;justify-content:space-between;align-items:center;gap:20px;padding-bottom:30px;border-bottom:1px solid var(--line);}
+.credit-balance {display:flex;align-items:baseline;gap:10px;margin-top:12px;}
+.credit-balance strong {font-size:48px;letter-spacing:-2px;font-weight:500;line-height:1;}
+.credit-balance>span {color:#737373;font-size:13px;}
+.credit-settings {font-size:12px;gap:8px;}
+.credit-settings>span {padding:4px 8px;background:#f1f2ee;color:#62675c;border-radius:20px;font-size:10px;}
+.credit-purchase-label {margin:26px 0 18px;}
+.credit-purchase-label h2 {font-size:18px;font-weight:500;margin:0 0 7px;letter-spacing:-.4px;}
+.credit-purchase-label p,.credit-purchase-note {color:#737373;font-size:12px;line-height:1.6;margin:0;}
+.credit-amounts {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.credit-amount {display:flex;align-items:stretch;flex-direction:column;gap:12px;text-align:left;padding:20px 18px;border:1px solid #deded9;border-radius:9px;min-height:108px;background:#fff;transition:background .15s,border-color .15s;}
+.credit-amount:hover:not(:disabled) {border-color:#292d25;background:#f4f5f0;}
+.credit-amount:focus-visible,.credit-settings:focus-visible {outline:2px solid #59664b;outline-offset:3px;}
+.credit-amount-price {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:26px;letter-spacing:-1px;font-weight:500;}
+.credit-amount-price svg {color:#7c8174;}
+.credit-amount>span:last-child {font-size:11px;color:#777;}
+.credit-amount-other {background:#fafaf8;border-style:dashed;}
+.credit-amount-other .credit-amount-price {font-size:21px;}
+.credit-purchase-note {margin-top:17px;font-size:11px;}
+.credit-usage {margin-top:20px;font-size:11px;color:#737373;}
+.credit-usage {line-height:1.7;}
+.credit-notice {font-size:12px;line-height:1.7;margin:16px 0 0;}
+.credit-dialog {width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #e0e1dc;border-radius:16px;padding:28px;color:#242424;background:#fff;box-shadow:0 24px 90px #0002;}
+.credit-dialog::backdrop {background:#20251d66;backdrop-filter:blur(3px);}
+.credit-dialog>header {display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.credit-dialog h2 {font-size:24px;font-weight:500;letter-spacing:-.8px;line-height:1.25;margin:0;}
+.credit-dialog-description {font-size:12px;line-height:1.7;color:#737373;margin:16px 0 22px;}
+.credit-dialog-description details {font-size:11px;}
+.credit-form {display:grid;gap:18px;}
+.credit-form>label {display:grid;gap:8px;font-size:12px;font-weight:500;}
+.credit-form input:not([type=checkbox]) {width:100%;min-width:0;border:1px solid #d9dcd3;border-radius:7px;padding:11px 12px;background:#fff;color:#242424;}
+.credit-form input:focus,.credit-form select:focus {outline:2px solid #7a8967;outline-offset:2px;}
+.credit-form .credit-consent {display:block;font-size:11px;line-height:1.65;color:#666;font-weight:400;}
+.credit-consent input {margin:0 6px 0 0;vertical-align:middle;}
+.credit-skip {font-size:12px;color:#777;justify-self:center;}
+.credit-quote {padding:18px;background:#f5f6f1;border-radius:8px;font-size:13px;margin:0;line-height:1.6;}
+.credit-quote strong {font-size:24px;font-weight:500;}
+@media(max-width:1000px) {.credit-amounts{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:520px) {.credit-purchase{padding:22px 18px;}.credit-purchase-heading{align-items:flex-start;}.credit-balance strong{font-size:40px;}.credit-settings{font-size:11px;flex-wrap:wrap;justify-content:flex-end;}.credit-amount{padding:16px 13px;}.credit-dialog{padding:24px;}}
+
+/* Compact billing controls. */
+.pricing-page {max-width:1000px;padding:28px 32px 40px;}
+.pricing-intro {margin-bottom:22px;}
+.pricing-intro h1 {font-size:28px;letter-spacing:-1px;margin:0;line-height:1.2;}
+.credit-purchase {padding:22px 24px;border-radius:10px;margin-bottom:16px;}
+.credit-purchase-heading {padding-bottom:20px;}
+.credit-balance-label {font-size:11px;color:#777;}
+.credit-balance {margin-top:7px;gap:8px;}
+.credit-balance strong {font-size:34px;letter-spacing:-1px;}
+.credit-balance>span {font-size:11px;}
+.credit-purchase-label {margin:18px 0 12px;}
+.credit-purchase-label h2 {font-size:13px;letter-spacing:0;margin:0;}
+.credit-amounts {grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
+.credit-amount {min-height:76px;padding:13px 14px;gap:7px;border-radius:6px;}
+.credit-amount-price,.credit-amount-other .credit-amount-price {font-size:21px;letter-spacing:-.5px;}
+.credit-amount-price svg {width:14px;height:14px;}
+.credit-amount>span:last-child {font-size:10px;}
+.credit-purchase-note {margin-top:12px;font-size:10px;}
+.credit-usage {margin-top:12px;font-size:10px;}
+.billing-terms {padding:14px 2px;color:#777;font-size:10px;}
+.billing-terms>summary {cursor:pointer;}
+.billing-terms p {line-height:1.6;}
+.credit-dialog {width:min(360px,calc(100vw - 32px));padding:20px;border-radius:10px;}
+.credit-dialog h2 {font-size:19px;letter-spacing:-.5px;}
+.credit-dialog>header {align-items:center;margin-bottom:16px;}
+.credit-dialog-description {font-size:11px;line-height:1.5;margin:0 0 16px;}
+.credit-dialog-description p {margin:0 0 8px;}
+.credit-success {font-size:11px;color:#4b6640;margin:-4px 0 10px;}
+.credit-form {gap:13px;}
+.credit-form>label,.credit-field-pair>label {font-size:11px;font-weight:400;gap:6px;}
+.credit-field-pair {display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.credit-field-pair>label {display:grid;}
+.credit-form input:not([type=checkbox]),.credit-form select {padding-block:8px;padding-inline-start:9px;border-radius:5px;font-size:12px;height:34px;}
+.credit-form .credit-consent {font-size:10px;line-height:1.5;}
+.credit-form-actions {display:flex;align-items:center;gap:14px;margin-top:3px;}
+.credit-form-actions .pricing-cta {width:auto;flex:1;min-height:34px;padding:8px 10px;font-size:11px;border-radius:5px;}
+.credit-skip {font-size:11px;white-space:nowrap;padding:6px 0;}
+.credit-quote {padding:0;background:none;font-size:11px;color:#777;}
+.credit-quote strong {font-size:15px;color:#333;}
+.credit-form>.pricing-cta {min-height:34px;padding:8px 10px;font-size:11px;}
+@media(max-width:520px) {.pricing-page{padding:22px 16px;}.credit-purchase{padding:18px 16px;}.credit-amounts{grid-template-columns:repeat(2,minmax(0,1fr));}.credit-dialog{padding:20px;}.credit-amount{min-height:70px;padding:12px;}.credit-balance strong{font-size:30px;}}
+.credit-dialog .credit-form label {margin:0;}
+.credit-dialog .credit-form label>input:not([type=checkbox]):not([type=radio]) {margin-top:0;padding:8px 9px;}
+.credit-dialog .credit-form select {margin-top:0;}
+
+.pricing-account-actions {align-items:center;}
+.pricing-account-refresh {width:28px;height:28px;min-height:0;padding:6px;flex:none;color:#737368;}
+.pricing-account-refresh:focus-visible {outline:2px solid #62665b;outline-offset:2px;}
+.pricing-page .pricing-storage {margin-top:16px;}

@@ -1,0 +1,24 @@
+.credit-dialog {
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  border: 1px solid #e0e1dc;
+  border-radius: 10px;
+  padding: 20px;
+  color: #242424;
+  background: #fff;
+  box-shadow: 0 24px 90px #0002;
+}
+.credit-dialog::backdrop { background: #20251d66; backdrop-filter: blur(3px); }
+.credit-dialog > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.credit-dialog h2 { font-size: 19px; font-weight: 500; letter-spacing: -.5px; line-height: 1.25; margin: 0; }
+.credit-dialog-description { font-size: 11px; line-height: 1.5; color: #737373; margin: 0 0 16px; }
+.credit-dialog-description p { margin: 0 0 8px; }
+.credit-form { display: grid; gap: 13px; }
+.credit-form > label { display: grid; font-size: 11px; font-weight: 400; gap: 6px; }
+.credit-dialog .credit-form label { margin: 0; }
+.credit-dialog .credit-form label > input:not([type=checkbox]):not([type=radio]) {
+  width: 100%; min-width: 0; height: 34px; margin-top: 0; padding: 8px 9px;
+  border: 1px solid #d9dcd3; border-radius: 5px; background: #fff; color: #242424; font-size: 12px;
+}
+.credit-form input:focus, .credit-form select:focus { outline: 2px solid #7a8967; outline-offset: 2px; }

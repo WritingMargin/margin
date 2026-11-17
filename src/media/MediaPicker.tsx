@@ -1,5 +1,5 @@
 import "./media-picker.css";
-import AccountGate from "../auth/AccountGate";
+import { useTeamIdentity } from "../auth/TeamContext";
 import { Cloud } from "lucide-react";
 import Empty from "../components/Empty";
 import MediaLibrary from "./MediaLibrary";
@@ -21,13 +21,15 @@ export default function MediaPicker(props: Parameters<typeof useMediaPicker>[0])
   </div>;
 }
 function MediaSource({ state }: { state: MediaPickerController }) {
+  const { role } = useTeamIdentity();
+  if (role !== "owner" && ["defaults", "library"].includes(state.tab)) return <p>Only publication owners can manage media settings and integrations.</p>;
   if (state.tab === "uploads") return <UploadedMedia onSelect={(url, kind) => state.insert(url, kind)} />;
   if (state.tab === "defaults") return <MediaDefaultsSettings notify={state.notify} />;
   if (state.tab === "link" && state.onInsert) return <MediaLink state={state} />;
   return <div className="media-picker-body">
-    <AccountGate feature="Cloudinary integration" onConnected={() => void state.refresh()}>
+    <>
       <CloudinaryLibrary state={state} />
-    </AccountGate>
+    </>
   </div>;
 }
 function CloudinaryLibrary({ state }: { state: MediaPickerController }) {

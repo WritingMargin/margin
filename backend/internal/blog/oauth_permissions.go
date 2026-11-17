@@ -7,9 +7,14 @@ import (
 	"github.com/Usefused/fused-open-core/oauthserver"
 )
 
-type oauthPermission struct{ Scope, Name, Description string }
+type oauthPermission struct {
+	Scope       string `json:"scope"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
 
 var oauthPermissions = []oauthPermission{
+	{"review:assigned", "Review assigned articles", "Read and review only the articles assigned to you when you approve this connection, including their shared source documents. Does not grant access to other articles or publication libraries."},
 	{"content:read", "Read content", "Read published posts, private drafts, archives, revision history, writing notes, and the image, video, audio and source document libraries."},
 	{"content:draft", "Create and edit drafts", "Create new drafts, edit existing drafts, and stage or discard unpublished changes to live posts. Does not allow publishing, changing the live version, or deleting posts."},
 	{"content:publish", "Publish and delete content", "Publish, unpublish, change live or archived posts, archive, restore, and permanently delete posts. Draft editing is a separate permission."},
@@ -59,7 +64,7 @@ func legacyOAuthScopes(role string) []string {
 	case "publisher":
 		return []string{"content:read", "content:draft", "content:publish", "media:write"}
 	case "owner":
-		return oauthSupportedScopes()
+		return []string{"content:read", "content:draft", "content:publish", "media:write", "settings:manage", "administration:manage"}
 	}
 	return nil
 }
@@ -143,6 +148,9 @@ var assetOAuthPermissions = map[string]string{
 }
 
 func explicitOAuthPermission(pattern string) string {
+	if oauthReviewRoute(pattern) {
+		return "review:assigned"
+	}
 	if permission := postWriteOAuthPermissions[pattern]; permission != "" {
 		return permission
 	}
@@ -191,6 +199,12 @@ func (a *App) requestOAuthScopes(r *http.Request) ([]string, bool) {
 	}
 	principal := a.oauthPrincipal(r, value)
 	scopes, _ := principal["scopes"].([]string)
+	if principal.str("subject") != "" && !principal.yes("primaryOwner") {
+		_, pattern := a.mux.Handler(r)
+		if primaryOwnerRoute(r.URL.Path, pattern) {
+			return nil, true
+		}
+	}
 	return scopes, true
 }
 
@@ -203,4 +217,12 @@ func normalizedOAuthScopes(scopes []string) []string {
 		return nil
 	}
 	return result
+}
+
+func oauthReviewRoute(pattern string) bool {
+	switch pattern {
+	case "GET /api/public/team/reviews", "POST /api/public/reviews/{invite}/open", "POST /api/public/reviews/{invite}/notes", "POST /api/public/reviews/{invite}/approve", "GET /api/public/reviews/{invite}/notes/{note}/fix":
+		return true
+	}
+	return false
 }

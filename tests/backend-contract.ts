@@ -76,7 +76,7 @@ async function contract(base: string) {
   assert.match(await (await api.call('/rss.xml')).text(), /<content:encoded>/);
   await api.call('/api/posts', 'POST', { title: 'Duplicate', slug: 'contract-post', content: 'orphan' }, 409);
   await api.call('/api/ai/summaries', 'POST', { postId: draft.id, title: 'Title', content: 'Text', platforms: ['x', 'x'], tone: 'natural' }, 400);
-  await api.call('/api/media', 'GET', undefined, 402);
+  assert.deepEqual(await (await api.call('/api/media')).json(), { configured: false, resources: [] });
   assert.equal((await (await api.call('/api/newsletter/settings')).json()).enabled, false);
   await api.call('/api/newsletter/settings', 'PUT', { enabled: true, delivery: 'managed', senderEmail: '' }, 402);
   const anonymousComment = await api.call(`/api/public/posts/${draft.id}/comments`, 'POST', { name: 'Reader', email: 'reader@example.com', body: 'Comment', captchaToken: 'invalid' }, 401);

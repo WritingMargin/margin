@@ -2,6 +2,27 @@
 
 Write Markdown with live preview, save a draft, and publish when ready. Choose Blog, Articles, or Research papers during setup or in Settings to match the language used across your publication.
 
+## Publication teams
+
+Open **Settings → Team** to invite someone by email. This works on hosted and self-hosted publications without connecting a separate account service. The invitation lets a new teammate create an account on this publication, or sign in if they already have an account here. The owner keeps their existing login. Using the same email on another Margin installation creates a separate account with its own password, role and article access. Being an Owner on one publication does not grant access to another.
+
+Members and Pending invitations have separate page controls and page-size selectors. The engine counts and selects each requested page in SQL; the browser loads only that page. Removing the last item on a page returns that list to its last available page.
+
+| Role | Publication access |
+| --- | --- |
+| Owner | Content, team management and publication settings. The primary owner retains account ownership and credential delegation. |
+| Writer | Create and edit drafts, upload media, and save proposed changes to published articles. Cannot publish, archive or delete content. |
+| Publisher | Writer access plus publishing, archiving and deleting content. |
+| Peer reviewer | Read and annotate only assigned articles, compare addressed notes and approve a review. Cannot edit article content or browse the workspace. |
+
+Invitations expire and can be resent or revoked. Resending replaces the old link. Owners can change a member's role or remove access; the engine checks current membership on subsequent browser, API and OAuth requests. Removing someone revokes their publication access while retaining their account for a future invitation. It does not change accounts or access on other Margin installations. Team sign-in and permission checks use the publication's own database.
+
+Peer-review access is granted per article. Invite from the article's review panel or choose **Peer reviewer** and an article in Team. A person can review several assigned articles. Inviting an existing Writer, Publisher or Owner to review an article adds that review assignment without replacing their publication role. Reviewer access to private media and source documents is restricted to the assigned draft.
+
+Peer review requires a publication account and an article assignment. Reader accounts do not grant draft access. Send a team invitation to give an existing reader access to review an article.
+
+Team edits identify the member in revision history. Public bylines remain the publication's shared author profile. Concurrent editing uses revision checks and conflict review; it does not merge keystrokes live.
+
 ## Articles and guides
 
 Choose **New** in the workspace or content list, then select your publication’s **Post**, **Article**, or **Paper** option or **Guide**. All formats use the Markdown editor, media tools, draft/publish controls, and revision history. Guides provide user-guide and playbook outlines. The workspace lists the content type beside each title. The keyboard shortcut **⌘/Ctrl+N** starts an article.
@@ -51,7 +72,7 @@ Page templates populate the same design JSON used by the **JSON** editor. Option
 
 In **Design → JSON**, type a setting or value to see supported completions with short descriptions. Related settings are grouped into objects such as `homepage.search`, `homepage.feed`, `homepage.hero`, and `article.body`. Expand or collapse objects with the gutter arrows. Optional display blocks are enabled by their presence: include `homepage.hero.artwork: {"type":"emoji","emoji":"✳"}` to show artwork, or omit `artwork` to hide it. `{}` enables a block with default options. This also applies to the hero, tagline, search, featured stories, card images, footer title, and comments. These blocks have no separate visibility field. Suggestions follow the current object and include allowed values. Existing flat configurations are still accepted and are shown in grouped form after previewing. Use **Ctrl+Space** or **Suggest** to open them, arrow keys to choose, **Enter** or **Tab** to insert, and **Esc** to dismiss. Help beneath the editor describes the setting at the caret, including limits and fallbacks. Choose **Preview changes** to validate, then **Save design** to publish.
 
-The galleries load their catalog from Margin Central **only when you enter Templates or open the writing-template picker**. There is no background polling. Each visit revalidates Central’s version using its ETag; an unchanged catalog reuses the cached copy. If Central is unavailable or returns an incompatible catalog, Margin keeps the last valid catalog in memory, or uses included templates after a restart. A catalog update never changes your saved design or draft automatically.
+The galleries load their catalog from Margin **only when you enter Templates or open the writing-template picker**. There is no background polling. Each visit revalidates the catalog version using its ETag; an unchanged catalog reuses the cached copy. If the catalog service is unavailable or returns an incompatible catalog, Margin keeps the last valid catalog in memory, or uses included templates after a restart. A catalog update never changes your saved design or draft automatically.
 
 Template catalogs do not require an AI subscription or a Central account. The engine requests `GET /v1/templates?schemaVersion=5` from its configured `AI_SERVICE_URL` and exposes the validated result through the owner-only `GET /api/settings/templates` endpoint. No credentials, publication settings, or post content are sent to Central. Public pages render entirely from their saved local design.
 
@@ -105,12 +126,14 @@ Record the assumption behind the result.
 
 ## Drafts and revisions
 
-To unpublish a live post, open **Post options (⋯) → Post details**, change **Visibility** to **Draft — only you**, and click **Unpublish post**. This saves the change and keeps the content as a private draft. The post remains live until that action succeeds. If you close the details dialog first, the editor footer shows the same **Unpublish post** action. Archiving and restoring drafts also use explicit action labels.
+Editing a published article opens its working draft. **Save draft** saves proposed changes while leaving the live article unchanged. A Publisher or Owner uses **Publish changes** to make the reviewed draft public. Writers can save the draft but cannot publish it.
+
+To unpublish a live post, a Publisher or Owner opens **Post options (⋯) → Post details** and chooses **Unpublish**. This removes public access and keeps the working content as a private draft for the publication team. The post remains live until that action succeeds. Archiving and restoring drafts also use explicit action labels.
 
 Manage newsletter signups, article comments, passage questions, and private reader notes in **Readers → Settings**. **Comments & questions** controls both with one Open, Closed, or Hidden mode. Closed and hidden conversations are omitted from public articles; opening them also requires configured spam protection. **Readers → Conversations** is the shared moderation inbox; **Readers → Subscribers** shows subscription status. Email delivery and spam protection now live under Readers. Blog designer keeps the visual controls for comments.
 
 - Edits are backed up to this browser after an 800 ms pause. Local recovery does not sync between devices or create server revisions.
-- **Save draft / Save changes** creates a server revision and clears the local backup.
+- **Save draft** creates a server revision and clears the local backup; publishing is a separate action.
 - **Revision history** shows previous versions, authors, additions and removals. Load an older version into the editor, review it, then save.
 - Concurrent saves open a conflict review without discarding your edits. This is revision-based protection, not live co-editing.
 - Saved changes from the CLI, API, or another editor update the open article through SSE as soon as the save commits. SQLite uses server notifications; PostgreSQL uses LISTEN/NOTIFY across server instances. No content polling is used. If you have unsaved edits, a **Review changes** notice keeps your draft intact and opens the existing conflict comparison. Updates wait while a dialog or save is in progress. Reconnecting catches up with the latest revision; deletion leaves your editor content available to copy. These updates follow saved revisions.
@@ -150,7 +173,7 @@ Check **Research mode** to ask for papers or save a source or private thinking n
 
 Ask a follow-up in the same message box. **Writing suggestions** can be expanded to keep an insight with one click or ask about a specific suggestion. Failed requests keep your message for retrying. **Saved insights** holds private notes you chose to keep; the chat itself lasts for the current workspace session.
 
-To use a website as a reference, paste its public HTTPS URL directly into the brief and ask the assistant to read it. This works for documentation and HTML research articles. The agent can call `read_url` for up to three URLs explicitly supplied in that brief. It reads bounded page text in memory, without browser automation, JavaScript, file downloads, attachments, cookies, or saved source files. Private-network addresses and redirects to them are blocked. PDF and other file URLs, download responses, oversized pages, and pages requiring sign-in or JavaScript are unavailable. Website text is treated as untrusted evidence, and the assistant is instructed to cite the source URL and acknowledge failed reads. Existing notes and copying controls are unchanged. This requires the updated Margin Central service and hosted AI Unified App version 1.1.0.
+To use a website as a reference, paste its public HTTPS URL directly into the brief and ask the assistant to read it. This works for documentation and HTML research articles. The agent can call `read_url` for up to three URLs explicitly supplied in that brief. It reads bounded page text in memory, without browser automation, JavaScript, file downloads, attachments, cookies, or saved source files. Private-network addresses and redirects to them are blocked. PDF and other file URLs, download responses, oversized pages, and pages requiring sign-in or JavaScript are unavailable. Website text is treated as untrusted evidence, and the assistant is instructed to cite the source URL and acknowledge failed reads. Existing notes and copying controls are unchanged. This requires the updated Margin service and hosted AI Unified App version 1.1.0.
 
 AI can also create images and social drafts for review. All AI requests use Margin's managed service and applicable account plan. Publishing a post does not automatically send a newsletter or publish to social accounts.
 

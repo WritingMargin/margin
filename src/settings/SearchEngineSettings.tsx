@@ -1,5 +1,6 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { Globe, ExternalLink } from "lucide-react";
+import CopyField from "../components/CopyField";
 import { api, json } from "../api";
 import type { PublicationSettingsController } from "./usePublicationSettings";
 import "./SearchEngineSettings.css";
@@ -172,45 +173,6 @@ function BingStatus({ status }: { status: SearchEngineStatus | null }) {
     </div>
   );
 }
-function CopyAddress({ label, value }: { label: string; value: string }) {
-  const [message, setMessage] = useState("");
-  const id = useId();
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(value);
-      setMessage("Copied");
-    } catch {
-      setMessage("Select the address and copy it.");
-    }
-  }
-  return (
-    <div className="search-engine-address">
-      <label htmlFor={id}>{label}</label>
-      <div className="search-engine-address-controls">
-        <input
-          id={id}
-          readOnly
-          value={value}
-          onFocus={(event) => event.target.select()}
-        />
-        <button
-          type="button"
-          className="button"
-          onClick={() => {
-            void copy();
-          }}
-        >
-          Copy
-        </button>
-      </div>
-      {message && (
-        <span role="status" className="small-text">
-          {message}
-        </span>
-      )}
-    </div>
-  );
-}
 function GoogleSearchSettings({
   state,
 }: {
@@ -247,7 +209,7 @@ function GoogleSearchSettings({
           </a>{" "}
           and add a <strong>URL-prefix</strong> property with this exact
           address.
-          <CopyAddress label="Blog address" value={home} />
+          <CopyField label="Blog address" value={home} />
         </li>
         <li>
           Choose <strong>HTML tag</strong> verification and paste only its{" "}
@@ -290,7 +252,7 @@ function GoogleSearchSettings({
         <li>
           In Search Console, open <strong>Sitemaps</strong> and submit this
           address.
-          <CopyAddress label="Sitemap address" value={sitemap} />
+          <CopyField label="Sitemap address" value={sitemap} />
           <SitemapDiscovery key={home} home={home} sitemap={sitemap} />
         </li>
       </ol>

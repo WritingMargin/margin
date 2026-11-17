@@ -1,0 +1,1010 @@
+/* Unified rich writer surface. */
+
+.rich-writer-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  height: 100%;
+}
+.rich-writer-fallback {
+  width: 100%;
+  min-height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 20px 24px 40px;
+  resize: none;
+  box-sizing: border-box;
+}
+.rich-writer-content {
+  min-height: 100%;
+  padding: 20px 24px 40px;
+  outline: none;
+  caret-color: var(--accent, #40543b);
+  font-family: var(--article-font, "Lora", Georgia, serif);
+  font-size: var(--body-size, 15px);
+  line-height: var(--body-leading, 1.95);
+  color: var(--blog-text, #262725);
+  overflow-wrap: anywhere;
+}
+.rich-writer-content > :first-child {
+  margin-top: 0;
+}
+.rich-writer-content > :last-child {
+  margin-bottom: 0;
+}
+.rich-writer-content p {
+  margin: 0 0 1.4em;
+}
+.rich-writer-content h1,
+.rich-writer-content h2,
+.rich-writer-content h3,
+.rich-writer-content h4,
+.rich-writer-content h5,
+.rich-writer-content h6 {
+  font-family: var(--heading-font, var(--article-font, "Lora", Georgia, serif));
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  margin: 1.4em 0 0.6em;
+  color: #20211f;
+}
+.rich-writer-content h1 {
+  font-size: 2.1em;
+}
+.rich-writer-content h2 {
+  font-size: 1.6em;
+}
+.rich-writer-content h3 {
+  font-size: 1.3em;
+}
+.rich-writer-content h4 {
+  font-size: 1.12em;
+}
+.rich-writer-content h5 {
+  font-size: 1em;
+}
+.rich-writer-content h6 {
+  font-size: 0.9em;
+}
+.rich-writer-content ul,
+.rich-writer-content ol {
+  padding-left: 1.5em;
+  margin: 1em 0 1.5em;
+}
+.rich-writer-content li > p {
+  margin: 0.25em 0;
+}
+.rich-writer-content blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 3px solid color-mix(in srgb, var(--blog-text, #262725) 22%, transparent);
+  color: color-mix(in srgb, var(--blog-text, #262725) 82%, transparent);
+}
+.rich-writer-content code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--blog-text, #262725) 8%, transparent);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.rich-writer-content pre {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.85em;
+  line-height: 1.6;
+  background: color-mix(in srgb, var(--blog-text, #262725) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blog-text, #262725) 12%, transparent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.rich-writer-content pre code {
+  background: transparent;
+  padding: 0;
+}
+.rich-writer-content a {
+  color: var(--accent, #303630);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.rich-writer-content hr {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--blog-text, #262725) 18%, transparent);
+  margin: 2em 0;
+}
+.rich-writer-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9a9a92;
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Component blocks rendered inline, exactly like the reader. */
+.margin-component-node {
+  margin: 1.4em 0;
+}
+.margin-component-frame {
+  position: relative;
+  border-radius: 8px;
+  outline: 2px solid transparent;
+  outline-offset: 6px;
+  transition: outline-color 120ms ease;
+}
+.margin-component-frame:hover {
+  outline-color: color-mix(in srgb, var(--accent, #40543b) 45%, transparent);
+}
+.margin-component-node.is-selected .margin-component-frame {
+  outline-color: var(--accent, #40543b);
+}
+.margin-component-edit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb, var(--blog-text, #262725) 16%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--blog-background, #fff) 92%, transparent);
+  color: var(--blog-text, #262725);
+  font: 500 11px/1.4 var(--font-sans, sans-serif);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.margin-component-frame:hover .margin-component-edit,
+.margin-component-node.is-selected .margin-component-edit {
+  opacity: 1;
+}
+.margin-component-edit:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent, #40543b);
+  outline-offset: 2px;
+}
+.margin-component-frame {
+  cursor: default;
+}
+/* Components stay interactive in the writer: tabs, galleries, polls and
+   players work in place. Use the edit button for their compact settings. */
+.margin-component-preview {
+  pointer-events: auto;
+  user-select: auto;
+}
+@media (hover: none) {
+  .margin-component-edit { opacity: 1; }
+}
+
+/* Component settings stay compact: these are configs, not documents. */
+.component-settings-backdrop {
+  background: #15151026;
+  backdrop-filter: none;
+}
+.component-settings {
+  max-width: 600px;
+  width: min(600px, calc(100vw - 32px));
+}
+.component-settings .dialog-header {
+  padding: 18px 52px 14px 20px;
+}
+.component-settings .dialog-header h2 {
+  margin: 0;
+}
+.component-settings .dialog-body {
+  padding: 16px 20px;
+}
+.component-settings .dialog-footer {
+  padding: 12px 20px;
+}
+.component-settings-body {
+  display: block;
+  max-height: min(58vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.component-settings-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+.component-settings-fields label {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: #74796a;
+}
+.component-settings-fields label.is-wide {
+  grid-column: 1 / -1;
+}
+:root .modal-backdrop .modal.component-settings .component-settings-fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+:root .modal-backdrop .modal.component-settings .component-settings-fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  margin: 0;
+  padding-block: 8px;
+  padding-inline-start: 10px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+.component-layout {
+  margin: 16px 0 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.component-layout > legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #8a8f80;
+}
+.component-settings-body > .small-text {
+  margin: 12px 0 0;
+}
+.component-settings .inner-tabs {
+  margin: 0 0 4px;
+}
+
+/* Unified article canvas. */
+.editor-panes.unified {
+  display: flex;
+  min-height: 0;
+}
+.unified-writer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.article-canvas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 0 48px;
+}
+.article-canvas .preview-article {
+  max-width: var(--publication-width, 760px);
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+.article-canvas .preview-post-title {
+  font-family: var(--heading-font, var(--article-font));
+  font-size: 32px;
+  line-height: 1.25;
+  margin: 0 0 16px;
+  color: var(--blog-text, #20211f);
+}
+.article-canvas .writer-cover {
+  margin: 0 0 20px;
+}
+.article-canvas .rich-writer-scroll {
+  overflow: visible;
+  height: auto;
+  flex: none;
+}
+.article-canvas .rich-writer-content {
+  padding: 0;
+  min-height: 200px;
+}
+.app-shell .editor-card .article-canvas .source-body.writer-source {
+  display: block;
+  overflow: visible;
+  min-height: 0;
+  padding: 0;
+}
+.article-canvas .image-drop-feedback {
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .article-canvas {
+    padding: 16px 0 32px;
+  }
+  .article-canvas .preview-article {
+    padding: 0 12px;
+  }
+  .rich-writer-content {
+    padding: 16px 12px 32px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Writer's pad: a page you can just start writing on, with components beside it.
+   --------------------------------------------------------------------------- */
+.pad-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.pad-row > .article-canvas {
+  flex: 1;
+  min-width: 0;
+  background: color-mix(in srgb, var(--blog-text, #262725) 4%, var(--blog-background, #fff));
+  padding: 28px 24px 64px;
+  cursor: text;
+}
+.article-canvas .preview-article.writer-page {
+  background: var(--blog-background, #fff);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(30, 30, 20, 0.06), 0 8px 28px rgba(30, 30, 20, 0.06);
+  padding: 56px 72px 72px;
+  min-height: calc(100% - 8px);
+}
+.article-canvas .writer-page .rich-writer-content {
+  min-height: 45vh;
+}
+.pad-title {
+  display: block;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: var(--blog-text, #20211f);
+  font-family: var(--heading-font, var(--article-font, "Lora", Georgia, serif));
+  font-size: 2.3em;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.pad-title::placeholder {
+  color: color-mix(in srgb, var(--blog-text, #262725) 28%, transparent);
+}
+.rich-writer-content p.is-editor-empty:first-child::before {
+  color: color-mix(in srgb, var(--blog-text, #262725) 38%, transparent);
+}
+.rich-writer-content p.is-empty:not(.is-editor-empty)::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--blog-text, #262725) 26%, transparent);
+}
+.rich-writer-scroll {
+  position: relative;
+}
+
+/* Component shelf. */
+.component-shelf {
+  flex: none;
+  width: 212px;
+  overflow-y: auto;
+  padding: 18px 12px 24px;
+  border-right: 1px solid var(--line, #e7e6e0);
+  background: var(--surface, #fbfbf9);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+.component-shelf-title {
+  margin: 0 4px 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #33352f;
+}
+.component-shelf-hint {
+  margin: 0 4px 14px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #8a8d80;
+}
+.component-shelf-group-name {
+  margin: 14px 4px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a9d90;
+}
+.component-shelf-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 2px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #3d4038;
+  text-align: left;
+  cursor: grab;
+}
+.component-shelf-item[draggable="false"] {
+  cursor: pointer;
+}
+.component-shelf-item:hover {
+  background: #fff;
+  border-color: #e4e3dc;
+  box-shadow: 0 1px 2px rgba(30, 30, 20, 0.05);
+}
+.component-shelf-item:active {
+  cursor: grabbing;
+}
+.component-shelf-item svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--accent, #40543b);
+}
+.component-shelf-item strong,
+.slash-menu strong {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.component-shelf-item small,
+.slash-menu small {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #8a8d80;
+}
+
+/* ⋮⋮ block handle. */
+.block-handle {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  border-radius: 5px;
+  color: #a6a99c;
+  fill: currentColor;
+  cursor: grab;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.block-handle.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.block-handle:hover {
+  background: color-mix(in srgb, var(--blog-text, #262725) 7%, transparent);
+  color: #55584e;
+}
+.block-handle.is-dragging {
+  cursor: grabbing;
+}
+
+/* "/" component menu. */
+.slash-menu {
+  position: absolute;
+  z-index: 20;
+  width: 290px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid #e3e2dc;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(20, 20, 10, 0.15);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+.slash-menu button {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #33352f;
+  text-align: left;
+  cursor: pointer;
+}
+.slash-menu button svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--accent, #40543b);
+}
+.slash-menu button.is-active,
+.slash-menu button:hover {
+  background: #f1f2ec;
+}
+
+/* Formatting bar on text selection. */
+.selection-bar {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 9px;
+  background: #1f201d;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+.selection-bar button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #e9e9e3;
+  cursor: pointer;
+}
+.selection-bar button:hover,
+.selection-bar button[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.14);
+}
+.selection-bar-link {
+  width: 260px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font: 13px var(--font-sans, system-ui, sans-serif);
+}
+.title-display {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1100px) {
+  .pad-row {
+    flex-direction: column;
+  }
+  .component-shelf {
+    display: flex;
+    gap: 4px;
+    width: auto;
+    overflow-x: auto;
+    padding: 8px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line, #e7e6e0);
+  }
+  .component-shelf-title,
+  .component-shelf-hint,
+  .component-shelf-group-name,
+  .component-shelf-item small {
+    display: none;
+  }
+  .component-shelf-group {
+    display: contents;
+  }
+  .component-shelf-item {
+    width: auto;
+    flex: none;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .article-canvas .preview-article.writer-page {
+    padding: 32px 28px 48px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Substack-simple: one slim bar, one toolbar, then a plain white page.
+   --------------------------------------------------------------------------- */
+.pad-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  margin: 0 38px;
+  padding: 8px 4px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+.pad-topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  color: #5d6055;
+}
+.pad-topbar-kind {
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.pad-topbar-meta {
+  color: #9a9d90;
+  white-space: nowrap;
+}
+.pad-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.pad-topbar-actions > button:not(.button),
+.pad-topbar-actions .post-template-trigger,
+.pad-topbar-actions .editor-actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #4b4e44;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.pad-topbar-actions > button:not(.button):hover,
+.pad-topbar-actions .editor-actions-trigger:hover,
+.pad-topbar-actions > button[aria-expanded="true"] {
+  background: #efefea;
+}
+/* Save state and Save / Publish, moved up from the old bottom bar. */
+.pad-topbar .editor-bottom {
+  min-height: 0;
+  margin-left: 8px;
+  padding: 0 0 0 12px;
+  gap: 10px;
+  border-left: 1px solid var(--line, #e7e6e0);
+  background: none;
+}
+.pad-topbar .save-state {
+  font-size: 11.5px;
+}
+.pad-topbar .save-state small {
+  display: none;
+}
+.pad-topbar .bottom-actions .button {
+  font-size: 12px;
+  padding: 7px 13px;
+}
+
+/* The card becomes the page itself: no frame, no grey canvas. */
+.app-shell .editor-card.writer-pad-card {
+  border: 0;
+  border-top: 1px solid var(--line, #e7e6e0);
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+.writer-pad-card .format-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fff;
+  border-bottom: 1px solid var(--line, #e7e6e0);
+}
+.writer-pad-card .format-bar {
+  justify-content: safe center;
+  align-items: center;
+}
+.writer-pad-card .pad-row > .article-canvas {
+  background: var(--blog-background, #fff);
+  padding: 56px 24px 120px;
+}
+.writer-pad-card .article-canvas .preview-article.writer-page {
+  max-width: 728px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.writer-pad-card .pad-title {
+  margin: 0 0 10px;
+  font-size: 2.5em;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.pad-subtitle {
+  display: block;
+  width: 100%;
+  margin: 0 0 32px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: color-mix(in srgb, var(--blog-text, #262725) 62%, transparent);
+  font-family: var(--article-font, "Lora", Georgia, serif);
+  font-size: 1.3em;
+  line-height: 1.45;
+}
+.pad-subtitle::placeholder {
+  color: color-mix(in srgb, var(--blog-text, #262725) 28%, transparent);
+}
+.pad-subtitle-note {
+  margin: -24px 0 28px;
+  font: 11px var(--font-sans, system-ui, sans-serif);
+  color: #9a9d90;
+}
+
+/* Formatting toolbar. */
+.pad-format-slot,
+.pad-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.pad-divider {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: var(--line, #e7e6e0);
+}
+.pad-style {
+  height: 30px;
+  padding: 0 24px 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #33352f;
+  font: 500 12.5px var(--font-sans, system-ui, sans-serif);
+  cursor: pointer;
+}
+.pad-style:hover {
+  background-color: #efefea;
+}
+.pad-tool {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #3d4038;
+  cursor: pointer;
+}
+.pad-tool:hover:not(:disabled),
+.pad-tool[aria-pressed="true"] {
+  background: #ecede6;
+}
+.pad-tool[aria-pressed="true"] {
+  color: var(--accent, #40543b);
+}
+.pad-tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.pad-link-tool {
+  display: inline-flex;
+  align-items: center;
+}
+.pad-link-input {
+  width: 230px;
+  height: 30px;
+  margin-left: 4px;
+  padding: 0 10px;
+  border: 1px solid var(--line, #dcdcd5);
+  border-radius: 6px;
+  outline: none;
+  font: 12.5px var(--font-sans, system-ui, sans-serif);
+}
+.pad-insert-toggle.is-open {
+  background: #ecede6;
+  color: var(--accent, #40543b);
+}
+
+/* The component shelf now opens as a drawer from Insert. */
+.writer-pad-card .component-shelf {
+  border-right: 1px solid var(--line, #e7e6e0);
+  background: #fbfbf9;
+}
+.component-shelf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 2px;
+}
+.component-shelf-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b6e63;
+  cursor: pointer;
+}
+.component-shelf-close:hover {
+  background: #ecede6;
+}
+
+@media (max-width: 1100px) {
+  .pad-topbar {
+    margin: 0 16px;
+  }
+  .pad-topbar-meta,
+  .pad-topbar-actions .editor-control-label {
+    display: none;
+  }
+  .writer-pad-card .pad-row > .article-canvas {
+    padding: 32px 18px 80px;
+  }
+}
+@media (max-width: 700px) {
+  .pad-topbar {
+    flex-wrap: wrap;
+  }
+  .writer-pad-card .pad-title {
+    font-size: 2em;
+  }
+}
+.pad-topbar .save-state,
+.pad-topbar .save-state-copy {
+  display: flex;
+  align-items: center;
+}
+.pad-topbar .save-state-label {
+  line-height: 1;
+  white-space: nowrap;
+}
+.app-shell .pad-topbar .editor-bottom {
+  align-items: center;
+}
+
+/* Top bar, decongested: status on the left reads as one line ("Draft post ·
+   Saved"); tools, then Save / Publish, on the right. */
+.pad-topbar-status {
+  gap: 7px;
+  font-size: 12.5px;
+}
+.pad-topbar-sep {
+  color: #b9bbb0;
+}
+.pad-topbar-status .save-state {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: #8a8d80;
+}
+.pad-topbar-status .save-state svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.pad-topbar-status .save-state .draft-dot {
+  margin: 0 1px;
+}
+.pad-topbar-status .save-state-copy {
+  display: block;
+  min-width: 0;
+}
+.pad-topbar-status .save-state-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.pad-topbar-status .save-state small {
+  display: none;
+}
+.pad-topbar-actions {
+  gap: 0;
+}
+.pad-topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 12px;
+  padding-right: 12px;
+  border-right: 1px solid var(--line, #e7e6e0);
+}
+.pad-topbar-tools > button:not(.button),
+.pad-topbar-tools .post-template-trigger,
+.pad-topbar-tools .editor-actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #4b4e44;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.pad-topbar-tools > button:not(.button):hover,
+.pad-topbar-tools .post-template-trigger:hover,
+.pad-topbar-tools .editor-actions-trigger:hover,
+.pad-topbar-tools > button[aria-expanded="true"] {
+  background: #efefea;
+}
+.pad-topbar .bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pad-topbar .bottom-actions .button {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 12.5px;
+}
+.pad-topbar .bottom-actions .button:not(.primary) {
+  border-color: transparent;
+  background: transparent;
+  color: #4b4e44;
+}
+.pad-topbar .bottom-actions .button:not(.primary):hover:not(:disabled) {
+  background: #efefea;
+}
+
+/* Word count, quietly in the page's corner. */
+.writer-pad-card {
+  position: relative;
+}
+.pad-wordcount {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  z-index: 4;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--line, #e7e6e0);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #8a8d80;
+  font: 11px var(--font-sans, system-ui, sans-serif);
+  pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+  .pad-topbar-tools {
+    margin-right: 8px;
+    padding-right: 8px;
+  }
+}
+@media (max-width: 760px) {
+  .pad-topbar-status .save-state-copy,
+  .pad-topbar-sep {
+    display: none;
+  }
+}
+/* One status dot is enough: the words already say "Unsaved". Sentence case. */
+.pad-topbar-status .save-state > .draft-dot {
+  display: none;
+}
+.pad-topbar-kind {
+  display: inline-block;
+  text-transform: none;
+}
+.pad-topbar-kind::first-letter {
+  text-transform: uppercase;
+}

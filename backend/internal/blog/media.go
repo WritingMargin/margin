@@ -34,7 +34,6 @@ func (a *App) mediaRoutes() {
 // @Success 200 {object} APIMediaLibrary
 // @Failure 400 {object} APIError "Invalid source"
 // @Failure 401 {object} APIError "Missing or invalid API key"
-// @Failure 402 {object} APIError "Cloudinary integration requires an active plan"
 // @Failure 503 {object} APIError "Cloudinary is not configured"
 // @Router /api/media/images [get]
 func (a *App) listImages(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +49,6 @@ func (a *App) listImages(w http.ResponseWriter, r *http.Request) {
 		result = append(result, Row{"public_id": item["id"], "title": generatedImageTitle(item.str("prompt")), "secure_url": "/api/assets/" + item.str("id") + ".png", "resource_type": "image"})
 	}
 	if r.URL.Query().Get("source") == "cloudinary" {
-		a.require(r.Context(), "integrations")
 		config := cloudinary()
 		if config == nil {
 			fail(503, "Configure Cloudinary before opening its library.")
@@ -67,7 +65,6 @@ func cloudinary() Row {
 	return Row{"cloudName": cloud, "apiKey": key, "secret": secret}
 }
 func (a *App) listMedia(w http.ResponseWriter, r *http.Request) {
-	a.require(r.Context(), "integrations")
 	config := cloudinary()
 	result := []Row{}
 	if config != nil {
@@ -106,7 +103,6 @@ func (a *App) mediaResources(ctx context.Context, config Row, kind string) []Row
 	return result
 }
 func (a *App) signMedia(w http.ResponseWriter, r *http.Request) {
-	a.require(r.Context(), "integrations")
 	config := cloudinary()
 	if config == nil {
 		fail(503, "Configure Cloudinary before uploading media.")

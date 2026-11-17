@@ -23,14 +23,15 @@ export function PostsPageSize({ state, query, onSearch }: {
     </div>
   );
 }
-export default function PostsPagination({ state }: { state: Pagination }) {
+type PageNavigation = Pick<Pagination, "loading" | "error" | "pages" | "page" | "setPage">;
+export default function PostsPagination({ state, label = "Posts pagination", scrollSelector = ".posts-list-toolbar" }: { state: PageNavigation; label?: string; scrollSelector?: string }) {
   if (state.loading || state.error || state.pages <= 1) return null;
   const go = (page: number) => {
     state.setPage(page);
-    requestAnimationFrame(() => document.querySelector(".posts-list-toolbar")?.scrollIntoView({ block: "start" }));
+    requestAnimationFrame(() => document.querySelector(scrollSelector)?.scrollIntoView({ block: "start" }));
   };
   return (
-    <nav className="posts-pagination" aria-label="Posts pagination">
+    <nav className="posts-pagination" aria-label={label}>
       <button className="button" disabled={state.page === 1} onClick={() => go(state.page - 1)}>← Previous</button>
       <div className="posts-page-numbers">
         {paginationPages(state.page, state.pages).map((page, index) =>

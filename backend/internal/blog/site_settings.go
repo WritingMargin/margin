@@ -45,6 +45,9 @@ func (a *App) saveSiteSetting(ctx context.Context, name string, value Row) {
 	a.DB.Must(ctx, "INSERT INTO site_settings(name,configuration) VALUES($1,$2) ON CONFLICT(name) DO UPDATE SET configuration=EXCLUDED.configuration", name, encode(value))
 }
 func (a *App) domainSettings(ctx context.Context) Row {
+	if a.cloudOwner(ctx).str("subject") != "" {
+		return Row{"url": ""}
+	}
 	return a.siteSetting(ctx, "domain", Row{"url": ""}, validDomain)
 }
 func (a *App) seoSettings(ctx context.Context) Row {
@@ -104,13 +107,15 @@ func (a *App) allowedOrigin(r *http.Request, origin string) bool {
 	return origin == a.origin(r) || origin == a.domainSettings(r.Context()).str("url") || additionalOriginAllowed(origin) || publicAliasOriginAllowed(origin)
 }
 func (a *App) readDomain(w http.ResponseWriter, r *http.Request) {
-	result := a.domainSettings(r.Context())
-	result["effectiveUrl"] = a.publicationOrigin(r)
-	result["serverUrl"] = a.origin(r)
-	send(w, 200, result)
+	send(w, 200, a.domainResult(r, nil))
 }
 func (a *App) saveDomain(w http.ResponseWriter, r *http.Request) {
-	a.saveSiteSetting(r.Context(), "domain", validDomain(body(w, r)))
+	input := body(w, r)
+	if a.cloudOwner(r.Context()).str("subject") != "" {
+		a.saveHostingAddress(w, r, input)
+		return
+	}
+	a.saveSiteSetting(r.Context(), "domain", validDomain(input))
 	a.readDomain(w, r)
 }
 func (a *App) indexingHeader(w http.ResponseWriter, r *http.Request) {

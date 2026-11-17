@@ -114,3 +114,75 @@ func TestCloudStorageUsageRequiresMachineCredential(t *testing.T) {
 		t.Fatal(response)
 	}
 }
+
+func TestOwnerStorageHasNoMarginPlanLimit(t *testing.T) {
+	t.Setenv("AWS_EC2_METADATA_DISABLED", "true")
+	t.Setenv("S3_STORAGE_LIMIT_BYTES", "100")
+	t.Setenv("MARGIN_STORAGE_MANAGED", "false")
+	storage, err := NewStorage(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if storage.limit != 0 {
+		t.Fatal("owner bucket inherited a Margin quota")
+	}
+	if err := storage.checkStorageLimit(context.Background(), "large", 10000); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("MARGIN_STORAGE_MANAGED", "true")
+	storage, err = NewStorage(context.Background())
+	if err != nil || storage.limit != 100 {
+		t.Fatalf("managed quota missing: %v", err)
+	}
+}
+func TestStorageQuotaStatusShowsUsedRemainingAndUnlimited(t *testing.T) {
+	a, _ := coreFixture(t)
+	client := &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(`<ListBucketResult><IsTruncated>false</IsTruncated><Contents><Key>content</Key><Size>90</Size></Contents></ListBucketResult>`))}, nil
+	})}
+	storage := &S3Storage{bucket: "test", limit: 100, client: s3.New(s3.Options{Region: "us-east-1", BaseEndpoint: aws.String("https://storage.test"), UsePathStyle: true, Credentials: credentials.NewStaticCredentialsProvider("test", "test", ""), HTTPClient: client})}
+	storage.AttachDatabase(a.DB)
+	a.Storage = storage
+	expectStatus(t, request(t, a, "GET", "/api/storage/usage", nil, false), 401)
+	row := responseRow(t, request(t, a, "GET", "/api/storage/usage", nil, true), 200)
+	if row["usedBytes"] != float64(90) || row["remainingBytes"] != float64(10) || row["quotaBytes"] != float64(100) {
+		t.Fatal(row)
+	}
+	storage.limit = 80
+	row = responseRow(t, request(t, a, "GET", "/api/storage/usage", nil, true), 200)
+	if row["remainingBytes"] != float64(0) {
+		t.Fatal(row)
+	}
+	storage.limit = 0
+	row = responseRow(t, request(t, a, "GET", "/api/storage/usage", nil, true), 200)
+	if row["quotaBytes"] != nil || row["remainingBytes"] != nil || row["usedBytes"] != float64(90) {
+		t.Fatal(row)
+	}
+}
+
+func TestStorageQuotaFailureNeverReportsZeroOrPartialUsage(t *testing.T) {
+	for _, partial := range []bool{false, true} {
+		t.Run(fmt.Sprintf("partial=%v", partial), func(t *testing.T) {
+			a, _ := coreFixture(t)
+			client := &http.Client{Transport: testTransport(func(r *http.Request) (*http.Response, error) {
+				if partial && r.URL.Query().Get("continuation-token") == "" {
+					return &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(`<ListBucketResult><IsTruncated>true</IsTruncated><NextContinuationToken>next</NextContinuationToken><Contents><Key>first</Key><Size>50</Size></Contents></ListBucketResult>`))}, nil
+				}
+				return &http.Response{StatusCode: 403, Header: http.Header{"Content-Type": []string{"application/xml"}}, Body: io.NopCloser(strings.NewReader(`<Error><Code>AccessDenied</Code><Message>Denied</Message></Error>`))}, nil
+			})}
+			storage := &S3Storage{bucket: "test", limit: 100, client: s3.New(s3.Options{Region: "us-east-1", BaseEndpoint: aws.String("https://storage.test"), UsePathStyle: true, Credentials: credentials.NewStaticCredentialsProvider("test", "test", ""), HTTPClient: client})}
+			storage.AttachDatabase(a.DB)
+			a.Storage = storage
+			row := responseRow(t, request(t, a, "GET", "/api/storage/usage", nil, true), 503)
+			if row.str("code") != "STORAGE_UNAVAILABLE" {
+				t.Fatal(row)
+			}
+			if _, present := row["usedBytes"]; present {
+				t.Fatal("failed scan exposed misleading usage", row)
+			}
+			if len(a.DB.Must(context.Background(), "SELECT * FROM storage_usage_scan_objects")) != 0 {
+				t.Fatal("failed scan retained partial objects")
+			}
+		})
+	}
+}

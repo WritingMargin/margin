@@ -4,11 +4,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"html"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -52,23 +51,23 @@ func oauthQuery(client, role, resource string) url.Values {
 	return url.Values{"client_id": {client}, "redirect_uri": {"https://client.test/callback"}, "response_type": {"code"}, "scope": {role}, "state": {"state+with&symbols"}, "code_challenge": {base64.RawURLEncoding.EncodeToString(digest[:])}, "code_challenge_method": {"S256"}, "resource": {resource}}
 }
 
-var oauthHiddenPattern = regexp.MustCompile(`<input type="hidden" name="([^"]+)" value="([^"]*)">`)
-
 func oauthConsentForm(t *testing.T, a *App, query url.Values) url.Values {
 	t.Helper()
-	w := oauthHTTPRequest(a, "GET", sitePath("/oauth/authorize")+"?"+query.Encode(), nil, true)
+	w := oauthConsentDataRequest(a, query, true)
 	expectStatus(t, w, 200)
-	if strings.Contains(w.Body.String(), "<script>") {
-		t.Fatal("unescaped client name")
+	var data struct {
+		Fields      map[string]string `json:"fields"`
+		Permissions []oauthPermission `json:"permissions"`
 	}
+	must(json.Unmarshal(w.Body.Bytes(), &data))
 	values := url.Values{}
-	for _, match := range oauthHiddenPattern.FindAllStringSubmatch(w.Body.String(), -1) {
-		values.Set(html.UnescapeString(match[1]), html.UnescapeString(match[2]))
+	for name, value := range data.Fields {
+		values.Set(name, value)
 	}
 	if values.Get("csrf") == "" {
 		t.Fatal("missing consent CSRF")
 	}
-	for _, permission := range requestedOAuthPermissions(normalizedOAuthScopes(strings.Fields(query.Get("scope")))) {
+	for _, permission := range data.Permissions {
 		values.Add("permission", permission.Scope)
 	}
 	values.Set("decision", "allow")

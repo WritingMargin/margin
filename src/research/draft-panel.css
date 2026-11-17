@@ -1,14 +1,12 @@
 .draft-panel-body {
   width: 100%;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   font-size: 13px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
 .draft-panel-body h3 {
-  font-size: 16px;
+  font-size: 13px;
   margin: 1.25rem 0 0.5rem;
 }
 .draft-panel-body h3:first-child {
@@ -36,10 +34,6 @@
 }
 .source-entry a {
   color: inherit;
-}
-.draft-panel summary {
-  cursor: pointer;
-  padding: 0.4rem 0;
 }
 .draft-panel .button {
   justify-self: start;

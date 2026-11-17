@@ -32,7 +32,11 @@ func (a *App) sendReaderAlertDelivery(ctx context.Context, delivery, config Row)
 	state, message := "uncertain", "Email acceptance could not be confirmed. Check the provider before resending."
 	defer func() {
 		_ = recover()
-		a.DB.Must(context.WithoutCancel(ctx), "UPDATE reader_alert_deliveries SET status=$2,message=$3 WHERE alert_id=$1 AND status='sending'", delivery["alert_id"], state, message)
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if _, err := a.DB.Query(cleanup, "UPDATE reader_alert_deliveries SET status=$2,message=$3 WHERE alert_id=$1 AND status='sending'", delivery["alert_id"], state, message); err != nil {
+			log.Printf("[margin] reader alert delivery cleanup: %v", err)
+		}
 	}()
 	if first(a.DB.Must(ctx, "SELECT comment_id FROM public_notes WHERE comment_id=$1", delivery["target_id"])) != nil {
 		state, message = "skipped", "Public notes are no longer available."

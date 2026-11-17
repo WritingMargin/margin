@@ -22,7 +22,7 @@ func (a *App) connection(ctx context.Context) Row {
 }
 func decryptAccount(row Row) string {
 	if row.str("service_url") != serviceAddress() {
-		coded(503, "The saved account belongs to a different Central address. Restore AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
+		coded(503, "The saved account belongs to a different Margin service address. Restore AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
 	}
 	return decryptStoredAccount(row)
 }
@@ -43,7 +43,7 @@ func (a *App) accountToken(ctx context.Context) string {
 	}
 	if row.str("service_url") != serviceAddress() {
 		if os.Getenv("AI_SERVICE_URL_MIGRATE_FROM") != row.str("service_url") {
-			coded(503, "The saved account belongs to a different Central address. Restore AI_SERVICE_URL or explicitly set AI_SERVICE_URL_MIGRATE_FROM to the saved address.", "ACCOUNT_CONFIGURATION")
+			coded(503, "The saved account belongs to a different Margin service address. Restore AI_SERVICE_URL or explicitly set AI_SERVICE_URL_MIGRATE_FROM to the saved address.", "ACCOUNT_CONFIGURATION")
 		}
 		return a.migrateAccountURL(ctx, row)
 	}
@@ -59,7 +59,7 @@ func (a *App) migrateAccountURL(ctx context.Context, row Row) string {
 	result, status, err := a.fetchJSON(ctx, "GET", base.ResolveReference(&url.URL{Path: "/v1/account"}).String(), nil,
 		map[string]string{"Authorization": "Bearer " + key, "Content-Type": "application/json"}, 10*time.Second)
 	if err != nil || status != 200 || !validEntitlements(object(result["entitlements"])) {
-		coded(503, "The new Central could not verify the saved account. Check AI_SERVICE_URL, its TLS certificate and shared account database; restore the old URL until this succeeds.", "ACCOUNT_MIGRATION_FAILED")
+		coded(503, "The new Margin service address could not verify the saved account. Check AI_SERVICE_URL, its TLS certificate and shared account database; restore the old URL until this succeeds.", "ACCOUNT_MIGRATION_FAILED")
 	}
 	encrypted, err := accountEncryption().Encrypt([]byte(key), "settings", "central-account:"+serviceAddress())
 	must(err)
@@ -72,7 +72,7 @@ func (a *App) migrateAccountURL(ctx context.Context, row Row) string {
 	if count == 0 {
 		current := a.connection(ctx)
 		if current.str("service_url") != serviceAddress() {
-			coded(409, "The saved Central connection changed during migration. Retry after checking AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
+			coded(409, "The saved Margin account connection changed during migration. Retry after checking AI_SERVICE_URL.", "ACCOUNT_CONFIGURATION")
 		}
 		return decryptAccount(current)
 	}
@@ -84,6 +84,7 @@ func (a *App) serviceHeaders(ctx context.Context) map[string]string {
 func (a *App) accountRoutes() {
 	a.mux.HandleFunc("GET /api/account", a.accountStatus)
 	a.mux.HandleFunc("POST /api/account", a.createAccount)
+	a.mux.HandleFunc("POST /api/account/connection", a.completeAccountConnection)
 }
 func (a *App) accountStatus(w http.ResponseWriter, r *http.Request) {
 	row := a.connection(r.Context())
@@ -97,10 +98,14 @@ func (a *App) accountStatus(w http.ResponseWriter, r *http.Request) {
 		registration := object(row["registration"])
 		email, blogURL = registration.str("email"), registration.str("blogUrl")
 	}
-	send(w, 200, Row{"connected": connected, "pending": row != nil && !connected,
+	response := Row{"connected": connected, "pending": row != nil && !connected,
 		"connectionState": state, "serverTokenConfigured": os.Getenv("AI_SERVICE_TOKEN") != "",
 		"registrationAvailable": state == "disconnected" && serviceErr == nil && keyErr == nil && owner != nil && a.newsletterOrigin(r.Context()) != "",
-		"email":                 email, "blogUrl": blogURL})
+		"email":                 email, "blogUrl": blogURL}
+	if state == "disconnected" && row != nil && row.str("account_id") == "" {
+		response["authentication"] = object(object(row["registration"])["authentication"])
+	}
+	send(w, 200, response)
 }
 func (a *App) prepareAccount(r *http.Request) Row {
 	ctx := r.Context()
@@ -136,14 +141,11 @@ func (a *App) createAccount(w http.ResponseWriter, r *http.Request) {
 	base := accountURL()
 	saved := a.prepareAccount(r)
 	headers := map[string]string{"Authorization": "Bearer " + decryptAccount(saved), "Content-Type": "application/json"}
-	result, status, err := a.fetchJSON(r.Context(), "POST", base.ResolveReference(&url.URL{Path: "/v1/accounts"}).String(), saved["registration"], headers, 20*time.Second)
+	result, status, err := a.fetchJSON(r.Context(), "POST", base.ResolveReference(&url.URL{Path: "/v1/accounts"}).String(), accountRegistration(saved), headers, 20*time.Second)
 	if err != nil {
 		coded(503, "Account creation could not finish. Your blog still works; try again to complete the same registration.", "ACCOUNT_UNAVAILABLE")
 	}
 	result = serviceResult(result, status, nil)
-	if !uuidRE.MatchString(result.str("id")) {
-		coded(502, "Margin Central returned an invalid account. Please try again.", "ACCOUNT_UNAVAILABLE")
-	}
-	a.DB.Must(r.Context(), "UPDATE central_connection SET account_id=$1 WHERE id=1", result["id"])
+	a.saveAccountConnection(r.Context(), saved, result)
 	a.accountStatus(w, r)
 }

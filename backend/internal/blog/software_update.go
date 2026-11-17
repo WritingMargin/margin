@@ -28,7 +28,7 @@ func (a *App) softwareUpdate(w http.ResponseWriter, r *http.Request) {
 			send(w, 200, Row{"hosted": true, "version": a.Version, "state": "unavailable"})
 			return
 		}
-		fail(503, "Could not confirm the update with Margin Central. Check its status before trying again.")
+		fail(503, "Margin could not confirm the update. Try again or contact support.")
 	}
 	send(w, 200, Row{"hosted": true, "version": a.Version, "state": result.str("state")})
 }

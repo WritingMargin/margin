@@ -52,7 +52,7 @@ func (m *rssMarkup) inlineDirectives(source string, markdown goldmark.Markdown) 
 			continue
 		}
 		marker, end := rssReadInline(source, match)
-		if marker == nil {
+		if marker == nil || rssLiteralColon(marker, end == match[1]) {
 			continue
 		}
 		out.WriteString(source[cursor:match[0]])
@@ -62,6 +62,15 @@ func (m *rssMarkup) inlineDirectives(source string, markdown goldmark.Markdown) 
 	out.WriteString(source[cursor:])
 	return out.String()
 }
+// rssKnownInline lists names that mean something written inline without a label.
+var rssKnownInline = map[string]bool{"image": true, "video": true, "divider": true, "mark": true, "citation": true, "linkcard": true, "social": true, "clear": true, "callout": true}
+
+// rssLiteralColon reports prose such as "re:Invent" or "mailto:me@x": an
+// unknown name with no [label] or {attributes} is text, not a directive.
+func rssLiteralColon(marker *rssMarker, bare bool) bool {
+	return bare && !rssKnownInline[marker.name] && !audioMarker(marker.name)
+}
+
 func rssReadInline(source string, match []int) (*rssMarker, int) {
 	marker := &rssMarker{name: source[match[2]:match[3]], attrs: map[string]string{}}
 	end := match[1]

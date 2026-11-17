@@ -66,6 +66,7 @@ func (a *App) saveAuthorUpdate(w http.ResponseWriter, r *http.Request) {
 	query, args := a.DB.adapt("SELECT email FROM newsletter_subscribers WHERE status='subscribed' ORDER BY email", nil)
 	rows, err := tx.QueryContext(r.Context(), query, args...)
 	must(err)
+	defer rows.Close()
 	emails := []string{}
 	for rows.Next() {
 		var email string
@@ -109,7 +110,11 @@ func (a *App) sendAuthorUpdateDelivery(ctx context.Context, delivery, config Row
 	state, message := "uncertain", "Email acceptance could not be confirmed. Check the provider before resending."
 	defer func() {
 		_ = recover()
-		a.DB.Must(context.WithoutCancel(ctx), "UPDATE author_update_deliveries SET status=$3,message=$4 WHERE update_id=$1 AND email=$2 AND status='sending'", delivery["update_id"], delivery["email"], state, message)
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if _, err := a.DB.Query(cleanup, "UPDATE author_update_deliveries SET status=$3,message=$4 WHERE update_id=$1 AND email=$2 AND status='sending'", delivery["update_id"], delivery["email"], state, message); err != nil {
+			log.Printf("[margin] author update delivery cleanup: %v", err)
+		}
 	}()
 	subscriber := first(a.DB.Must(ctx, "SELECT email FROM newsletter_subscribers WHERE email=$1 AND status='subscribed'", delivery["email"]))
 	if subscriber == nil {

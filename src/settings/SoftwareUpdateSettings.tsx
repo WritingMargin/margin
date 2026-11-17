@@ -10,8 +10,8 @@ const messages: Record<UpdateState, string> = {
   updating: "Updating Margin. This page will check again when your blog restarts.",
   updated: "Update complete. Your blog is running the new release.",
   current: "Your blog is running the latest stable release.",
-  failed: "Central could not confirm the update. Try again or contact support.",
-  unavailable: "Margin Central is unavailable. Check again in a moment.",
+  failed: "Margin could not confirm the update. Try again or contact support.",
+  unavailable: "Margin is unavailable. Check again in a moment.",
 };
 const buttonLabels: Partial<Record<UpdateState, string>> = {
   available: "Update Margin",
@@ -59,7 +59,7 @@ export default function SoftwareUpdateSettings() {
     try {
       setSoftware(await api<Software>(route, state === "unavailable" ? undefined : json("POST", {})));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not reach Margin Central.");
+      setError(e instanceof Error ? e.message : "Could not reach Margin.");
       setSoftware({ ...software, state: "unavailable" });
     } finally {
       setBusy(false);

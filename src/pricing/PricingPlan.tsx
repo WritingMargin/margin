@@ -1,4 +1,5 @@
-import { Check,Zap } from "lucide-react";
+import { isHostingPlan } from "../../shared/plans";
+import { Check,Cloud,Zap } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type { Pricing } from "../../shared/pricing";
 import { money } from "./format";
@@ -26,8 +27,8 @@ export default function PricingPlan({ plan, state }: Props) {
         <span>{plan.id === "free" ? "/ forever" : "/ month"}</span>
       </div>
       <div className="pricing-allowance">
-        <Zap size={16} />
-        {plan.credits ? (
+        {isHostingPlan(plan.id) ? <Cloud size={16} /> : <Zap size={16} />}
+        {isHostingPlan(plan.id) ? "Managed hosting · AI sold separately" : plan.credits ? (
           <>
             <strong>{plan.credits.toLocaleString("en-GB")}</strong> AI credits /
             month
@@ -38,9 +39,9 @@ export default function PricingPlan({ plan, state }: Props) {
       </div>
       <PlanAction plan={plan} state={state} />
       <CheckoutNotice id={plan.id} notice={state.checkoutNotice} />
-      {plan.id === "studio" && state.existing && state.current === "starter" && (
+      {isHostingPlan(plan.id) && state.existing && state.current !== plan.id && (
         <p className="pricing-plan-change-note">
-          Moving back to Starter later? Contact support and we’ll help after a quick storage check.
+          Moving to a smaller hosting plan later? Contact support and we’ll help after a quick storage check.
         </p>
       )}
       <div className="pricing-rule" />

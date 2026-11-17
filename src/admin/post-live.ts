@@ -1,5 +1,6 @@
 import type { Post } from "../../shared/types";
-import { api, APIError } from "../api";
+import { readEditablePost } from "./team-posts";
+import { APIError } from "../api";
 import { sitePath } from "../base-path";
 
 export type IncomingPost = { post: Post; baseline: string | undefined };
@@ -39,7 +40,7 @@ export function watchPost(options: Options) {
   const stream = (options.connect || ((url) => new EventSource(url)))(
     sitePath(`/api${path}/events`),
   );
-  const read = options.read || ((signal) => api<Post>(path, { signal }));
+  const read = options.read || ((signal) => readEditablePost(options.id, signal));
   const controller = new AbortController();
   let wanted = "",
     reading = false,
@@ -112,13 +113,14 @@ export function watchPost(options: Options) {
     const data = JSON.parse((event as MessageEvent).data) as {
       id: string;
       revision: string;
+      draftRevision?: string;
       deleted: boolean;
     };
     if (data.id !== options.id) return;
     if (data.deleted) return deleted();
     status("connected");
-    wanted = data.revision;
-    void refresh();
+    wanted = data.draftRevision || data.revision;
+    void refresh(Boolean(data.draftRevision && options.current().post.baseRevision !== data.revision));
   });
   stream.addEventListener("unauthorized", () => {
     if (stopped) return;
