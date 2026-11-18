@@ -188,14 +188,17 @@ export default function RichWriter({
   );
 }
 
-/** A component-only document still needs an empty line to put the caret in. */
+/** A component-only document still needs an empty line to put the caret in.
+ *  Adding it is bookkeeping, not an author edit: keep it out of undo history. */
 function ensureTrailingParagraph(editor: Editor) {
   const last = editor.state.doc.lastChild;
   if (last?.isTextblock) return;
   const paragraph = editor.schema.nodes.paragraph;
   if (!paragraph) return;
   editor.view.dispatch(
-    editor.state.tr.insert(editor.state.doc.content.size, paragraph.create()),
+    editor.state.tr
+      .insert(editor.state.doc.content.size, paragraph.create())
+      .setMeta("addToHistory", false),
   );
 }
 

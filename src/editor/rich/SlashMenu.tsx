@@ -83,7 +83,10 @@ function nextMenu(
   const caret = editor.view.coordsAtPos(slash.to);
   const box = host.getBoundingClientRect();
   const index = current && current.query === slash.query ? Math.min(current.index, items.length - 1) : 0;
-  return { ...slash, items, index, top: caret.bottom - box.top + 6, left: caret.left - box.left };
+  // Keep the 290px menu inside the pad when the caret sits near its right edge.
+  const menuWidth = 292;
+  const left = Math.max(0, Math.min(caret.left - box.left, box.width - menuWidth - 8));
+  return { ...slash, items, index, top: caret.bottom - box.top + 6, left };
 }
 
 function handleKey(

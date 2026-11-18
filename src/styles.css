@@ -860,6 +860,13 @@ textarea::placeholder {
   font-size: 10px;
   padding: 9px 15px;
 }
+.bottom-actions .new-content-menu summary.button {
+  padding: 0 9px;
+}
+.bottom-actions .new-content-options .button {
+  padding: 10px 12px;
+  font-size: 12px;
+}
 .notice {
   background: #f1f2ed;
   border: 1px solid #dedfd5;

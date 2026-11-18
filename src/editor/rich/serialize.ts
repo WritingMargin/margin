@@ -68,19 +68,29 @@ type Origin = {
 
 const origins = new WeakMap<PMNode, Origin>();
 
+/** Origins of the most recent load, by top-level child index. Undoing a step
+ *  rebuilds its nodes without identity; a rebuilt block whose content still
+ *  lines up with its loaded source (verified in keepOriginal) keeps that
+ *  source, so undo never drifts alternate Markdown syntax. */
+let loadedByIndex: Origin[] = [];
+
 export function rememberSources(doc: PMNode, imported: ImportedMarkdown) {
   const content: JSONContent[] = imported.doc.content ?? [];
   if (doc.childCount !== content.length) return;
   const load: Load = { trailing: imported.trailing };
+  const byIndex: Origin[] = [];
   doc.forEach((node, _offset, index) => {
     if (content[index]?.type !== node.type.name) return;
-    origins.set(node, {
+    const origin: Origin = {
       load,
       index,
       source: imported.sources[index] ?? null,
       gapBefore: imported.gaps[index] ?? null,
-    });
+    };
+    origins.set(node, origin);
+    byIndex[index] = origin;
   });
+  loadedByIndex = byIndex;
 }
 
 /** Blank-line-only text that can safely separate two blocks again. */
@@ -134,14 +144,19 @@ export function serializeDoc(doc: PMNode): Serialized {
   let first = true;
   let previous: Origin | undefined;
   let loaded: Load | undefined;
-  doc.forEach((node, offset) => {
+  doc.forEach((node, offset, index) => {
     if (isEmptyBlock(node)) return;
     const origin = origins.get(node);
     loaded ??= origin?.load;
     acc.write(separator(origin, previous, first));
     first = false;
-    // Untouched blocks keep their original Markdown; edited ones are written fresh.
-    const kept = origin?.source != null && keepOriginal(acc, node, offset, origin.source);
+    // Untouched blocks keep their original Markdown; edited ones are written
+    // fresh. An undone step rebuilds its nodes without identity, so a rebuilt
+    // block falls back to the same-index origin. keepOriginal still verifies
+    // the content lines up before reusing that source, so a real edit to the
+    // block never picks up a stale one.
+    const saved = origin ?? loadedByIndex[index];
+    const kept = saved?.source != null && keepOriginal(acc, node, offset, saved.source);
     if (!kept) block(node, offset, acc);
     previous = origin;
   });

@@ -113,6 +113,7 @@ var postWriteOAuthPermissions = map[string]string{
 	"GET /api/posts/{id}/reviews/notes/{note}/revisions": "content:draft",
 	"GET /api/posts/{id}/reviews":                        "content:draft",
 	"POST /api/posts/{id}/reviews":                       "content:draft",
+	"DELETE /api/posts/{id}/reviews/{review}":            "content:draft",
 	"POST /api/posts/{id}/reviews/notes/{note}/address":  "content:draft",
 	"POST /api/posts/{id}/sources":                       "content:draft",
 	"POST /api/posts/{id}/writing-notes":                 "content:draft",

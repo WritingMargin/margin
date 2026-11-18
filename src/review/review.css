@@ -113,6 +113,18 @@
   font-size: 12px;
   margin: 8px 0 0;
 }
+.review-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.review-entry-head .button {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
 .review-note {
   border-inline-start: 2px solid var(--theme-border, #dedfd6);
   padding-inline-start: 1rem;

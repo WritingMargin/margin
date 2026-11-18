@@ -66,6 +66,24 @@ export default function AuthorReviews({ post }: { post: Post }) {
       setBusy(false);
     }
   }
+  async function revoke(review: PeerReview) {
+    if (busy) return;
+    const who = review.reviewer_name || review.email;
+    if (!confirm(`Revoke the review for ${who}? They lose access with their next request.`))
+      return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await api(`${path}/${review.id}`, { method: "DELETE" });
+      setNotice(`Review revoked for ${who}.`);
+      setVersion((v) => v + 1);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   if (!post.id)
     return (
       <Empty
@@ -114,7 +132,21 @@ export default function AuthorReviews({ post }: { post: Post }) {
         )}
         {reviews.map((review) => (
           <article className="review-entry" key={review.id}>
-            <strong>{review.reviewer_name || review.email}</strong>
+            <div className="review-entry-head">
+              <strong>{review.reviewer_name || review.email}</strong>
+              {!review.closed && (
+                <button
+                  className="button"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void revoke(review)}
+                >
+                  {review.status === "Requested"
+                    ? "Revoke request"
+                    : "Revoke access"}
+                </button>
+              )}
+            </div>
             <p className="peer-review-status">
               {review.status}
               {review.closed && " · Closed"}

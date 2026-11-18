@@ -119,6 +119,31 @@ func TestReviewPassageTracksARepeatedQuoteAfterInsertion(t *testing.T) {
 	}
 }
 
+func TestAuthorRevokesReviewRequest(t *testing.T) {
+	a, _ := coreFixture(t)
+	input := draftInput("peer-revoke")
+	post := responseRow(t, request(t, a, "POST", "/api/posts", input, true), 201)
+	author := "/api/posts/" + post.str("id")
+	email := "gone@example.test"
+	review := token()
+	a.DB.Must(t.Context(), "INSERT INTO peer_reviews(id,email,post_id) VALUES($1,$2,$3)", review, email, post["id"])
+	invitation := uuid()
+	a.DB.Must(t.Context(), "INSERT INTO engine_invitations(id,email,role,article_id,token_hash,expires_at) VALUES($1,$2,'peer_reviewer',$3,$4,$5)",
+		invitation, email, post["id"], hash(token()), "2099-01-01T00:00:00.000Z")
+	reviewer := engineReviewerCookie(t, a, email, post.str("id"))
+	path := "/api/public/reviews/" + review
+	expectStatus(t, commentAuthRequest(a, "POST", path+"/open", Row{}, reviewer, "http://blog.test"), 200)
+	expectStatus(t, request(t, a, "DELETE", author+"/reviews/"+review, nil, true), 200)
+	if !first(a.DB.Must(t.Context(), "SELECT closed FROM peer_reviews WHERE id=$1", review)).yes("closed") {
+		t.Fatal("review not closed")
+	}
+	if first(a.DB.Must(t.Context(), "SELECT status FROM engine_invitations WHERE id=$1", invitation)).str("status") != "revoked" {
+		t.Fatal("pending invitation not revoked")
+	}
+	expectStatus(t, commentAuthRequest(a, "POST", path+"/open", Row{}, reviewer, "http://blog.test"), 404)
+	expectStatus(t, request(t, a, "DELETE", author+"/reviews/"+review, nil, true), 409)
+}
+
 func checkPeerAccess(t *testing.T, a *App, path, author, email string, reviewer *http.Cookie) {
 	t.Helper()
 	wrong := engineReviewerCookie(t, a, "other@example.test", "")

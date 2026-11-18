@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type KeyboardEvent, type Ref } from "react";
+import { useEffect, useLayoutEffect, useRef, type KeyboardEvent, type Ref } from "react";
 
 type Props = {
   value: string;
@@ -21,6 +21,22 @@ export default function PadTitle({ value, label, placeholder, className, onChang
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [value]);
+
+  useEffect(() => {
+    const el = field.current;
+    if (!el) return;
+    const resize = () => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    };
+    // The pad's width changes when the window resizes or the Insert shelf
+    // opens, and the heading font lands after first paint. Both re-wrap the
+    // text, so recalibrate instead of clipping the wrapped lines.
+    const observer = new ResizeObserver(resize);
+    observer.observe(el);
+    document.fonts?.ready.then(resize).catch(() => {});
+    return () => observer.disconnect();
+  }, []);
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" && event.key !== "ArrowDown") return;

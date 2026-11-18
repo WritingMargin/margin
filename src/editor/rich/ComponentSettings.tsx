@@ -37,8 +37,14 @@ const layoutFields: { name: string; label: string; options: string[] }[] = [
   { name: "wrap", label: "Wrap text beside", options: ["", "true", "false"] },
 ];
 
-/** Fields that need the full row because they hold URLs or prose. */
-const wideFields = new Set(["src", "url", "caption", "description", "accent"]);
+/** Long values (URLs, prose) take the full row; names take two of three columns. */
+const wideFields = new Set(["src", "url", "image", "caption", "description"]);
+const mediumFields = new Set(["title", "alt"]);
+
+function fieldSize(name: string) {
+  if (wideFields.has(name)) return "is-wide";
+  return mediumFields.has(name) ? "is-medium" : "";
+}
 
 const fieldLabels: Record<string, string> = {
   src: "Source",
@@ -94,7 +100,7 @@ export default function ComponentSettings({ src, label, kind: nodeKind, onChange
   return createPortal(
     <div className="modal-backdrop component-settings-backdrop" onClick={onClose}>
       <div
-        className="modal component-settings editor-button-surface"
+        className={`modal component-settings editor-button-surface${tab === "code" ? " is-code" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={`${label} settings`}
@@ -108,8 +114,10 @@ export default function ComponentSettings({ src, label, kind: nodeKind, onChange
           </button>
         </header>
 
+        <div className="component-settings-tabs">
         <InnerTabs<Tab>
           label="Component settings"
+          numbered={false}
           tabs={
             codeOnly
               ? [{ value: "code", label: "Code" }]
@@ -121,6 +129,7 @@ export default function ComponentSettings({ src, label, kind: nodeKind, onChange
           value={tab}
           onChange={switchTab}
         />
+        </div>
 
         <div className="dialog-body component-settings-body">
           {tab === "properties" ? (
@@ -187,7 +196,7 @@ function Properties({
           {fields.map((field) => (
             <label
               key={field.name}
-              className={wideFields.has(field.name) ? "is-wide" : ""}
+              className={fieldSize(field.name)}
             >
               {fieldLabels[field.name] ?? field.label}
               {field.type === "select" ? (

@@ -1,10 +1,12 @@
 import { canPublish } from "../../shared/team";
 import { useTeamIdentity } from "../auth/TeamContext";
 import { contentTypeLabel } from "../../shared/content-types";
-import { ArrowUpRight, CheckCheck, Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCheck, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { AdminController } from "./useAdminController";
 import { editorSaveState } from "../editor/save-state";
 import { visibilityChange } from "../editor/visibility-change";
+import "./new-content-menu.css";
 type Props = {
   state: Pick<
     AdminController,
@@ -76,23 +78,72 @@ function SaveActions({ state, label }: Props & { label: string }) {
   return <PublisherSaveActions state={state} label={label} />;
 }
 
+/** Same split control as New post: Save is the primary action, and the
+ *  attached summary opens Publish as the second option. */
 function PublisherSaveActions({ state, label }: Props & { label: string }) {
   const { post, busy, dirty, save } = state;
   const published = post.status === "published";
-  return <>
-        <button className="button" disabled={busy || (!!post.id && !dirty)} onClick={() => save()}>
-          {busy ? <Loader2 className="spin" size={14} /> : null}{{ archived: "Save archive", draft: "Save draft", published: "Save draft" }[post.status]}
-        </button>
-        <button
-          className="button primary"
-          disabled={busy || (published && !dirty)}
-          title={published ? `Publish the reviewed changes to the live ${label}` : `Make this ${label} publicly readable`}
-          onClick={() => save(true)}
-        >
-          {published ? "Publish changes" : `Publish ${label}`}
-          <ArrowUpRight size={15} />
-        </button>
-  </>;
+  const saveLabel = { archived: "Save archive", draft: "Save draft", published: "Save draft" }[post.status];
+  const publishLabel = published ? "Publish changes" : `Publish ${label}`;
+  const publishTitle = published
+    ? `Publish the reviewed changes to the live ${label}`
+    : `Make this ${label} publicly readable`;
+  const container = useRef<HTMLDivElement>(null);
+  const details = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const outside = (event: PointerEvent) => {
+      if (details.current && !container.current?.contains(event.target as Node)) details.current.open = false;
+    };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, []);
+  const choose = (publish: boolean) => {
+    if (details.current) details.current.open = false;
+    void save(publish);
+  };
+  return (
+    <div
+      ref={container}
+      className="new-content-menu save-content-menu"
+      onBlur={(event) => {
+        if (details.current && !event.currentTarget.contains(event.relatedTarget)) details.current.open = false;
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && details.current?.open) {
+          event.preventDefault();
+          event.stopPropagation();
+          details.current.open = false;
+          details.current.querySelector("summary")?.focus();
+        }
+      }}
+    >
+      <button
+        type="button"
+        className="button primary new-content-default"
+        disabled={busy}
+        onClick={() => choose(false)}
+      >
+        {busy ? <Loader2 className="spin" size={14} /> : null}
+        {saveLabel}
+      </button>
+      <details ref={details}>
+        <summary className="button primary" aria-label={`${saveLabel} options`}>
+          <ChevronDown size={14} aria-hidden="true" />
+        </summary>
+        <div className="new-content-options" aria-label={`${saveLabel} options`}>
+          <button
+            type="button"
+            className="button"
+            disabled={busy || (published && !dirty)}
+            title={publishTitle}
+            onClick={() => choose(true)}
+          >
+            <ArrowUpRight size={15} aria-hidden="true" /> {publishLabel}
+          </button>
+        </div>
+      </details>
+    </div>
+  );
 }
 
 function stagedSaveState(state: Props["state"], fallback: { label: string; detail: string }) {

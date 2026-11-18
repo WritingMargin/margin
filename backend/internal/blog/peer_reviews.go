@@ -15,6 +15,7 @@ func (a *App) peerRoutes() {
 	a.mux.HandleFunc("POST /api/public/reviews/{invite}/approve", a.approvePeerReview)
 	a.mux.HandleFunc("GET /api/posts/{id}/reviews", a.authorReviews)
 	a.mux.HandleFunc("POST /api/posts/{id}/reviews", a.invitePeer)
+	a.mux.HandleFunc("DELETE /api/posts/{id}/reviews/{review}", a.revokePeerReview)
 	a.mux.HandleFunc("GET /api/posts/{id}/reviews/notes/{note}/revisions", a.peerFixRevisions)
 	a.mux.HandleFunc("POST /api/posts/{id}/reviews/notes/{note}/address", a.addressPeerNote)
 }
@@ -122,6 +123,25 @@ func (a *App) authorReviews(w http.ResponseWriter, r *http.Request) {
 		row["notes"] = a.peerNotes(r.Context(), row.str("id"))
 	}
 	send(w, 200, rows)
+}
+
+// Closing the review withdraws the request: the reviewer loses article access
+// on their next request, and a still-pending invitation can no longer be
+// accepted. The engine's accepted article grant is managed separately in Team.
+func (a *App) revokePeerReview(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	postID := r.PathValue("id")
+	a.getPost(ctx, postID)
+	tx, err := a.DB.SQL.BeginTx(ctx, nil)
+	must(err)
+	defer tx.Rollback()
+	review := a.queryPostTransaction(ctx, tx, "UPDATE peer_reviews SET closed=TRUE WHERE id=$1 AND post_id=$2 AND closed=FALSE RETURNING email", r.PathValue("review"), postID)
+	if review == nil {
+		fail(409, "This review request was already closed.")
+	}
+	a.execInteraction(ctx, tx, "UPDATE engine_invitations SET status='revoked' WHERE email=$1 AND article_id=$2 AND role='peer_reviewer' AND status='pending'", review.str("email"), postID)
+	must(tx.Commit())
+	send(w, 200, Row{"ok": true})
 }
 
 func (a *App) addPeerNote(w http.ResponseWriter, r *http.Request) {

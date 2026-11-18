@@ -11,3 +11,5 @@
 .new-content-options .button:hover, .new-content-options .button:focus-visible { background: #f1f3eb; }
 .sidebar-create { display: flex; margin: 18px 0; }
 .sidebar-create .new-content-default { justify-content: flex-start; }
+.save-content-menu > .new-content-default { justify-content: center; }
+.save-content-menu .new-content-options { left: auto; right: 0; }
