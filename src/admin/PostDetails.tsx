@@ -1,6 +1,7 @@
 import { useTeamIdentity } from "../auth/TeamContext";
 import { canPublish } from "../../shared/team";
 import { contentTypeLabel } from "../../shared/content-types";
+import ScrollTabs from "../components/ScrollTabs";
 import Select from "../components/Select";
 import PostContentsControl from "./PostContentsControl";
 import { useState, type ReactNode } from "react";
@@ -158,10 +159,11 @@ export default function PostDetails({ state, published, startInSEO }: Props) {
 
 function SEOSection({ state }: Props) {
   const saved = state.conflicts.baseline.current;
+  const livePublished = saved && (saved.status === "published" || Boolean(saved.baseRevision));
   return (
     <>
-      {saved?.status === "published" && (
-        <PublishedShare key={saved.revision} post={saved} />
+      {livePublished && (
+        <PublishedShare key={saved.baseRevision || saved.revision} post={saved} />
       )}
       <PostSharingImage post={state.post} change={state.change} generate={() => state.setModal("sharing-image")} />
       <ArticleAuditPanel post={state.post} audit={state.articleAudit} />
@@ -177,7 +179,7 @@ type Section = "details" | "seo" | "recommendations" | "update" | "polls";
 function specialSection(section: Section, state: Props["state"]): ReactNode {
   if (section === "seo") return <SEOSection state={state} />;
   if (section === "polls") return <PollAdminPanel post={state.conflicts.baseline.current || state.post} />;
-  if (section === "update") return <AuthorUpdateEditor postId={state.post.id} published={state.conflicts.baseline.current?.status === "published"} />;
+  if (section === "update") return <AuthorUpdateEditor postId={state.post.id} published={state.conflicts.baseline.current?.status === "published" || Boolean(state.conflicts.baseline.current?.baseRevision || state.post.baseRevision)} />;
   if (section === "recommendations") return <PostRecommendations post={state.post} change={state.change} />;
   return null;
 }
@@ -204,10 +206,10 @@ function DetailsHeader({
           ? "Your changes are live."
           : "Shape how your story appears to readers."}
       </p>
-      <div
+      <ScrollTabs
         className="settings-tabs"
         role="group"
-        aria-label={`${label} settings`}
+        label={`${label} settings`}
       >
         <button
           type="button"
@@ -232,7 +234,7 @@ function DetailsHeader({
         </button>
         {canPublish(role) && <button type="button" aria-pressed={section === "update"} onClick={() => setSection("update")}>Author update</button>}
         {canPublish(role) && <button type="button" aria-pressed={section === "polls"} onClick={() => setSection("polls")}>Polls</button>}
-      </div>
+      </ScrollTabs>
     </header>
   );
 }

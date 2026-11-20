@@ -1229,16 +1229,29 @@ textarea::placeholder {
 }
 .section-tabs {
   display: flex;
+  flex-wrap: nowrap;
   gap: 23px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 25px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.section-tabs::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 .section-tabs button {
+  flex: 0 0 auto;
   font-size: 11px;
   padding: 13px 0 15px;
   color: #8f8f82;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  white-space: nowrap;
 }
 .section-tabs button.active {
   border-color: #333;

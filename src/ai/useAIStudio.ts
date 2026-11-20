@@ -32,7 +32,7 @@ export function useAIStudio({
   imagePurpose?: "cover" | "sharing";
   notify: (text: string) => void;
 }) {
-  const published = Boolean(post.id) && post.status === "published";
+  const published = Boolean(post.id) && (post.status === "published" || Boolean(post.baseRevision));
   const [tab, setTab] = useState<"social" | "images" | "history">(
     initialTab === "social" && !published ? "images" : initialTab,
   );

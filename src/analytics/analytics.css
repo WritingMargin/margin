@@ -699,10 +699,7 @@
 }
 
 .analytics-tabs {
-  flex-wrap: wrap;
   column-gap: 26px;
-  row-gap: 0;
-  overflow: visible;
 }
 .analytics-tabs button {
   white-space: nowrap;

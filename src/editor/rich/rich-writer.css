@@ -512,9 +512,17 @@
     gap: 4px;
     width: auto;
     overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
     padding: 8px 12px;
     border-right: 0;
     border-bottom: 1px solid var(--line, #e7e6e0);
+  }
+  .component-shelf::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
   .component-shelf-title,
   .component-shelf-hint,
@@ -1028,10 +1036,13 @@
 .component-settings .inner-tabs-container {
   margin-bottom: 0;
 }
-.component-settings .inner-tabs {
+.component-settings .inner-tabs-container > .scroll-tabs {
   gap: 2px;
   padding: 3px;
   border-radius: 9px;
+}
+.component-settings .inner-tabs {
+  gap: 2px;
 }
 .component-settings .inner-tabs [role="tab"] {
   padding: 5px 12px;

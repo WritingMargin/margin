@@ -1,5 +1,6 @@
 import { Check,BookOpen,FileText,Home,MessageSquare,PanelBottom } from "lucide-react";
 import "../blog-design.css";
+import ScrollTabs from "../components/ScrollTabs";
 import ArticleControls from "./ArticleControls";
 import CommentControls from "./CommentControls";
 import DesignPreview from "./DesignPreview";
@@ -47,10 +48,10 @@ export function Designer(props: Parameters<typeof useDesigner>[0]) {
           {error}
         </div>
       )}
-      <div
+      <ScrollTabs
         className="design-section-tabs"
         role="tablist"
-        aria-label="Design section"
+        label="Design section"
       >
         {(
           [
@@ -75,7 +76,7 @@ export function Designer(props: Parameters<typeof useDesigner>[0]) {
           </button>
         ))}
         <span>Every detail, considered.</span>
-      </div>
+      </ScrollTabs>
       <DesignMode state={state} />
       <DesignWorkspace state={state} />
     </section>

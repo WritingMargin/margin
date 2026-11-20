@@ -24,8 +24,15 @@ func TestPublishedPostLinkLifecycleAndRoles(t *testing.T) {
 		t.Fatal("link used an old slug", link)
 	}
 	containsHTML(t, request(t, app, "GET", "/post/renamed-story", nil, false).Body.String(), `rel="canonical" href="`+link.str("url")+`"`)
+	shortPath := "/s/" + strings.SplitN(post.str("id"), "-", 2)[0]
+	shortRedirect := request(t, app, "GET", shortPath, nil, false)
+	expectStatus(t, shortRedirect, 302)
+	if shortRedirect.Header().Get("Location") != "/post/renamed-story" {
+		t.Fatalf("short redirect location = %q", shortRedirect.Header().Get("Location"))
+	}
 	for _, status := range []string{"draft", "archived"} {
 		post = responseRow(t, request(t, app, "PUT", "/api/posts/"+post.str("id"), Row{"revision": post["revision"], "status": status}, true), 200)
+		expectStatus(t, request(t, app, "GET", shortPath, nil, false), 404)
 		failure := responseRow(t, request(t, app, "GET", path, nil, true), 409)
 		if failure.str("code") != "POST_NOT_PUBLISHED" || failure["url"] != nil {
 			t.Fatal("private content got a public URL", failure)

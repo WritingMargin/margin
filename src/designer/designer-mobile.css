@@ -39,8 +39,9 @@
   .expanded-designer .design-save-actions { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
   .expanded-designer .design-save-actions > span { display: inline; font-size: 12px; }
   .expanded-designer .design-save-actions .button { min-height: 44px; font-size: 13px; }
-  .expanded-designer .design-section-tabs { margin-bottom: 16px; overflow-x: auto; }
-  .expanded-designer .design-section-tabs > button { flex: 0 0 auto; min-height: 48px; font-size: 12px; white-space: nowrap; padding-inline: 12px; }
+  .expanded-designer .design-section-tabs { margin-bottom: 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-behavior: smooth; scrollbar-width: none; }
+  .expanded-designer .design-section-tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .expanded-designer .design-section-tabs > button { flex: 0 0 auto; min-height: 48px; margin-bottom: 0; font-size: 12px; white-space: nowrap; padding-inline: 12px; }
   .expanded-designer .design-mode { flex-wrap: wrap; gap: 8px; }
   .expanded-designer .design-preview-top { flex-wrap: wrap; gap: 8px; }
 }

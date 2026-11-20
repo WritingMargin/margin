@@ -115,7 +115,14 @@ function EditorSidePanel({
   close: () => void;
 }) {
   return panel === "Simplified" ? (
-    <SimplifiedPanel post={state.post} close={close} />
+    <SimplifiedPanel
+      post={state.post}
+      close={close}
+      openSettings={() => {
+        close();
+        void state.navigate({ view: "readers", readersTab: "settings" });
+      }}
+    />
   ) : (
     <DraftPanel state={state} close={close} />
   );

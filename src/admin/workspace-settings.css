@@ -44,8 +44,9 @@
 }
 
 /* Publication settings */
-.settings-tabs { display: flex; gap: 26px; border-bottom: 1px solid var(--line); margin: 0 0 28px; }
-.settings-tabs button { padding: 12px 0; color: #79796d; border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: 12px; }
+.settings-tabs { display: flex; flex-wrap: nowrap; gap: 26px; border-bottom: 1px solid var(--line); margin: 0 0 28px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-behavior: smooth; scrollbar-width: none; }
+.settings-tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.settings-tabs button { flex: 0 0 auto; padding: 12px 0; color: #79796d; border-bottom: 2px solid transparent; margin-bottom: -1px; font-size: 12px; white-space: nowrap; }
 .settings-tabs button[aria-selected="true"] { color: #252521; border-bottom-color: #252521; }
 .settings-tabs button:focus-visible { outline: 2px solid #777; outline-offset: 4px; }
 .settings-general { display: grid; gap: 24px; }

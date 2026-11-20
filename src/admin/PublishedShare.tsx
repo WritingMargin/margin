@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, Copy, Link2 } from "lucide-react";
 import { api } from "../api";
 import type { Post } from "../../shared/types";
-import { devShareLink, socialShareLinks } from "../blog/share";
+import { devShareLink, shortArticleURL, socialShareLinks } from "../blog/share";
 import "./published-share.css";
 
 export default function PublishedShare({ post }: { post: Post }) {
@@ -39,6 +39,7 @@ export default function PublishedShare({ post }: { post: Post }) {
       setMessage("Select and copy the text below.");
     }
   }
+  const shortURL = shortArticleURL(url, post.id);
   const caption = [post.title, post.excerpt, url].filter(Boolean).join("\n\n");
   return (
     <section className="published-share" aria-label="Share your article">
@@ -51,13 +52,24 @@ export default function PublishedShare({ post }: { post: Post }) {
               {post.slug}
               <ArrowUpRight size={13} />
             </a>
-            <button
-              type="button"
-              onClick={() => void copy(url, "Article link copied.")}
-            >
-              <Copy size={13} />
-              Copy link
-            </button>
+            <div className="published-share-copy-actions">
+              {shortURL && (
+                <button
+                  type="button"
+                  onClick={() => void copy(shortURL, "Short article link copied.")}
+                >
+                  <Copy size={13} />
+                  Copy short link
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void copy(url, "Article link copied.")}
+              >
+                <Copy size={13} />
+                Copy link
+              </button>
+            </div>
           </div>
           <nav aria-label="Sharing destinations">
             {socialShareLinks(post.title, url).map(({ label, href }) => (

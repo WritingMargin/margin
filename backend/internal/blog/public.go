@@ -47,9 +47,27 @@ func (a *App) publicRoutes() {
 	a.mux.HandleFunc("GET /privacy", a.publicPageHandler(a.privacyHTML))
 	a.mux.HandleFunc("GET /post/{slug}", a.publicPageHandler(a.articleHTML))
 	a.mux.HandleFunc("GET /post/{slug}/simplified", a.publicPageHandler(a.simplifiedArticleHTML))
+	a.mux.HandleFunc("GET /s/{code}", a.publicPageHandler(a.shortArticleRedirect))
 	a.mux.HandleFunc("GET /newsletter/{action}", a.publicPageHandler(a.newsletterHTML))
 	a.mux.HandleFunc("GET /robots.txt", a.robots)
 	a.mux.HandleFunc("GET /sitemap.xml", a.sitemap)
+}
+
+var shortPostCodeRE = regexp.MustCompile(`^(?i:[0-9a-f]{8}(?:-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})?)$`)
+
+func (a *App) shortArticleRedirect(w http.ResponseWriter, r *http.Request) {
+	code := strings.ToLower(strings.TrimSpace(r.PathValue("code")))
+	if !shortPostCodeRE.MatchString(code) {
+		a.publicError(w, r, 404)
+		return
+	}
+	row := first(a.DB.Must(r.Context(), "SELECT slug FROM posts WHERE status='published' AND (LOWER(id)=$1 OR LOWER(id) LIKE $1 || '-%') ORDER BY created_at ASC,id ASC LIMIT 1", code))
+	if row == nil {
+		a.publicError(w, r, 404)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	http.Redirect(w, r, sitePath("/post/"+url.PathEscape(row.str("slug"))), http.StatusFound)
 }
 func (a *App) publicPageHandler(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

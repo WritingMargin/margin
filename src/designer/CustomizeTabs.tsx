@@ -1,12 +1,14 @@
 import { useEffect, useId, useRef, useState, type ReactNode, type KeyboardEvent } from "react";
+import ScrollTabs from "../components/ScrollTabs";
 
 const tabs = ["Layout", "Content", "Style"] as const;
 export default function CustomizeTabs({ layout, content, style }: { layout: ReactNode; content: ReactNode; style: ReactNode }) {
   const id = useId();
-  const list = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    list.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus({ preventScroll: true });
-    list.current?.scrollIntoView({ block: "nearest" });
+    const selected = root.current?.querySelector<HTMLButtonElement>('[role="tablist"] [aria-selected="true"]');
+    selected?.focus({ preventScroll: true });
+    selected?.scrollIntoView({ block: "nearest" });
   }, []);
   const [active, setActive] = useState(0);
   const panels = [layout, content, style];
@@ -17,10 +19,10 @@ export default function CustomizeTabs({ layout, content, style }: { layout: Reac
     setActive(next);
     event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
   };
-  return <div className="customize-sections">
-    <div ref={list} className="customize-tabs" role="tablist" aria-label="Customize settings">
+  return <div ref={root} className="customize-sections">
+    <ScrollTabs className="customize-tabs" role="tablist" label="Customize settings">
       {tabs.map((name, index) => <button key={name} type="button" role="tab" id={`${id}-tab-${index}`} aria-controls={`${id}-panel-${index}`} aria-selected={active === index} tabIndex={active === index ? 0 : -1} onClick={() => setActive(index)} onKeyDown={event => navigate(event, index)}>{name}</button>)}
-    </div>
+    </ScrollTabs>
     {panels.map((panel, index) => <div key={tabs[index]} id={`${id}-panel-${index}`} role="tabpanel" aria-labelledby={`${id}-tab-${index}`} hidden={active !== index}>{panel}</div>)}
   </div>;
 }

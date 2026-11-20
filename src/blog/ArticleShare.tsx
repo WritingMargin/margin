@@ -3,7 +3,7 @@ import { useShareMenu } from "./useShareMenu";
 import { ChevronDown, Copy, ExternalLink, Mail, Share2 } from "lucide-react";
 import type { Post } from "../../shared/types";
 import { sitePath } from "../base-path";
-import { devShareLink, shareArticle, socialShareLinks } from "./share";
+import { devShareLink, shareArticle, shortArticleURL, socialShareLinks } from "./share";
 
 export default function ArticleShare({
   post,
@@ -21,14 +21,15 @@ export default function ArticleShare({
   );
   const { menu, close } = useShareMenu();
   if (post.status !== "published") return null;
-  async function share(native: boolean) {
-    const result = await shareArticle(post.title, url, {
+  const shortURL = shortArticleURL(url, post.id);
+  async function share(native: boolean, targetUrl = url) {
+    const result = await shareArticle(post.title, targetUrl, {
       share:
         native && navigator.share ? navigator.share.bind(navigator) : undefined,
       clipboard: navigator.clipboard,
     });
-    setMessage(result === "copied" ? "Link copied" : "");
-    setManualURL(result === "manual" ? url : "");
+    setMessage(result === "copied" ? (targetUrl === shortURL ? "Short link copied" : "Link copied") : "");
+    setManualURL(result === "manual" ? targetUrl : "");
   }
   async function copyForPlatform(platform: "Medium" | "Substack") {
     const destination =
@@ -151,6 +152,12 @@ export default function ArticleShare({
               <Copy size={15} aria-hidden="true" />
               Copy link
             </button>
+            {shortURL && (
+              <button type="button" onClick={() => void share(false, shortURL)}>
+                <Copy size={15} aria-hidden="true" />
+                Copy short link
+              </button>
+            )}
             {typeof navigator !== "undefined" &&
               typeof navigator.share === "function" && (
                 <button type="button" onClick={() => void share(true)}>

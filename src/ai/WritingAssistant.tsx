@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AIConfig } from "../../shared/ai";
 import type { Post } from "../../shared/types";
 import type {
+  SavedWritingNote,
   WritingSession,
   WritingTurn,
   WritingView,
@@ -36,6 +37,40 @@ type Props = {
   insert: (before: string, after?: string) => void;
   selection: () => string;
 };
+function insightKey(title: string, body: string) {
+  return `${title.trim()}\n${body.trim()}`;
+}
+
+function useSavedInsightKeys(postId: string, refreshKey?: unknown) {
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!postId) {
+      setSaved({});
+      return;
+    }
+    const controller = new AbortController();
+    void api<SavedWritingNote[]>("/posts/" + postId + "/writing-notes", {
+      signal: controller.signal,
+    })
+      .then((items) => {
+        if (controller.signal.aborted) return;
+        const next: Record<string, boolean> = {};
+        for (const item of items) {
+          next[insightKey(item.note.title, item.note.body)] = true;
+        }
+        setSaved((current) => ({ ...current, ...next }));
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [postId, refreshKey]);
+  return {
+    isSaved: (title: string, body: string) =>
+      Boolean(saved[insightKey(title, body)]),
+    markSaved: (title: string, body: string) =>
+      setSaved((current) => ({ ...current, [insightKey(title, body)]: true })),
+  };
+}
+
 export default function WritingAssistant({
   post,
   session,
@@ -53,6 +88,7 @@ export default function WritingAssistant({
   const [config, setConfig] = useState<AIConfig | null>(null);
   const [configError, setConfigError] = useState("");
   const keeping = useRef(false);
+  const savedInsights = useSavedInsightKeys(post.id, session.lastResearch);
   const [copied, setCopied] = useState("");
   const [pane, setPane] = useState<"thread" | "library">("thread");
   const [history, setHistory] = useState(false);
@@ -122,10 +158,10 @@ export default function WritingAssistant({
     choose(next);
   }
   async function keep(turn: WritingTurn, title: string, body: string) {
-    if (keeping.current) return;
+    if (keeping.current) return false;
     if (!post.id) {
       onChange({ error: "Save the draft to keep insights with it." });
-      return;
+      return false;
     }
     keeping.current = true;
     const context = turn.research
@@ -142,9 +178,12 @@ export default function WritingAssistant({
           reason: "",
         }),
       );
-      onChange({ view: "saved", error: "" });
+      savedInsights.markSaved(title, body);
+      onChange({ error: "" });
+      return true;
     } catch (error) {
       onChange({ error: (error as Error).message });
+      return false;
     } finally {
       keeping.current = false;
     }
@@ -248,6 +287,7 @@ export default function WritingAssistant({
             manage,
             choose,
             keep,
+            isSaved: savedInsights.isSaved,
             refine,
             copy,
           }}

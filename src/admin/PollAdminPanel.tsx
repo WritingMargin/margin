@@ -18,6 +18,10 @@ type PollSummary = {
 };
 type PollList = { polls: PollSummary[] };
 
+function isPollArticlePublished(post: Post) {
+  return post.status === "published" || Boolean(post.baseRevision);
+}
+
 export default function PollAdminPanel({ post }: { post: Post }) {
   const [data, setData] = useState<PollList | null>(null);
   const [error, setError] = useState("");
@@ -26,14 +30,15 @@ export default function PollAdminPanel({ post }: { post: Post }) {
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
   const path = `/posts/${post.id}/polls`;
+  const published = isPollArticlePublished(post);
   useEffect(() => {
-    if (post.status !== "published") return;
+    if (!published) return;
     let active = true;
     api<PollList>(path).then(value => { if (active) setData(value); })
       .catch(cause => { if (active) setError((cause as Error).message); });
     return () => { active = false; };
-  }, [path, post.id, post.status, post.revision]);
-  if (post.status !== "published")
+  }, [path, post.id, published, post.baseRevision, post.revision]);
+  if (!published)
     return <p className="muted">Publish this article to see its poll results.</p>;
 
   async function close(id: string) {

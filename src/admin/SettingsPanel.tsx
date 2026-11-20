@@ -6,6 +6,7 @@ import type { KeyboardEvent } from "react";
 import type { Theme } from "../../shared/types";
 import type { SettingsTab } from "../admin-route";
 import PageHeading from "../components/PageHeading";
+import ScrollTabs from "../components/ScrollTabs";
 import SoftwareUpdateSettings from "../settings/SoftwareUpdateSettings";
 import DomainSettings from "../settings/DomainSettings";
 import SEOSettings from "../settings/SEOSettings";
@@ -63,7 +64,7 @@ export default function SettingsPanel({
         title="Publication settings"
         description="Manage your blog’s address, search appearance, installed app, and connected tools."
       />
-      <div className="settings-tabs" role="tablist" aria-label="Settings">
+      <ScrollTabs className="settings-tabs" role="tablist" label="Settings">
         {tabs.map((item, index) => (
           <button
             key={item.id}
@@ -79,7 +80,7 @@ export default function SettingsPanel({
             {item.label}
           </button>
         ))}
-      </div>
+      </ScrollTabs>
       <div
         role="tabpanel"
         id={`settings-panel-${tab}`}

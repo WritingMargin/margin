@@ -19,6 +19,10 @@ type Version = {
   error: string;
 };
 
+export function hasPublishedArticle(post: Pick<Post, "id" | "status" | "baseRevision">) {
+  return Boolean(post.id && (post.status === "published" || post.baseRevision));
+}
+
 function useSimplifiedVersion(post: Post) {
   const [version, setVersion] = useState<Version | null>(null);
   const [content, setContent] = useState("");
@@ -26,15 +30,22 @@ function useSimplifiedVersion(post: Post) {
   const [hidden, setHidden] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const published = hasPublishedArticle(post);
+  const publishedRevision = post.baseRevision || post.revision;
   async function refresh() {
-    if (!post.id) return;
+    if (!post.id || !published) return;
     try {
       const value = await api<Version>(`/posts/${post.id}/simplified`);
       setVersion(value); setContent(value.content); setReviewed(value.reviewed);
       setHidden(value.status === "hidden"); setMessage("");
     } catch (error) { setMessage((error as Error).message); }
   }
-  useEffect(() => { void refresh(); }, [post.id, post.revision]);
+  useEffect(() => { void refresh(); }, [post.id, publishedRevision, published]);
+  useEffect(() => {
+    if (!version || (version.status !== "queued" && version.status !== "generating")) return;
+    const timer = window.setTimeout(() => void refresh(), 1500);
+    return () => window.clearTimeout(timer);
+  }, [version]);
   async function save() {
     if (!version) return;
     setBusy(true); setMessage("");
@@ -68,7 +79,15 @@ function useSimplifiedVersion(post: Post) {
 
 type State = ReturnType<typeof useSimplifiedVersion>;
 
-export default function SimplifiedPanel({ post, close }: { post: Post; close: () => void }) {
+export default function SimplifiedPanel({
+  post,
+  close,
+  openSettings,
+}: {
+  post: Post;
+  close: () => void;
+  openSettings?: () => void;
+}) {
   const panel = useRef<HTMLElement>(null);
   useOverlayFocus(panel, true, close);
   const state = useSimplifiedVersion(post);
@@ -76,29 +95,65 @@ export default function SimplifiedPanel({ post, close }: { post: Post; close: ()
     <section ref={panel} className="modal post-details-modal simplified-modal editor-button-surface" role="dialog" aria-modal="true" aria-labelledby="simplified-title" aria-describedby="simplified-intro">
       <button type="button" className="modal-close icon-button" aria-label="Close Simplified version" onClick={close}><X size={18} /></button>
       <header className="dialog-header"><span className="eyebrow">ARTICLE VIEW</span><h2 id="simplified-title">Simplified version</h2><p id="simplified-intro">Review the shorter version for accuracy, then mark it reviewed. Changes here do not edit the full article.</p></header>
-      <SimplifiedBody post={post} state={state} />
+      <SimplifiedBody post={post} state={state} openSettings={openSettings} />
       <SimplifiedFooter post={post} state={state} />
     </section>
   </div>;
 }
 
-function SimplifiedBody({ post, state }: { post: Post; state: State }) {
-  if (!post.id || post.status !== "published")
+function SimplifiedBody({
+  post,
+  state,
+  openSettings,
+}: {
+  post: Post;
+  state: State;
+  openSettings?: () => void;
+}) {
+  if (!hasPublishedArticle(post))
     return <div className="dialog-body simplified-panel-body"><p>Publish this article to generate its Simplified version.</p></div>;
   const version = state.version;
+  const sourceRevision = version?.sourceRevision || post.baseRevision || post.revision || "";
   return <div className="dialog-body simplified-panel-body">
-    <VersionStatus state={state} version={version} />
+    <VersionStatus state={state} version={version} openSettings={openSettings} />
     <SimplifiedControls state={state} />
-    <SimplifiedHistory key={version?.writerRevision || post.revision} postId={post.id} currentSourceRevision={post.revision || ""} />
+    <SimplifiedHistory key={version?.writerRevision || sourceRevision} postId={post.id} currentSourceRevision={sourceRevision} />
   </div>;
 }
 
-function VersionStatus({ state, version }: { state: State; version: Version | null }) {
+function VersionStatus({
+  state,
+  version,
+  openSettings,
+}: {
+  state: State;
+  version: Version | null;
+  openSettings?: () => void;
+}) {
   return <>
     <div className="simplified-panel-status"><span>Status</span><strong>{version?.status ?? "Loading…"}</strong><button type="button" className="button" disabled={state.busy} onClick={() => void state.refresh()}>Refresh</button></div>
     <VersionError version={version} />
     {version?.status === "failed" && <button type="button" className="button" disabled={state.busy} onClick={() => void state.retry()}>Retry generation</button>}
-    {version?.status === "unavailable" && <><p>Enable Simplified articles in Readers settings, then generate this published article or wait until its next revision.</p><button type="button" className="button" disabled={state.busy} onClick={() => void state.generate()}>Generate for this article</button></>}
+    {version?.status === "unavailable" && (
+      <>
+        <p>
+          Generate a Simplified version for this published article now, or enable automatic generation in{" "}
+          <a
+            className="simplified-settings-link"
+            href={sitePath("/admin/readers/settings")}
+            onClick={event => {
+              if (!openSettings || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+              event.preventDefault();
+              openSettings();
+            }}
+          >
+            Readers settings
+          </a>{" "}
+          for future revisions.
+        </p>
+        <button type="button" className="button" disabled={state.busy} onClick={() => void state.generate()}>Generate for this article</button>
+      </>
+    )}
     {state.message && <p role="status">{state.message}</p>}
   </>;
 }
@@ -130,7 +185,7 @@ function SimplifiedFooter({ post, state }: { post: Post; state: State }) {
 }
 
 function canShowSimplifiedFooter(post: Post, version: Version | null): version is Version {
-  return !!post.id && post.status === "published" && !!version && (version.status === "ready" || version.status === "hidden");
+  return hasPublishedArticle(post) && !!version && (version.status === "ready" || version.status === "hidden");
 }
 
 function canSaveSimplified(state: State, version: Version) {

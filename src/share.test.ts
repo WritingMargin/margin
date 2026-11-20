@@ -111,3 +111,16 @@ test("share menus follow the trigger and flip above when the viewport is tight",
   assert.equal(moved.bottom, 48);
   assert.equal(moved.maxHeight, 480);
 });
+
+test("short article URLs preserve mounted paths and swap cleanly in social summaries", async () => {
+  const { shortArticleURL, swapSummaryArticleURL } = await import("./blog/share");
+  const postId = "e54e1bd4-93f4-4fe1-be00-998f4dda86c9";
+  const slug = "a-very-long-article-slug-for-social-sharing";
+  const full = `https://example.com/blog/post/${slug}`;
+  const short = shortArticleURL(full, postId);
+  assert.equal(short, "https://example.com/blog/s/e54e1bd4");
+  const draft = `A concise insight.\n\n${full}`;
+  const shortened = swapSummaryArticleURL(draft, postId, slug, true);
+  assert.equal(shortened, "A concise insight.\n\nhttps://example.com/blog/s/e54e1bd4");
+  assert.equal(swapSummaryArticleURL(shortened, postId, slug, false), draft);
+});

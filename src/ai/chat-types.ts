@@ -29,7 +29,8 @@ export type ChatBodyProps = AssistantInput & {
   copied: string;
   manage: (view: "sources" | "notes") => void;
   choose: (text: string) => void;
-  keep: (turn: WritingTurn, title: string, body: string) => void;
+  keep: (turn: WritingTurn, title: string, body: string) => Promise<boolean | void> | boolean | void;
+  isSaved?: (title: string, body: string) => boolean;
   refine: (text: string) => void;
   copy: (text: string, id: string) => void;
 };

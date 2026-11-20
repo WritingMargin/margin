@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { BookmarkPlus, Check, Copy, CornerDownRight } from "lucide-react";
 import { copyWritingSection, type WritingPlan } from "../../shared/writing";
 import ReplyMarkdown from "./ReplyMarkdown";
 import "./writing-insights.css";
 
 type Actions = {
-  keep: (title: string, body: string) => void;
+  keep: (title: string, body: string) => Promise<boolean | void> | boolean | void;
+  isSaved?: (title: string, body: string) => boolean;
   refine?: (note: string) => void;
   busy?: boolean;
 };
@@ -18,6 +20,7 @@ export function WritingResults({
   copied,
   copy,
   keep,
+  isSaved,
   refine,
   busy,
 }: Props) {
@@ -55,6 +58,7 @@ export function WritingResults({
                 body={note}
                 quote={section.quote}
                 keep={keep}
+                isSaved={isSaved}
                 refine={refine}
                 busy={busy}
               />
@@ -74,6 +78,7 @@ export function WritingResults({
                 title="Question to revisit"
                 body={question}
                 keep={keep}
+                isSaved={isSaved}
                 refine={refine}
                 busy={busy}
                 question
@@ -93,18 +98,40 @@ function Suggestion({
   body,
   quote,
   keep,
+  isSaved,
   refine,
   busy,
   question = false,
 }: Actions & { title: string; body: string; quote?: string; question?: boolean }) {
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const contextualBody = quote ? `“${quote}”\n\n${body}` : body;
+  const kept = saved || Boolean(isSaved?.(title, contextualBody));
+  async function save() {
+    if (kept || saving) return;
+    setSaving(true);
+    try {
+      if ((await keep(title, contextualBody)) !== false) setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  }
   return (
     <li>
       <ReplyMarkdown content={body} compact />
       <div className="assistant-note-actions">
-        <button type="button" onClick={() => keep(title, contextualBody)}>
-          <BookmarkPlus size={13} aria-hidden="true" />
-          Keep insight
+        <button
+          type="button"
+          disabled={kept || saving}
+          aria-pressed={kept}
+          onClick={() => void save()}
+        >
+          {kept ? (
+            <Check size={13} aria-hidden="true" />
+          ) : (
+            <BookmarkPlus size={13} aria-hidden="true" />
+          )}
+          {kept ? "Saved" : "Keep insight"}
         </button>
         {refine && (
           <button type="button" disabled={busy} onClick={() => refine(contextualBody)}>

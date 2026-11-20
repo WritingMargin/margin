@@ -24,8 +24,14 @@
   overflow-wrap: anywhere;
   min-width: 0;
 }
-.published-share-link button {
+.published-share-copy-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-left: auto;
+}
+.published-share-link button {
   flex: none;
   font-size: 12px;
   min-height: 32px;

@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import ScrollTabs from "../components/ScrollTabs";
 import { analyticsGroups, type AnalyticsGroup } from "./groups";
 
 export default function AnalyticsTabs({
@@ -26,10 +27,10 @@ export default function AnalyticsTabs({
       ?.focus();
   }
   return (
-    <div
+    <ScrollTabs
       className="settings-tabs analytics-tabs"
       role="tablist"
-      aria-label="Analytics views"
+      label="Analytics views"
     >
       {analyticsGroups.map((group, index) => (
         <button
@@ -46,6 +47,6 @@ export default function AnalyticsTabs({
           {group[0].toUpperCase() + group.slice(1)}
         </button>
       ))}
-    </div>
+    </ScrollTabs>
   );
 }

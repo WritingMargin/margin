@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from "react";
 import PageHeading from "../components/PageHeading";
+import ScrollTabs from "../components/ScrollTabs";
 import CommentsAdmin from "../admin/CommentsAdmin";
 import type { AdminController } from "../admin/useAdminController";
 import type { ReadersTab } from "../admin-route";
@@ -41,7 +42,7 @@ export default function ReadersPage({ state }: { state: AdminController }) {
         title="Readers"
         description="Subscriptions, conversations, and a little space to think."
       />
-      <div className="settings-tabs" role="tablist" aria-label="Readers">
+      <ScrollTabs className="settings-tabs" role="tablist" label="Readers">
         {tabs.map((item, index) => (
           <button
             type="button"
@@ -57,7 +58,7 @@ export default function ReadersPage({ state }: { state: AdminController }) {
             {item.label}
           </button>
         ))}
-      </div>
+      </ScrollTabs>
       <div
         role="tabpanel"
         tabIndex={0}

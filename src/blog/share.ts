@@ -51,3 +51,32 @@ export function devShareLink(title: string, url: string) {
   const draft = `---\ntitle: ${JSON.stringify(title)}\npublished: false\n---\n\n${url}\n`;
   return `https://dev.to/new?prefill=${encodeURIComponent(draft)}`;
 }
+
+export function shortArticleCode(postId: string) {
+  const code = postId.trim().toLowerCase().split("-")[0] || "";
+  return /^[0-9a-f]{8}$/.test(code) ? code : "";
+}
+
+export function shortArticleURL(articleUrl: string, postId: string) {
+  const code = shortArticleCode(postId);
+  if (!code || !articleUrl) return "";
+  const base = articleUrl.replace(/\/post\/[^/?#]+$/, "").replace(/\/$/, "");
+  return `${base}/s/${code}`;
+}
+
+export function swapSummaryArticleURL(
+  text: string,
+  postId: string,
+  slug: string,
+  useShort: boolean,
+) {
+  const code = shortArticleCode(postId);
+  if (!code) return text;
+  if (useShort) {
+    return text.replace(/(https?:\/\/[^\s)]+?)\/post\/[^\s)]+/g, `$1/s/${code}`);
+  }
+  return text.replace(
+    new RegExp(`(https?:\\/\\/[^\\s)]+?)\\/s\\/${code}\\b`, "gi"),
+    `$1/post/${encodeURIComponent(slug)}`,
+  );
+}

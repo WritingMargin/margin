@@ -84,7 +84,6 @@ func checkSimplifiedWriterHistory(t *testing.T, a *App, post, version Row) {
 func TestSimplifiedExplicitGenerationForOlderArticle(t *testing.T) {
 	a, _ := coreFixture(t)
 	post := responseRow(t, request(t, a, "POST", "/api/posts", Row{"title": "Older article", "slug": "older", "content": "A clear source article.", "status": "published"}, true), 201)
-	a.saveSiteSetting(context.Background(), "simplified", Row{"enabled": true})
 	expectStatus(t, request(t, a, "GET", "/api/public/posts/older/simplified", nil, false), 404)
 	a.Client.Transport = testTransport(func(*http.Request) (*http.Response, error) {
 		return fixtureResponse(Row{"content": "A short older article."}), nil

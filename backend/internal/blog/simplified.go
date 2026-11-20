@@ -162,22 +162,22 @@ func (a *App) simplifiedHistory(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) retrySimplified(w http.ResponseWriter, r *http.Request) {
 	post := a.getPost(r.Context(), r.PathValue("id"))
-	if post.str("status") != "published" || !a.simplifiedSettings(r.Context()).yes("enabled") {
-		fail(409, "Publish the article and enable Simplified articles first.")
+	if post.str("status") != "published" {
+		fail(409, "Publish the article before retrying Simplified generation.")
 	}
 	row := first(a.DB.Must(r.Context(), `UPDATE simplified_versions SET status='queued',error='',generation_id=$3,updated_at=NOW()
 		WHERE post_id=$1 AND source_revision=$2 AND status='failed' RETURNING *`, post["id"], post["revision"], uuid()))
 	if row == nil {
 		fail(409, "Only a failed Simplified generation can be retried.")
 	}
-	a.startSimplified(post.str("id"), post.str("revision"))
+	go a.queueSimplified(post.str("id"), post.str("revision"))
 	send(w, 202, simplifiedDraftResult(post, row))
 }
 
 func (a *App) generateSimplifiedForPost(w http.ResponseWriter, r *http.Request) {
 	post := a.getPost(r.Context(), r.PathValue("id"))
-	if post.str("status") != "published" || !a.simplifiedSettings(r.Context()).yes("enabled") {
-		fail(409, "Publish the article and enable Simplified articles first.")
+	if post.str("status") != "published" {
+		fail(409, "Publish the article before generating its Simplified version.")
 	}
 	row := first(a.DB.Must(r.Context(), `INSERT INTO simplified_versions(post_id,source_revision,generation_id)
 		VALUES($1,$2,$3) ON CONFLICT(post_id,source_revision) DO NOTHING RETURNING *`, post["id"], post["revision"], uuid()))
@@ -225,9 +225,6 @@ func (a *App) queueSimplified(id, revision string) {
 			log.Printf("[margin] simplified queue: %v", err)
 		}
 	}()
-	if !a.simplifiedSettings(ctx).yes("enabled") {
-		return
-	}
 	post := first(a.DB.Must(ctx, "SELECT * FROM posts WHERE id=$1 AND revision=$2 AND status='published'", id, revision))
 	if post == nil {
 		return

@@ -1,4 +1,5 @@
-import { useId, useRef, type KeyboardEvent, type CSSProperties } from "react";
+import { useId, useRef, type KeyboardEvent } from "react";
+import ScrollTabs from "./ScrollTabs";
 import "./inner-tabs.css";
 
 export interface InnerTab<Value extends string> {
@@ -42,12 +43,10 @@ export default function InnerTabs<Value extends string>({
   }
   return (
     <div className="inner-tabs-container">
-      <div
+      <ScrollTabs
         className="inner-tabs"
         role="tablist"
-        aria-label={label}
-        data-count={tabs.length}
-        style={{ "--inner-tab-count": tabs.length } as CSSProperties}
+        label={label}
       >
         {tabs.map((tab, index) => (
           <button
@@ -85,7 +84,7 @@ export default function InnerTabs<Value extends string>({
             )}
           </button>
         ))}
-      </div>
+      </ScrollTabs>
     </div>
   );
 }

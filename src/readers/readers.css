@@ -3,8 +3,8 @@
   gap: 24px;
 }
 @media (max-width: 380px) {
-  .readers-page > .settings-tabs { gap: 10px; }
-  .readers-page > .settings-tabs button { font-size: 11px; }
+  .readers-page .settings-tabs { gap: 10px; }
+  .readers-page .settings-tabs button { font-size: 11px; }
 }
 .reader-settings > .settings-card > h2 {
   margin-top: 0;

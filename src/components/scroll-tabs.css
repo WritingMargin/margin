@@ -1,0 +1,101 @@
+.scroll-tabs {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
+.scroll-tabs:has(> .settings-tabs) {
+  margin: 0 0 28px;
+  border-bottom: 1px solid var(--line, #e6e6e2);
+}
+.scroll-tabs:has(> .design-section-tabs) {
+  margin: 0 0 26px;
+  border-bottom: 1px solid #e4e4e4;
+}
+.scroll-tabs:has(> .section-tabs) {
+  margin: 0 0 25px;
+  border-bottom: 1px solid var(--line, #e6e6e2);
+}
+.scroll-tabs:has(> .customize-tabs) {
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  margin: 0 0 24px;
+  border: 1px solid #e2e6db;
+  border-radius: 7px;
+  background: #f2f4ee;
+}
+.scroll-tabs > .customize-tabs {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+.scroll-tabs > .customize-tabs > button {
+  flex: 1 0 auto;
+  padding: 9px 10px;
+  white-space: nowrap;
+}
+.scroll-tabs > .scroll-tabs-track {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  border-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-tabs > .scroll-tabs-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.scroll-tabs-control {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  min-height: 36px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: #f3f3ee;
+  color: #34342e;
+  cursor: pointer;
+}
+.scroll-tabs-control:first-child {
+  border-right: 1px solid var(--line, #e6e6e2);
+}
+.scroll-tabs-control:last-child {
+  border-left: 1px solid var(--line, #e6e6e2);
+}
+.scroll-tabs-control[hidden] {
+  display: none;
+}
+.scroll-tabs-control:hover:not(:disabled) {
+  background: #e4e4dc;
+}
+.scroll-tabs-control:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.scroll-tabs-control:focus-visible {
+  outline: 2px solid #57644d;
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-tabs > .scroll-tabs-track {
+    scroll-behavior: auto;
+  }
+}
+@media (max-width: 600px) {
+  .expanded-designer .scroll-tabs:has(> .design-section-tabs) {
+    margin-bottom: 16px;
+  }
+}

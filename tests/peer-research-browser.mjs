@@ -804,6 +804,8 @@ try {
   );
   await button(turns.nth(1), "Keep insight").first().click();
   assert.equal((await kept).status(), 201);
+  await button(turns.nth(1), "Saved").first().waitFor();
+  await button(assistant, "Saved insights").click();
   await button(assistant, "View context").first().click();
   await assistant
     .getByText(/Consult these sources/)

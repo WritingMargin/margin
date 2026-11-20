@@ -20,6 +20,11 @@ func TestSummaryLinksPreserveCopyAndAvoidDuplicates(t *testing.T) {
 			t.Fatalf("got %#v, want %q", got, want)
 		}
 	}
+	longDraft := "Quiet software respects the writer's attention by removing noisy dashboards and constant notifications. When tools stay out of the way, small teams can focus on clear thinking, careful editing, and lasting work that readers actually value and share."
+	fitted := summariesWithPostURL([]any{Row{"platform": "x", "text": longDraft}}, link)[0].str("text")
+	if len([]rune(fitted)) > 280 || !strings.HasSuffix(fitted, "\n\n"+link) {
+		t.Fatalf("expected X summary with link to fit within 280 chars, got %d: %q", len([]rune(fitted)), fitted)
+	}
 }
 
 func TestGeneratedSummaryPersistsCanonicalPostURL(t *testing.T) {

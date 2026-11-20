@@ -1,5 +1,7 @@
 .simplified-panel-body { display:flex; flex-direction:column; gap:14px; }
 .simplified-panel-body > p { margin:0; color:#62625c; font-size:12px; line-height:1.6; }
+.simplified-settings-link { color:#3e5431; font-weight:500; text-decoration:underline; text-underline-offset:3px; }
+.simplified-settings-link:hover { color:#2b3d20; }
 .simplified-panel-status { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; border:1px solid #e1e7d9; border-radius:10px; background:#f5f7f0; font-size:12px; }
 .simplified-panel-status span { color:#777; }
 .simplified-panel-status strong { margin-right:auto; text-transform:capitalize; font-weight:600; }

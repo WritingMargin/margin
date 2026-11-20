@@ -24,7 +24,8 @@ type Props = {
   insert: (before: string, after?: string) => void;
   selection: () => string;
   manage: (view: "sources" | "notes") => void;
-  keep: (turn: WritingTurn, title: string, body: string) => void;
+  keep: (turn: WritingTurn, title: string, body: string) => Promise<boolean | void> | boolean | void;
+  isSaved?: (title: string, body: string) => boolean;
   refine: (text: string) => void;
   copied: string;
   copy: (text: string, id: string) => void;
@@ -35,6 +36,7 @@ export default function ChatTurn({
   turn,
   index,
   keep,
+  isSaved,
   refine,
   manage,
   copy,
@@ -84,6 +86,7 @@ export default function ChatTurn({
           details={details}
           busy={props.session.busy}
           keep={keep}
+          isSaved={isSaved}
           refine={refine}
           copied={copied}
           copy={localCopy}
@@ -106,10 +109,11 @@ function TurnNotes({
   details,
   busy,
   keep,
+  isSaved,
   refine,
   copied,
   copy,
-}: Pick<Props, "turn" | "keep" | "refine" | "copied" | "copy"> & {
+}: Pick<Props, "turn" | "keep" | "isSaved" | "refine" | "copied" | "copy"> & {
   details: boolean;
   busy: boolean;
 }) {
@@ -119,6 +123,7 @@ function TurnNotes({
       <WritingResults
         plan={turn.plan}
         keep={(title, body) => keep(turn, title, body)}
+        isSaved={isSaved}
         refine={refine}
         busy={busy}
         copied={

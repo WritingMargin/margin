@@ -39,9 +39,16 @@
 .dialog-header p {
   margin-bottom: 0;
 }
+.dialog-header .scroll-tabs:has(> .settings-tabs) {
+  margin: 16px 0 -24px;
+  border-bottom: 0;
+}
 .dialog-header .settings-tabs {
   margin: 16px 0 -24px;
   gap: 20px;
+}
+.dialog-header .scroll-tabs > .settings-tabs {
+  margin: 0;
 }
 .dialog-header .settings-tabs button {
   white-space: nowrap;
@@ -65,6 +72,7 @@
 .modal .media-picker-footer {
   margin: 0;
 }
+.modal .media-picker > .scroll-tabs:has(> .section-tabs),
 .modal .media-picker > .section-tabs {
   flex: none;
   margin: 0;
@@ -118,9 +126,13 @@
   .dialog-header {
     padding: 20px 48px 20px 20px;
   }
+  .dialog-header .scroll-tabs:has(> .settings-tabs),
   .dialog-header .settings-tabs {
     margin-bottom: -20px;
     gap: 12px;
+  }
+  .dialog-header .scroll-tabs > .settings-tabs {
+    margin-bottom: 0;
   }
   .dialog-header .settings-tabs button {
     font-size: 11px;
@@ -136,6 +148,7 @@
   .modal .media-picker-footer {
     padding: 14px 20px;
   }
+  .modal .media-picker > .scroll-tabs:has(> .section-tabs),
   .modal .media-picker > .section-tabs {
     padding: 0 20px;
     gap: 12px;

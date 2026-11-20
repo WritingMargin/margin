@@ -1,6 +1,7 @@
 import { mediaPath } from "../base-path";
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import ScrollTabs from "../components/ScrollTabs";
 import { galleryImageTitle, galleryImageURL, type GalleryAsset } from "./gallery-images";
 
 type Props = {
@@ -124,7 +125,7 @@ export default function SharingImageLibrary(props: Props) {
   const [source, setSource] = useState<"uploads" | "cloudinary">("uploads");
   return (
     <>
-      <div className="section-tabs">
+      <ScrollTabs className="section-tabs" role="group" label="Image source">
         <button
           type="button"
           className={source === "uploads" ? "active" : ""}
@@ -141,7 +142,7 @@ export default function SharingImageLibrary(props: Props) {
         >
           Cloudinary
         </button>
-      </div>
+      </ScrollTabs>
       {props.purpose === "cover" && source === "cloudinary" && (
         <p className="muted">
           Choose an image or a still frame from a video. Videos use their middle

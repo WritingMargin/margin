@@ -227,9 +227,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 10px 16px;
   border-top: 1px solid #eeeee5;
   background: #fcfcf8;
+}
+.ai-summary-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .ai-summary footer > span {
   font-size: 8px;
