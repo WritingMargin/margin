@@ -16,6 +16,9 @@ artifacts/
 
 .react-router/
 .renderer-test-*/
+.tabs-test-*/
+.peer-review-test-*/
+.codemon/
 release/
 backend/assets/web/*
 !backend/assets/web/README.txt
