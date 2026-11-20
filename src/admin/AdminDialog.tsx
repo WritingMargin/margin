@@ -6,10 +6,10 @@ import AIPanel from "../AIPanel";
 import BlockPicker from "../blocks/BlockPicker";
 import TabsPicker from "../blocks/TabsPicker";
 import MediaPicker from "../media/MediaPicker";
+import "./dialog-layout.css";
 import PostDetails from "./PostDetails";
 import SyntaxGuide from "./SyntaxGuide";
 import type { AdminController } from "./useAdminController";
-import "./dialog-layout.css";
 type Props = {
   state: Pick<
     AdminController,
