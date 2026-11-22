@@ -53,8 +53,12 @@ func (a *App) memberPeerReviews(w http.ResponseWriter, r *http.Request) {
 // identity, invitation and revocable article grant. A resend reuses that review.
 func (a *App) inviteLocalPeer(w http.ResponseWriter, r *http.Request, input Row) {
 	a.limit(r, "peer-invite", 30, time.Hour, true)
-	email := emailField(input, "email", true)
+	email := strings.ToLower(strings.TrimSpace(emailField(input, "email", true)))
 	article := stringField(input, "articleId", 1, 100, true)
+	if !a.localTeamActionAllowed(r, "invite", Row{"email": email, "role": "peer_reviewer", "articleId": article}) {
+		fail(403, "Only an owner can manage the publication team.")
+	}
+	a.validateLocalInvitation(r, email, "peer_reviewer", article)
 	draft := a.reviewDraft(r, article)
 	ctx := r.Context()
 	id := token()

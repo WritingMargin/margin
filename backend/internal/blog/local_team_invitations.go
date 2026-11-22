@@ -8,23 +8,31 @@ import (
 	"time"
 )
 
-func (a *App) createLocalInvitation(r *http.Request, input Row) Row {
+func (a *App) validateLocalInvitation(r *http.Request, email, role, article string) any {
 	ctx := r.Context()
-	email := strings.ToLower(strings.TrimSpace(input.str("email")))
-	role := input.str("role")
 	if !validMemberRole(role) {
 		fail(400, "Choose a valid team role.")
+	}
+	if caller := a.requestMemberPrincipal(r); caller != nil && strings.EqualFold(caller.str("email"), email) {
+		fail(400, "You cannot invite yourself.")
 	}
 	if first(a.DB.Must(ctx, "SELECT id FROM admins WHERE LOWER(email)=$1", email)) != nil {
 		fail(400, "This email already belongs to the publication owner.")
 	}
-	var article any
-	if role == "peer_reviewer" {
-		article = input.str("articleId")
-		if first(a.DB.Must(ctx, "SELECT id FROM posts WHERE id=$1", article)) == nil {
-			fail(404, "Choose an article to review.")
-		}
+	if role != "peer_reviewer" {
+		return nil
 	}
+	if first(a.DB.Must(ctx, "SELECT id FROM posts WHERE id=$1", article)) == nil {
+		fail(404, "Choose an article to review.")
+	}
+	return article
+}
+
+func (a *App) createLocalInvitation(r *http.Request, input Row) Row {
+	ctx := r.Context()
+	email := strings.ToLower(strings.TrimSpace(input.str("email")))
+	role := input.str("role")
+	article := a.validateLocalInvitation(r, email, role, input.str("articleId"))
 	value := newsletterToken()
 	expires := time.Now().UTC().Add(7 * 24 * time.Hour).Format("2006-01-02T15:04:05.000Z")
 	row := first(a.DB.Must(ctx, `INSERT INTO engine_invitations(id,email,role,article_id,token_hash,expires_at) VALUES($1,$2,$3,$4,$5,$6)

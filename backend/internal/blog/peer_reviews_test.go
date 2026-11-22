@@ -144,6 +144,21 @@ func TestAuthorRevokesReviewRequest(t *testing.T) {
 	expectStatus(t, request(t, a, "DELETE", author+"/reviews/"+review, nil, true), 409)
 }
 
+func TestPeerInviteRejectsSelfAndOwnerWithoutRecordingReview(t *testing.T) {
+	a, writerCookie, writer := memberFixture(t, "writer")
+	post := responseRow(t, request(t, a, "POST", "/api/posts", draftInput("no-self-review"), true), 201)
+	path := "/api/posts/" + post.str("id") + "/reviews"
+	expectStatus(t, request(t, a, "POST", path, Row{"email": "owner@example.com"}, true), 400)
+	expectStatus(t, memberRequest(a, writerCookie, "POST", path, Row{"email": writer.str("email")}), 400)
+	expectStatus(t, memberRequest(a, writerCookie, "POST", path, Row{"email": "OWNER@EXAMPLE.COM"}), 400)
+	if rows := a.DB.Must(t.Context(), "SELECT id FROM peer_reviews WHERE post_id=$1", post["id"]); len(rows) != 0 {
+		t.Fatal("rejected self/owner peer invite recorded review rows", rows)
+	}
+	if rows := a.DB.Must(t.Context(), "SELECT id FROM engine_invitations WHERE article_id=$1", post["id"]); len(rows) != 0 {
+		t.Fatal("rejected self/owner peer invite recorded invitation rows", rows)
+	}
+}
+
 func checkPeerAccess(t *testing.T, a *App, path, author, email string, reviewer *http.Cookie) {
 	t.Helper()
 	wrong := engineReviewerCookie(t, a, "other@example.test", "")

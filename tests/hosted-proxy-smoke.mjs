@@ -30,7 +30,7 @@ async function certificates() {
   exec("openssl", ["x509", "-req", "-in", path.join(dir, "server.csr"), "-CA", path.join(dir, "ca.pem"), "-CAkey", path.join(dir, "ca.key"), "-CAcreateserial", "-days", "1", "-extfile", path.join(dir, "leaf.cnf"), "-out", path.join(dir, "server.pem")]);
 }
 async function generator() {
-  await writeFile(path.join(dir, "go.mod"), `module hosted-proxy-fixture\n\ngo 1.27.3\n\nrequire margin-cli v0.0.0\nreplace margin-cli => ${JSON.stringify(path.join(repo, "cli"))}\n`);
+  await writeFile(path.join(dir, "go.mod"), `module hosted-proxy-fixture\n\ngo 1.27.4\n\nrequire margin-cli v0.0.0\nreplace margin-cli => ${JSON.stringify(path.join(repo, "cli"))}\n`);
   await writeFile(path.join(dir, "main.go"), `package main\nimport("fmt";"os"; margincli "margin-cli")\nfunc main(){config,err:=margincli.GenerateHostedProxy(os.Args[1],os.Args[2]);if err!=nil{panic(err)};fmt.Print(config)}\n`);
   const binary = path.join(dir, "generate");
   exec("go", ["build", "-o", binary, "."], { cwd: dir });
