@@ -72,7 +72,7 @@ try {
   for (const type of ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/flac']) {
     openapi.paths['/api/media/audio'].post.requestBody.content[type] = { schema: { type: 'string', format: 'binary' } };
   }
-  for (const name of ['APIAuthorProfile', 'APIProfileLink', 'APILinkPreviewInput', 'APIUploadAudio', 'APICreateToken', 'APIUpdateToken', 'APISEO', 'APIRecommendations', 'APISiteSEO', 'APIUploadImage', 'APIUploadVideo']) {
+  for (const name of ['APIAuthorProfile', 'APIProfileLink', 'APILinkPreviewInput', 'APIUploadAudio', 'APICreateToken', 'APIUpdateToken', 'APISEO', 'APIRecommendations', 'APISiteSEO', 'APIUploadImage', 'APIUploadVideo', 'APIWorkspaceNoteLink', 'APIWorkspaceNoteInput', 'APIShareWorkspaceNoteInput']) {
     schemas[`blog.${name}`].additionalProperties = false;
   }
   openapi.paths['/api/posts'].post.requestBody.content['application/json'].example = {

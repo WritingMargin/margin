@@ -1040,6 +1040,537 @@
         ]
       }
     },
+    "/api/notes": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "List workspace notes created by the current author and public notes shared by teammates, ordered by most recently updated.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "List workspace notes",
+        "operationId": "listNotes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create a private workspace note or set isPublic true to share it with teammates. Supports Markdown content, uploaded media image references, and up to 50 HTTP/HTTPS links.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Create a workspace note",
+        "operationId": "createNote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIWorkspaceNoteInput"
+              }
+            }
+          },
+          "description": "Workspace note fields",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/notes/{id}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Read a single workspace note if owned by the current author or marked public to teammates.\n\nAllowed token roles: reader, writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Read a workspace note",
+        "operationId": "readNote",
+        "parameters": [
+          {
+            "description": "Note ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "reader",
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Update selected fields on a workspace note owned by the current author. Omitted fields remain unchanged.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Update a workspace note",
+        "operationId": "updateNote",
+        "parameters": [
+          {
+            "description": "Note ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIWorkspaceNoteInput"
+              }
+            }
+          },
+          "description": "Updated note fields",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      },
+      "delete": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Permanently delete a workspace note authored by the caller, or a public teammate note when called by an owner.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Delete a workspace note",
+        "operationId": "deleteNote",
+        "parameters": [
+          {
+            "description": "Note ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIOK"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/notes/{id}/duplicate": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create a new private editable copy of any visible workspace note under the current author.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Duplicate a workspace note",
+        "operationId": "duplicateNote",
+        "parameters": [
+          {
+            "description": "Note ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
+    "/api/notes/{id}/share": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Enable, disable, or regenerate the external read-only share link for a workspace note owned by the current author.\n\nAllowed token roles: writer, publisher, owner.",
+        "tags": [
+          "Notes"
+        ],
+        "summary": "Configure external sharing for a workspace note",
+        "operationId": "shareNote",
+        "parameters": [
+          {
+            "description": "Note ID",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/blog.APIShareWorkspaceNoteInput"
+              }
+            }
+          },
+          "description": "Share link configuration",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIWorkspaceNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/blog.APIError"
+                }
+              }
+            }
+          }
+        },
+        "x-token-roles": [
+          "writer",
+          "publisher",
+          "owner"
+        ]
+      }
+    },
     "/api/posts": {
       "get": {
         "security": [
@@ -5865,6 +6396,21 @@
           }
         }
       },
+      "blog.APIShareWorkspaceNoteInput": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "regenerate": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "blog.APISiteSEO": {
         "type": "object",
         "required": [
@@ -6300,6 +6846,104 @@
             "additionalProperties": true
           }
         }
+      },
+      "blog.APIWorkspaceNote": {
+        "type": "object",
+        "properties": {
+          "authorEmail": {
+            "type": "string"
+          },
+          "authorId": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "canDelete": {
+            "type": "boolean"
+          },
+          "canEdit": {
+            "type": "boolean"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIWorkspaceNoteLink"
+            }
+          },
+          "shareToken": {
+            "type": "string"
+          },
+          "shareUrl": {
+            "type": "string"
+          },
+          "shared": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "blog.APIWorkspaceNoteInput": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 50000
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/blog.APIWorkspaceNoteLink"
+            }
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "additionalProperties": false
+      },
+      "blog.APIWorkspaceNoteLink": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
       },
       "blog.APIWorkspacePostPage": {
         "type": "object",

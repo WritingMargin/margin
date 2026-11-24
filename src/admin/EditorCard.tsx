@@ -4,6 +4,7 @@ import { Code2, MessageSquareQuote, Plus, ScanText } from "lucide-react";
 import MediaMenu from "../editor/MediaMenu";
 import FormattingToolbar from "../editor/FormattingToolbar";
 import WriterPad from "../editor/WriterPad";
+import { useImageDrop } from "../editor/useImageDrop";
 import ComponentShelf from "../editor/ComponentShelf";
 import PadTitle from "../editor/PadTitle";
 import { setCatalogActionHandler } from "../editor/rich/component-catalog";
@@ -49,6 +50,12 @@ export default function EditorCard({ state }: Props) {
   const { post, setModal, openAI, editor, change } = state;
   const [formatSlot, setFormatSlot] = useState<HTMLDivElement | null>(null);
   const [shelfOpen, setShelfOpen] = useState(false);
+  const drop = useImageDrop({
+    editorRef: editor,
+    mediaDefaults: media.defaults,
+    value: post.content || "",
+    onChange: (content) => change({ content }),
+  });
   useEffect(() => {
     setCatalogActionHandler((action) => editor.current?.insertDraftComponent?.(action));
     return () => setCatalogActionHandler(null);
@@ -106,7 +113,12 @@ export default function EditorCard({ state }: Props) {
       </FormattingToolbar>
       <div className="pad-row">
         {shelfOpen && <ComponentShelf editor={editor} onClose={() => setShelfOpen(false)} />}
-        <div className="article-canvas publication-content" style={blogThemeStyle(contentTheme)} onClick={focusWriter}>
+        <div
+          className="article-canvas publication-content"
+          style={blogThemeStyle(contentTheme)}
+          onClick={focusWriter}
+          {...drop.handlers}
+        >
           <div className="preview-article writer-page">
             <PadHeading
               post={post}
@@ -123,6 +135,7 @@ export default function EditorCard({ state }: Props) {
               value={post.content || ""}
               onChange={(content) => change({ content })}
               toolbarSlot={formatSlot}
+              drop={drop}
             />
           </div>
         </div>

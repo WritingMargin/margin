@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 export type AdminView =
   | "editor"
   | "posts"
+  | "notes"
   | "connections"
   | "reviews"
   | "designer"
@@ -26,6 +27,7 @@ export type ReadersTab =
 export interface AdminRoute {
   view: AdminView;
   postId?: string;
+  noteId?: string;
   contentType?: ContentType;
   section?: DesignSection;
   mode?: EditorMode;
@@ -39,6 +41,7 @@ export interface AdminRoute {
 const entryRoutes: Record<string, (query: URLSearchParams) => AdminRoute> = {
   "/admin": () => ({ view: "posts" }),
   "/admin/posts": () => ({ view: "posts" }),
+  "/admin/notes": () => ({ view: "notes" }),
   "/admin/connections": () => ({ view: "connections" }),
   "/admin/reviews": () => ({ view: "reviews" }),
   "/admin/analytics": () => ({ view: "analytics" }),
@@ -112,9 +115,15 @@ export function parseAdminRoute(pathname: string, search = ""): AdminRoute {
     };
   const editor = path.match(/^\/admin\/posts\/([a-zA-Z0-9_-]+)$/);
   if (editor) return editorRoute(editor[1], query);
+  const note = path.match(/^\/admin\/notes\/([a-zA-Z0-9_-]+)$/);
+  if (note) return { view: "notes", noteId: note[1] };
   return { view: "not-found" };
 }
 const routeUrls: Partial<Record<AdminView, (route: AdminRoute) => string>> = {
+  notes: (route) =>
+    route.noteId
+      ? `/admin/notes/${encodeURIComponent(route.noteId)}`
+      : "/admin/notes",
   readers: (route) => {
     const query = new URLSearchParams();
     if (route.readersTab && route.readersTab !== "conversations")

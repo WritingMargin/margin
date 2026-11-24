@@ -71,7 +71,7 @@ func (a *App) imageInUse(ctx context.Context, address string) bool {
 			return true
 		}
 	}
-	for _, row := range a.DB.Must(ctx, "SELECT content FROM simplified_versions UNION ALL SELECT content FROM simplified_edits") {
+	for _, row := range a.DB.Must(ctx, "SELECT content FROM simplified_versions UNION ALL SELECT content FROM simplified_edits UNION ALL SELECT content FROM workspace_notes") {
 		if strings.Contains(row.str("content"), address) {
 			return true
 		}

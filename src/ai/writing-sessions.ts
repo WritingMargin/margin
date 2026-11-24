@@ -58,7 +58,7 @@ export function newWritingChat(
   return {
     id,
     createdAt,
-    state: { ...emptyWritingSession, turns: [], researchSources: [] },
+    state: { ...emptyWritingSession, turns: [], researchSources: [], attachedNotes: [] },
   };
 }
 export function writingChats(

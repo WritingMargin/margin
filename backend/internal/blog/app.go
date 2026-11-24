@@ -304,7 +304,7 @@ func (a *App) checkOrigin(r *http.Request) {
 	}
 }
 func protectedPath(p string) bool {
-	for _, prefix := range []string{"team", "posts", "settings", "comments", "readers", "tokens", "storage", "media", "ai", "newsletter", "account", "recommendations", "analytics", "oauth"} {
+	for _, prefix := range []string{"team", "posts", "notes", "settings", "comments", "readers", "tokens", "storage", "media", "ai", "newsletter", "account", "recommendations", "analytics", "oauth"} {
 		if p == "/api/"+prefix || strings.HasPrefix(p, "/api/"+prefix+"/") {
 			return true
 		}

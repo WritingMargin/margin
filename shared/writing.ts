@@ -19,6 +19,7 @@ export type WritingPlan = {
   questions: string[];
 };
 export type ResearchSource = { url: string; title: string; excerpt: string };
+export type AttachedNoteRef = { id: string; title: string };
 export type ResearchContext = {
   sources: ResearchSource[];
   saved?: {
@@ -40,6 +41,7 @@ export type WritingTurn = {
   context: WritingContext;
   contextExcerpted?: boolean;
   research?: ResearchContext;
+  attachedNotes?: AttachedNoteRef[];
   formatting?: FormattingProposal;
 };
 export type WritingActivity = {
@@ -53,6 +55,7 @@ export type WritingSession = {
   pendingActivity?: WritingActivity;
   research: boolean;
   researchSources: ResearchSource[];
+  attachedNotes?: AttachedNoteRef[];
   researchSelectionEdited?: boolean;
   researchView?: "sources" | "notes" | "notebook";
   lastResearch?: ResearchContext;
@@ -105,6 +108,7 @@ export const emptyWritingSession: WritingSession = {
   turns: [],
   research: false,
   researchSources: [],
+  attachedNotes: [],
   mode: "ideas",
   brief: "",
   audience: "",

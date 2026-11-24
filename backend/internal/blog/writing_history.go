@@ -55,6 +55,22 @@ func fitConversationContext(input Row) {
 			return
 		}
 	}
+	fitAttachedNotes(input)
+}
+
+func fitAttachedNotes(input Row) {
+	notes, ok := input["attachedNotes"].([]Row)
+	if !ok || len(notes) == 0 {
+		return
+	}
+	for i := len(notes) - 1; i >= 0 && len(utf16.Encode([]rune(encode(input)))) > writingPayloadLimit; i-- {
+		excess := len(utf16.Encode([]rune(encode(input)))) - writingPayloadLimit
+		content := notes[i].str("content")
+		units := writingStringUnits(content)
+		if units > 0 {
+			notes[i]["content"] = conversationExcerpt(content, max(0, units-excess))
+		}
+	}
 }
 
 func writingStringUnits(value string) int {

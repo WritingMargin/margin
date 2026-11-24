@@ -59,6 +59,13 @@ func mcpOperations() []mcpOperation {
 		{"save_research_source", "POST", "/api/posts/{id}/sources"},
 		{"list_thinking_notes", "GET", "/api/posts/{id}/writing-notes"},
 		{"save_thinking_note", "POST", "/api/posts/{id}/writing-notes"},
+		{"list_notes", "GET", "/api/notes"},
+		{"get_note", "GET", "/api/notes/{id}"},
+		{"create_note", "POST", "/api/notes"},
+		{"update_note", "PUT", "/api/notes/{id}"},
+		{"delete_note", "DELETE", "/api/notes/{id}"},
+		{"share_note", "POST", "/api/notes/{id}/share"},
+		{"duplicate_note", "POST", "/api/notes/{id}/duplicate"},
 		{"list_images", "GET", "/api/media/images"},
 		{"upload_image", "POST", "/api/media/images"},
 		{"preview_link", "POST", "/api/media/preview"},
@@ -102,7 +109,7 @@ func mcpOperations() []mcpOperation {
 			description = mcpRawUploadSentence.ReplaceAllString(description, "Over MCP, send base64 JSON only; for files over 10 MiB use the binary REST upload instead.")
 		}
 		description = rename(description)
-		destructive := definition.method == "PUT" || definition.name == "save_research_source"
+		destructive := mcpToolDestructive(definition.method, definition.name)
 		operations = append(operations, mcpOperation{
 			method: definition.method, path: definition.path, parameters: parameters,
 			tool: &mcp.Tool{Name: definition.name, Title: source.Summary, Description: description,
@@ -198,6 +205,10 @@ func mcpSchemaObject(v map[string]any, schemas map[string]any) any {
 		}
 	}
 	return result
+}
+
+func mcpToolDestructive(method, name string) bool {
+	return method == "PUT" || method == "DELETE" || name == "save_research_source"
 }
 
 func mcpParameters(source []mcpParameter, schemas map[string]any, binaryAlternative bool, rename func(string) string) (map[string]any, []string, []mcpParameter) {

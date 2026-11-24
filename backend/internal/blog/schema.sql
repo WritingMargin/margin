@@ -502,3 +502,20 @@ CREATE TABLE IF NOT EXISTS engine_password_resets (
  email TEXT NOT NULL, password_hash TEXT NOT NULL, token_hash TEXT UNIQUE NOT NULL,
  expires_at TIMESTAMPTZ NOT NULL, sent_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS workspace_notes (
+ id TEXT PRIMARY KEY,
+ author_id TEXT NOT NULL,
+ author_name TEXT NOT NULL DEFAULT '',
+ author_email TEXT NOT NULL DEFAULT '',
+ title TEXT NOT NULL DEFAULT '',
+ content TEXT NOT NULL DEFAULT '',
+ links JSONB NOT NULL DEFAULT '[]',
+ is_public BOOLEAN NOT NULL DEFAULT FALSE,
+ share_token TEXT NOT NULL DEFAULT '',
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS workspace_notes_owner_idx ON workspace_notes(author_id,updated_at DESC);
+CREATE INDEX IF NOT EXISTS workspace_notes_public_idx ON workspace_notes(is_public,updated_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS workspace_notes_share_idx ON workspace_notes(share_token) WHERE share_token<>'';

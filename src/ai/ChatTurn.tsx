@@ -3,7 +3,7 @@ import ReplyMarkdown from "./ReplyMarkdown";
 import "../markdown.css";
 import "./reply-markdown.css";
 import Accordion from "../Accordion";
-import { Copy, Feather } from "lucide-react";
+import { Copy, Feather, StickyNote } from "lucide-react";
 import type { Post } from "../../shared/types";
 import {
   copyWritingPlan,
@@ -57,6 +57,16 @@ export default function ChatTurn({
         <span className="sr-only">You: </span>
         {turn.message}
       </p>
+      {turn.attachedNotes && turn.attachedNotes.length > 0 && (
+        <div className="chat-turn-attached-notes" aria-label="Attached notes in this message">
+          {turn.attachedNotes.map((note) => (
+            <span key={note.id} className="chat-attached-note-chip">
+              <StickyNote size={11} aria-hidden="true" />
+              <span>{note.title}</span>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="chat-reply">
         <div className="chat-byline">
           <Feather size={14} aria-hidden="true" />

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { ArrowLeft, LockKeyhole, StickyNote } from "lucide-react";
+import { ArrowLeft, LockKeyhole, Plus, StickyNote } from "lucide-react";
 import type { ReaderNote } from "../../shared/interactions";
 import { api, json } from "../api";
 import ReaderAuth from "./ReaderAuth";
@@ -87,10 +87,12 @@ function NotebookList({ notes, notesEnabled, message, setDraft }: {
   setDraft: (draft: Draft) => void;
 }) {
   return <>
-    {notesEnabled && <button type="button" className="notebook-capture" onClick={() => setDraft({ quote: "", occurrence: 0, body: "" })}>
-      <StickyNote size={18} aria-hidden="true" /><span>Take a note…</span>
-    </button>}
-    <p className="notebook-privacy"><LockKeyhole size={13} aria-hidden="true" /> Private to you</p>
+    <div className="notebook-toolbar">
+      <p className="notebook-privacy"><LockKeyhole size={13} aria-hidden="true" /> Private to you</p>
+      {notesEnabled && <button type="button" className="button primary notebook-create" onClick={() => setDraft({ quote: "", occurrence: 0, body: "" })}>
+        <Plus size={15} aria-hidden="true" /> New note
+      </button>}
+    </div>
     {notes === null && !message && <p className="notebook-loading" role="status">Loading notes…</p>}
     {notes?.length === 0 && <div className="notebook-empty">
       <span className="notebook-empty-icon"><StickyNote size={27} strokeWidth={1.4} aria-hidden="true" /></span>
@@ -126,7 +128,7 @@ function NotebookEditor({ draft, setDraft, busy, save, remove }: {
     <form className="notebook-editor" onSubmit={(event) => void save(event)}>
       {draft.quote && <blockquote>{draft.quote}</blockquote>}
       <label htmlFor={inputId}>{draft.id ? "Edit note" : "New note"}</label>
-      <textarea ref={inputRef} id={inputId} required maxLength={10000} rows={8} placeholder="Write a thought for later…" value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })} />
+      <textarea ref={inputRef} id={inputId} autoFocus required maxLength={10000} rows={8} placeholder="Write a thought for later…" value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })} />
       <div className="notebook-editor-actions">
         <button className="button primary" disabled={busy}>{busy ? "Saving…" : "Save note"}</button>
         <button type="button" className="button" disabled={busy} onClick={() => setDraft(null)}>Cancel</button>

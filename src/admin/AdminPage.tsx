@@ -9,6 +9,7 @@ import AnalyticsPage from "../analytics/AnalyticsPage";
 import DesignPage from "./DesignPage";
 import EditorPage from "./EditorPage";
 import MediaPage from "./MediaPage";
+import NotesPage from "../notes/NotesPage";
 import PostsPage from "./PostsPage";
 import SettingsPanel from "./SettingsPanel";
 import type { AdminController } from "./useAdminController";
@@ -16,6 +17,7 @@ const pages: Partial<Record<AdminController["view"], import("react").ComponentTy
   analytics: AnalyticsPage,
   editor: EditorPage,
   posts: PostsPage,
+  notes: NotesPage,
   designer: DesignPage,
   media: MediaPage,
   comments: ReadersPage,

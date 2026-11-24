@@ -1,3 +1,6 @@
+.source-body.writer-source {
+  position: relative;
+}
 .source-body.image-drop-active {
   outline: 2px dashed #71825e;
   outline-offset: -3px;

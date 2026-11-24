@@ -77,7 +77,7 @@ func assertMCPConsolidatedTools(t *testing.T, tools []*mcp.Tool, role string) {
 			t.Fatal("obsolete tool still advertised", old)
 		}
 	}
-	if role == "owner" && len(tools) != 29 {
+	if role == "owner" && len(tools) != 36 {
 		t.Fatal("unexpected tool count", len(tools))
 	}
 	if role == "reader" {

@@ -14,7 +14,7 @@ import { useLocalDraft } from "./useLocalDraft";
 import { useNavigationSidebar } from "./useNavigationSidebar";
 import { useWritingCompanion } from "../ai/useWritingCompanion";
 import { sitePath } from "../base-path";
-import { FileText, Image, Users, Paintbrush, ChartNoAxesCombined, Plug } from "lucide-react";
+import { FileText, Image, Users, Paintbrush, ChartNoAxesCombined, Plug, StickyNote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { defaultTheme, type Post, type Theme } from "../../shared/types";
 import { useAdminRoute, type AdminView, type EditorMode } from "../admin-route";
@@ -398,6 +398,7 @@ export function useAdminController({
   const nav = [
     ...(articleIds.length ? [{ id: "reviews", icon: Users, label: "My peer reviews" }] : []),
     { id: "posts", icon: FileText, label: "All content" },
+    { id: "notes", icon: StickyNote, label: "Notes" },
     { id: "designer", icon: Paintbrush, label: "Publication designer" },
     { id: "media", icon: Image, label: "Media library" },
     { id: "readers", icon: Users, label: "Readers" },

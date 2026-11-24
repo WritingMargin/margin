@@ -13,6 +13,7 @@ func (a *App) coreRoutes() {
 	a.draftRoutes()
 	a.peerRoutes()
 	a.researchRoutes()
+	a.noteRoutes()
 	a.mux.HandleFunc("GET /api/posts/{id}/link", a.readPostLink)
 	a.mux.HandleFunc("POST /api/posts/audit", a.auditArticle)
 	a.mux.HandleFunc("GET /api/settings/templates", a.readTemplates)

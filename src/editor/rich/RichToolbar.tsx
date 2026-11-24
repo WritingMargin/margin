@@ -19,14 +19,15 @@ import {
 type Tool = {
   label: string;
   icon: LucideIcon;
+  shortcut?: string;
   active?: (editor: Editor) => boolean;
   enabled?: (editor: Editor) => boolean;
   run: (editor: Editor) => void;
 };
 
 const marks: Tool[] = [
-  { label: "Bold", icon: Bold, active: (e) => e.isActive("bold"), run: (e) => e.chain().focus().toggleBold().run() },
-  { label: "Italic", icon: Italic, active: (e) => e.isActive("italic"), run: (e) => e.chain().focus().toggleItalic().run() },
+  { label: "Bold", icon: Bold, shortcut: "B", active: (e) => e.isActive("bold"), run: (e) => e.chain().focus().toggleBold().run() },
+  { label: "Italic", icon: Italic, shortcut: "I", active: (e) => e.isActive("italic"), run: (e) => e.chain().focus().toggleItalic().run() },
   { label: "Strikethrough", icon: Strikethrough, active: (e) => e.isActive("strike"), run: (e) => e.chain().focus().toggleStrike().run() },
   { label: "Inline code", icon: Code2, active: (e) => e.isActive("code"), run: (e) => e.chain().focus().toggleCode().run() },
 ];
@@ -64,8 +65,9 @@ function ToolButton({ editor, tool }: { editor: Editor; tool: Tool }) {
     <button
       type="button"
       className="pad-tool"
-      title={tool.label}
+      title={tool.shortcut ? `${tool.label} (⌘${tool.shortcut} / Ctrl+${tool.shortcut})` : tool.label}
       aria-label={tool.label}
+      aria-keyshortcuts={tool.shortcut ? `Meta+${tool.shortcut} Control+${tool.shortcut}` : undefined}
       aria-pressed={tool.active ? tool.active(editor) : undefined}
       disabled={tool.enabled ? !tool.enabled(editor) : false}
       onMouseDown={(event) => event.preventDefault()}
@@ -135,7 +137,7 @@ function LinkTool({ editor }: { editor: Editor }) {
  * Substack-style formatting: a text style menu, marks, link, quote and lists,
  * undo/redo. It works on the rich document directly and reflects the caret.
  */
-export default function RichToolbar({ editor }: { editor: Editor }) {
+export default function RichToolbar({ editor, minimal = false }: { editor: Editor; minimal?: boolean }) {
   const [, refresh] = useReducer((n: number) => n + 1, 0);
   useEffect(() => {
     editor.on("transaction", refresh);
@@ -143,6 +145,12 @@ export default function RichToolbar({ editor }: { editor: Editor }) {
       editor.off("transaction", refresh);
     };
   }, [editor]);
+
+  if (minimal) return (
+    <div className="pad-format" role="group" aria-label="Note formatting">
+      {marks.slice(0, 2).map(tool => <ToolButton key={tool.label} editor={editor} tool={tool} />)}
+    </div>
+  );
 
   return (
     <div className="pad-format" role="group" aria-label="Text formatting">

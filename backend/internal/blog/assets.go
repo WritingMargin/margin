@@ -125,8 +125,9 @@ func (a *App) readCover(w http.ResponseWriter, r *http.Request) {
 	if !coverRE.MatchString(url) {
 		fail(404, "Cover image not found.")
 	}
+	shareToken := r.URL.Query().Get("note_share")
 	owner := a.privateMediaAllowed(r, "content:read")
-	if !owner && !a.coverPublished(r.Context(), url) {
+	if !owner && !a.coverAccessible(r.Context(), url, shareToken) {
 		fail(404, "Cover image not found.")
 	}
 	row := first(a.DB.Must(r.Context(), "SELECT object_key,content_type FROM uploaded_covers WHERE id=$1", r.PathValue("id")))
@@ -137,13 +138,17 @@ func (a *App) readCover(w http.ResponseWriter, r *http.Request) {
 	must(err)
 	a.recheckPreviewMedia(r)
 	// Recheck publication after storage I/O to prevent leaking an unpublished cover.
-	if !owner && !a.coverPublished(r.Context(), url) {
+	if !owner && !a.coverAccessible(r.Context(), url, shareToken) {
 		fail(404, "Cover image not found.")
 	}
 	if !owner {
 		w.Header().Set("Cross-Origin-Resource-Policy", "cross-origin")
 	}
 	sendImage(w, row.str("content_type"), data)
+}
+
+func (a *App) coverAccessible(ctx context.Context, url, shareToken string) bool {
+	return a.coverPublished(ctx, url) || a.coverInSharedNote(ctx, shareToken, url)
 }
 func sendImage(w http.ResponseWriter, kind string, data []byte) {
 	w.Header().Set("Content-Type", kind)

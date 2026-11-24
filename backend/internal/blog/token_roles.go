@@ -25,6 +25,8 @@ var postReadRoutes = map[string]bool{
 	"GET /api/posts/{id}/simplified/history":   true,
 	"GET /api/posts/{id}/author-update":        true,
 	"GET /api/recommendations":                 true,
+	"GET /api/notes":                           true,
+	"GET /api/notes/{id}":                      true,
 }
 
 func validTokenRole(role string) bool {
@@ -59,7 +61,7 @@ func tokenRouteAllowed(role, pattern string) bool {
 	switch pattern {
 	case "GET /api/posts/{id}/reviews/notes/{note}/revisions", "GET /api/posts/{id}/reviews", "POST /api/posts/{id}/reviews", "DELETE /api/posts/{id}/reviews/{review}", "POST /api/posts/{id}/reviews/notes/{note}/address", "POST /api/posts/{id}/sources", "POST /api/posts/{id}/writing-notes", "GET /api/analytics/reaction-map", "GET /api/posts/{id}/polls", "GET /api/posts/{id}/polls/{poll}", "GET /api/readers/flags", "PATCH /api/readers/flags/{id}":
 		return role == "writer" || role == "publisher"
-	case "PUT /api/posts/{id}/draft", "DELETE /api/posts/{id}/draft", "PUT /api/posts/{id}/simplified", "POST /api/posts", "PUT /api/posts/{id}", "POST /api/media/images", "DELETE /api/media/images/{id}", "POST /api/media/covers", "POST /api/media/videos", "POST /api/media/audio", "POST /api/media/models", "POST /api/media/preview":
+	case "PUT /api/posts/{id}/draft", "DELETE /api/posts/{id}/draft", "PUT /api/posts/{id}/simplified", "POST /api/posts", "PUT /api/posts/{id}", "POST /api/notes", "PUT /api/notes/{id}", "DELETE /api/notes/{id}", "POST /api/notes/{id}/share", "POST /api/notes/{id}/duplicate", "POST /api/media/images", "DELETE /api/media/images/{id}", "POST /api/media/covers", "POST /api/media/videos", "POST /api/media/audio", "POST /api/media/models", "POST /api/media/preview":
 		return role == "writer" || role == "publisher"
 	case "POST /api/posts/{id}/draft/publish", "DELETE /api/posts/{id}", "POST /api/posts/{id}/polls/{poll}/close", "PUT /api/posts/{id}/author-update":
 		return role == "publisher"

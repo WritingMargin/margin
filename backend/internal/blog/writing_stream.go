@@ -32,7 +32,7 @@ func (a *App) writingAssistantStream(w http.ResponseWriter, r *http.Request) {
 		fail(400, err.Error())
 	}
 	id := a.writingRequestKey(r, input)
-	payload, contextRow := writingStreamInput(input)
+	payload, contextRow := a.writingStreamInput(r, input)
 	ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
 	defer cancel()
 	upstream := a.openWritingStream(ctx, payload, id)
@@ -44,13 +44,12 @@ func (a *App) writingAssistantStream(w http.ResponseWriter, r *http.Request) {
 	a.forwardWritingStream(w, r, upstream.Body, input, contextRow, id)
 }
 
-func writingStreamInput(input writing.Input) (Row, Row) {
+func (a *App) writingStreamInput(r *http.Request, input writing.Input) (Row, Row) {
 	instructions, schema := writing.Instructions, writing.Schema()
 	if input.ConversationMode {
 		instructions, schema = writing.ConversationInstructions, writing.ConversationSchema()
 	}
-	contextRow := writingInputRow(input)
-	prepareWritingFormatting(input, contextRow)
+	contextRow := a.prepareWritingContext(r, input)
 	return Row{"instructions": instructions, "input": contextRow, "schemaName": "writing_plan", "schema": schema}, contextRow
 }
 

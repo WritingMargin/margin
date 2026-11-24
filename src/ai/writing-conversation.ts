@@ -61,7 +61,16 @@ export function conversationInput(
   const history = session.turns
     .slice(-8)
     .map((turn) => historyItem(turn, session));
-  return { request: { ...request, conversationMode: true, history }, research };
+  const attachedNoteIds = (session.attachedNotes ?? []).map((note) => note.id);
+  return {
+    request: {
+      ...request,
+      conversationMode: true,
+      history,
+      ...(attachedNoteIds.length ? { attachedNoteIds } : {}),
+    },
+    research,
+  };
 }
 export function completedWritingTurn(
   session: WritingSession,
@@ -107,5 +116,8 @@ export function completedWritingTurn(
       result.researchSources,
       result.researchSaved,
     ),
+    ...(session.attachedNotes?.length
+      ? { attachedNotes: [...session.attachedNotes] }
+      : {}),
   };
 }

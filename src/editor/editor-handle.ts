@@ -3,6 +3,7 @@ export type WriterEditor = HTMLElement & {
   selectionStart: number;
   selectionEnd: number;
   setSelectionRange: (start: number, end: number) => void;
+  insertLink?: (url: string, label?: string) => void;
   /** Rich writer only: put a component at the caret / start or end a shelf drag. */
   insertCodeBlock?: () => void;
   insertDraftComponent?: (kind: import("./rich/draft-component").DraftComponentKind) => void;

@@ -126,6 +126,11 @@ var postWriteOAuthPermissions = map[string]string{
 	"GET /api/readers/flags":                             "content:draft",
 	"PATCH /api/readers/flags/{id}":                      "content:draft",
 	"PUT /api/posts/{id}/author-update":                  "content:publish",
+	"POST /api/notes":                                    "content:draft",
+	"PUT /api/notes/{id}":                                "content:draft",
+	"DELETE /api/notes/{id}":                             "content:draft",
+	"POST /api/notes/{id}/share":                         "content:draft",
+	"POST /api/notes/{id}/duplicate":                     "content:draft",
 }
 
 // Public file delivery checks its capability separately. These protected library

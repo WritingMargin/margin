@@ -235,13 +235,13 @@ func decodeColumn(key string, value any) any {
 		return t.UTC().Format("2006-01-02T15:04:05.000Z")
 	}
 	switch key {
-	case "enabled", "closed", "approved", "featured", "email_required", "approval_required", "pinned":
+	case "enabled", "closed", "approved", "featured", "email_required", "approval_required", "pinned", "is_public":
 		if n, ok := value.(int64); ok {
 			return n != 0
 		}
 	}
 	switch key {
-	case "author", "snapshot", "tags", "theme", "configuration", "summaries", "seo", "registration", "recommendations", "recommended_ids", "citation_documents":
+	case "author", "snapshot", "tags", "theme", "configuration", "summaries", "seo", "registration", "recommendations", "recommended_ids", "citation_documents", "links":
 		return decodeJSONColumn(value)
 	}
 	return value

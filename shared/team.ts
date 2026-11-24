@@ -6,7 +6,7 @@ export const teamRoleLabels: Record<TeamRole, string> = {
 };
 export function canPublish(role: TeamRole) { return role === "owner" || role === "publisher"; }
 export function canOpenWorkspaceView(role: TeamRole, view: string) {
-  return view === "connections" || role === "owner" || ((role === "writer" || role === "publisher") && ["posts", "editor", "media", "reviews"].includes(view));
+  return view === "connections" || role === "owner" || ((role === "writer" || role === "publisher") && ["posts", "editor", "notes", "media", "reviews"].includes(view));
 }
 export function memberWorkspaceKey(workspace: string, user?: TeamUser) {
   return user ? `${workspace}:member:${encodeURIComponent(user.id)}` : workspace;

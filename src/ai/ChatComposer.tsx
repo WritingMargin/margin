@@ -1,7 +1,8 @@
 import { useId, type RefObject } from "react";
-import { ArrowUp, LibraryBig, Loader2 } from "lucide-react";
+import { ArrowUp, LibraryBig, Loader2, StickyNote, X } from "lucide-react";
 import type { WritingSession } from "../../shared/writing";
 import ChatContext from "./ChatContext";
+import ChatNotesPicker from "./ChatNotesPicker";
 import ChatResearchToggle from "./ChatResearchToggle";
 import type { AIConfig } from "../../shared/ai";
 
@@ -28,6 +29,7 @@ export default function ChatComposer({
 }: Props) {
   const id = useId();
   const message = session.busy ? "" : session.brief;
+  const attachedNotes = session.attachedNotes ?? [];
 
   return (
     <form
@@ -38,6 +40,28 @@ export default function ChatComposer({
       }}
     >
       <div className="chat-compose-box">
+        {attachedNotes.length > 0 && (
+          <div className="chat-attached-notes" aria-label="Attached notes">
+            {attachedNotes.map((note) => (
+              <span key={note.id} className="chat-attached-note-chip">
+                <StickyNote size={11} aria-hidden="true" />
+                <span>{note.title}</span>
+                <button
+                  type="button"
+                  aria-label={`Detach ${note.title}`}
+                  disabled={session.busy}
+                  onClick={() =>
+                    change({
+                      attachedNotes: attachedNotes.filter((item) => item.id !== note.id),
+                    })
+                  }
+                >
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
         <label className="sr-only" htmlFor={id}>
           Message the Writing Assistant
         </label>
@@ -75,6 +99,7 @@ export default function ChatComposer({
             onChange={(research) => change({ research })}
           />
           <ChatContext session={session} change={change} />
+          <ChatNotesPicker session={session} change={change} />
           {session.research && (
             <button
               type="button"

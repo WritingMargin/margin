@@ -21,8 +21,7 @@ func (a *App) writingAssistant(w http.ResponseWriter, r *http.Request) {
 	if input.ConversationMode {
 		instructions, schema = writing.ConversationInstructions, writing.ConversationSchema()
 	}
-	context := writingInputRow(input)
-	prepareWritingFormatting(input, context)
+	context := a.prepareWritingContext(r, input)
 	result := a.serviceRequest(r.Context(), "/v1/generations/writing", Row{
 		"instructions": instructions,
 		"input":        context,
@@ -30,6 +29,13 @@ func (a *App) writingAssistant(w http.ResponseWriter, r *http.Request) {
 		"schema":       schema,
 	}, id)
 	send(w, 200, a.writingResult(r.Context(), input, context, id, result))
+}
+
+func (a *App) prepareWritingContext(r *http.Request, input writing.Input) Row {
+	notes := a.loadAttachedWritingNotes(r, input.AttachedNoteIDs)
+	context := writingInputRow(input, notes)
+	prepareWritingFormatting(input, context)
+	return context
 }
 
 func (a *App) writingResult(ctx context.Context, input writing.Input, context Row, id string, result Row) Row {
@@ -81,7 +87,7 @@ func (a *App) writingRequestKey(r *http.Request, input writing.Input) string {
 	return researchRequestID(key, input.PostID)
 }
 
-func writingInputRow(input writing.Input) Row {
+func writingInputRow(input writing.Input, attachedNotes []Row) Row {
 	if input.ConversationMode && writing.GreetingOnly(input.Brief) {
 		// A greeting needs no draft, selection, research or prior turn context.
 		// Keep it from prompting unsolicited editorial feedback.
@@ -89,6 +95,9 @@ func writingInputRow(input writing.Input) Row {
 	}
 	row := Row{"mode": input.Mode, "brief": input.Brief, "audience": input.Audience, "title": input.Title, "content": input.Content}
 	attachWritingResearchInput(row, input)
+	if len(attachedNotes) > 0 {
+		row["attachedNotes"] = attachedNotes
+	}
 	if input.Passage != "" {
 		row["passage"] = input.Passage
 	}

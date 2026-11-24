@@ -31,6 +31,8 @@
   font-size:12px; text-align:left; white-space:nowrap;
 }
 .editor-actions-panel button:hover { background:#f0f0ea; }
+.editor-actions-panel button.is-danger { color:#98402f; }
+.editor-actions-panel button.is-danger:hover { background:#f6ece7; color:#98402f; }
 .editor-actions-panel p {
   margin:5px 4px 0; padding:12px 6px 6px; border-top:1px solid #e7e7df;
   font-size:11px; color:#62625c;

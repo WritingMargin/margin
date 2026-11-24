@@ -766,6 +766,12 @@ html:has(dialog.passage-dialog[open]) {
 .notebook-capture:focus-visible, .notebook-card:focus-visible, .notebook-back:focus-visible { outline: 2px solid var(--accent, #46603c); outline-offset: 2px; }
 .notebook-capture svg { color: var(--accent, #46603c); flex: none; }
 .notebook-privacy { display: flex; align-items: center; gap: 6px; margin: 10px 2px 0; color: var(--blog-muted, #73766e); font: 11px/1.5 Inter, sans-serif; }
+.notebook-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notebook-toolbar .notebook-privacy { margin: 0; }
+.notebook-toolbar .notebook-create { flex: none; gap: 6px; min-height: 36px; margin: 0; padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+@media (pointer: coarse) {
+  .notebook-toolbar .notebook-create { min-height: 44px; }
+}
 .notebook-empty { max-width: 280px; margin: 64px auto 24px; color: var(--blog-muted, #73766e); text-align: center; }
 .notebook-empty-icon { display: grid; place-items: center; width: 58px; height: 58px; margin: 0 auto 18px; border-radius: 14px; background: var(--blog-surface, #f5f6f1); color: var(--accent, #46603c); }
 .notebook-empty h3 { margin: 0 0 7px; color: var(--blog-text, #242424); font: 600 15px/1.4 Inter, sans-serif; }

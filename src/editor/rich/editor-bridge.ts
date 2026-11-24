@@ -50,6 +50,18 @@ export function richEditorBridge(
       if (el) el.scrollTop = value;
     },
     insertCodeBlock() { insertCodeBlockAtSelection(editor); },
+    insertLink(url: string, label?: string) {
+      if (!label && !editor.state.selection.empty) {
+        editor.chain().focus().setLink({ href: url }).run();
+        return;
+      }
+      editor.chain().focus().insertContent({
+        type: "text",
+        text: label || url,
+        marks: [{ type: "link", attrs: { href: url } }],
+      }).run();
+      editor.view.dispatch(editor.state.tr.setStoredMarks(null));
+    },
     insertDraftComponent(kind: import("./draft-component").DraftComponentKind) { insertDraftAtSelection(editor, kind); },
     insertComponent(src: string) {
       insertComponentAtSelection(editor, src);

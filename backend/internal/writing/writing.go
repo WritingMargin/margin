@@ -20,6 +20,7 @@ type Input struct {
 	ConversationMode bool     `json:"conversationMode,omitempty"`
 	History          []Turn   `json:"history,omitempty"`
 	ResearchSources  []Source `json:"researchSources,omitempty"`
+	AttachedNoteIDs  []string `json:"attachedNoteIds,omitempty"`
 	PostID           string   `json:"postId,omitempty"`
 	ResearchMode     bool     `json:"researchMode,omitempty"`
 	Mode             string   `json:"mode"`
@@ -99,7 +100,23 @@ func validateSession(input Input) error {
 	if !validResearchSources(input) {
 		return errors.New("Choose up to three sources with valid publication links in research mode.")
 	}
+	if !validAttachedNoteIDs(input.AttachedNoteIDs) {
+		return errors.New("Attach up to ten unique notes.")
+	}
 	return nil
+}
+func validAttachedNoteIDs(ids []string) bool {
+	if len(ids) > 10 {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, id := range ids {
+		if !text(id, 1, 100) || seen[id] {
+			return false
+		}
+		seen[id] = true
+	}
+	return true
 }
 func validResearchSources(input Input) bool {
 	if len(input.ResearchSources) == 0 {
